@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useHead } from '@unhead/vue';
+import { computed, nextTick, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { useHead } from "@unhead/vue";
 
-import Composer, { type ComposerAction } from './Composer.vue';
-import NoteItem from './NoteItem.vue';
-import { useNotesStore } from '../stores/notes';
+import Composer, { type ComposerAction } from "./Composer.vue";
+import NoteItem from "./NoteItem.vue";
+import { useNotesStore } from "../stores/notes";
 
 const { t } = useI18n();
 const store = useNotesStore();
@@ -15,17 +15,17 @@ const containerRef = ref<HTMLElement | null>(null);
 const composerOpen = ref(true);
 const composerFocusKey = ref(1);
 
-const appTitle = computed(() => t('appName'));
+const appTitle = computed(() => t("appName"));
 const empty = computed(() => notes.value.length === 0);
-const fabLabel = computed(() => t('openComposer'));
+const fabLabel = computed(() => t("openComposer"));
 
 const composerActions = computed<ComposerAction[]>(() => [
   {
-    id: 'check',
-    label: t('insertCheck'),
-    icon: '✅',
+    id: "check",
+    label: t("insertCheck"),
+    icon: "✅",
     onTrigger: (ctx) => {
-      ctx.append(' ✅');
+      ctx.append(" ✅");
       ctx.focus();
     },
   },
@@ -35,8 +35,8 @@ useHead(() => ({
   title: appTitle.value,
   meta: [
     {
-      name: 'description',
-      content: t('empty'),
+      name: "description",
+      content: t("empty"),
     },
   ],
 }));
@@ -45,7 +45,7 @@ function scrollToLatest() {
   if (containerRef.value) {
     containerRef.value.scrollTo({
       top: containerRef.value.scrollHeight,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   }
 }
@@ -72,14 +72,15 @@ function openComposer() {
     composerFocusKey.value += 1;
   });
 }
-
 </script>
 
 <template>
   <div class="relative min-h-screen bg-bg text-ink">
     <div class="mx-auto flex min-h-screen flex-col px-4 pb-28 pt-6 md:px-8">
       <div class="relative mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4">
-        <header class="surface sticky top-4 z-30 flex items-center justify-between gap-3 px-4 py-3 md:px-6 md:py-4">
+        <header
+          class="surface sticky top-4 z-30 flex items-center justify-between gap-3 px-4 py-3 md:px-6 md:py-4"
+        >
           <h1 class="text-lg font-semibold tracking-wide">{{ appTitle }}</h1>
           <button
             type="button"
@@ -87,8 +88,10 @@ function openComposer() {
             :aria-label="composerOpen ? t('closeComposer') : t('openComposer')"
             @click="composerOpen ? closeComposer() : openComposer()"
           >
-            <span aria-hidden="true">{{ composerOpen ? '−' : '+' }}</span>
-            <span>{{ composerOpen ? t('closeComposer') : t('openComposer') }}</span>
+            <span aria-hidden="true">{{ composerOpen ? "−" : "+" }}</span>
+            <span>{{
+              composerOpen ? t("closeComposer") : t("openComposer")
+            }}</span>
           </button>
         </header>
 
@@ -102,7 +105,9 @@ function openComposer() {
                 @delete="remove(n.id)"
               />
             </TransitionGroup>
-            <p v-if="empty" class="text-center text-sm opacity-70 py-8">{{ t('empty') }}</p>
+            <p v-if="empty" class="text-center text-sm opacity-70 py-8">
+              {{ t("empty") }}
+            </p>
           </div>
         </main>
       </div>
