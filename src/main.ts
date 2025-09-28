@@ -18,6 +18,11 @@ const messages = {
     delete: "Delete",
     confirmDelete: "Delete this note?",
     cancel: "Cancel",
+    emoji: "Emoji",
+    openComposer: "Open composer",
+    closeComposer: "Hide composer",
+    insertCheck: "Add check",
+    send: "Send",
   },
 };
 
