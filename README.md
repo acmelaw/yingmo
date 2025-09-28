@@ -1,41 +1,34 @@
-# ChatApp (Neo‑Brutalist Notes)
+# ChatApp · Neo‑Brutalist Notes
 
-A minimal, idiomatic Vue 3 + Vite note‑taking UI that feels like a chat timeline. Built to be **tiny**, **hackable**, and **themeable**. Styling follows a neo‑brutalist aesthetic using only a handful of CSS tokens so you can swap to any component / design system later.
+Production-ready Vue 3 chat-style notes experience with a neo-brutalist coat of paint. Built to stay tiny while leaning on modern tooling—swap styling systems, add features, or deploy as-is.
 
-## Goals
-- Treat notes like chat messages for fast capture
-- Clean, tiny surface area (easy to extend or delete pieces)
-- i18n ready: `appName` is a translation key
-- Pinia store encapsulates note logic (swap for backend later)
-- Zero global CSS framework lock‑in (just tokens)
+## Highlights
+- ⚡️ Vite + TypeScript + `<script setup>`
+- 🧠 Pinia store powered by VueUse `useStorage` for zero-config persistence
+- 🌍 vue-i18n with replaceable `ChatApp` label (i18n-ready)
+- 🎨 UnoCSS utility pipeline + branded shortcuts for the brutal aesthetic
+- 🧾 Head management via Unhead for SEO/meta polish
 
-## Stack
-- Vue 3 `<script setup>` + TypeScript
-- Vite for instant dev
-- Pinia for state
-- vue-i18n for localization
-
-## Run
+## Quick start
 ```bash
-pnpm install   # or: npm install / yarn install
-pnpm dev       # starts dev server
+npm install
+npm run dev
 ```
+Visit the printed local URL. Notes persist to `localStorage`, so refreshes keep your history.
 
-## Extend Ideas
-| Feature | Where to Start |
-|---------|----------------|
-| Persistence (localStorage) | augment `add/remove` in `src/stores/notes.ts` |
-| Edit notes | add an edit mode to `NoteItem.vue` |
-| Multi-language | expand `messages` in `main.ts` |
-| Theming | override CSS variables in `:root` or add class toggle |
-| Keyboard history nav | track index + key handlers in `Composer.vue` |
-| Backend sync | replace store actions with API calls |
+## Customize fast
+| Goal | Start Here |
+|------|------------|
+| Rename / add locales | extend `messages` in `src/main.ts` |
+| Change the look | tweak shortcut tokens in `uno.config.ts` or drop in a component library |
+| Add editing / reactions | extend `src/components/NoteItem.vue` |
+| Sync to an API | swap the Pinia actions in `src/stores/notes.ts` |
+| Keyboard powerups | enhance handlers inside `src/components/Composer.vue` |
 
-## i18n Rename
-Change the displayed app label by updating `messages.en.appName` or adding locales and switching `locale` dynamically.
-
-## Replace Styling
-Drop in Tailwind / UnoCSS / etc. Replace `src/style.css` or map tokens to utilities. Component markup is intentionally flat & class‑lite.
+## Production tips
+- Run `npm run build` for an optimized bundle.
+- Adjust UnoCSS presets or add icons in `uno.config.ts` as needs grow.
+- Wire CI to `npm run typecheck && npm run test` (Vitest prepped).
 
 ## License
 MIT

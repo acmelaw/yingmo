@@ -1,8 +1,13 @@
+import '@unocss/reset/tailwind.css';
+import 'uno.css';
+import "./style.css";
+
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 import { createI18n } from "vue-i18n";
+import { createHead } from "@unhead/vue";
+
 import App from "./App.vue";
-import "./style.css";
 
 const messages = {
   en: {
@@ -22,4 +27,10 @@ const i18n = createI18n({
   messages,
 });
 
-createApp(App).use(createPinia()).use(i18n).mount("#app");
+const app = createApp(App);
+
+app.use(createPinia());
+app.use(createHead());
+app.use(i18n);
+
+app.mount("#app");

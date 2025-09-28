@@ -1,21 +1,36 @@
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue';
-import { useNotesStore } from '../stores/notes';
-import NoteItem from './NoteItem.vue';
-import Composer from './Composer.vue';
+import { computed, nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useHead } from '@unhead/vue';
+
+import Composer from './Composer.vue';
+import NoteItem from './NoteItem.vue';
+import { useNotesStore } from '../stores/notes';
 
 const { t } = useI18n();
 const store = useNotesStore();
+const notes = computed(() => store.notes);
 
 const containerRef = ref<HTMLElement | null>(null);
+const appTitle = computed(() => t('appName'));
+const empty = computed(() => notes.value.length === 0);
+
+useHead(() => ({
+  title: appTitle.value,
+  meta: [
+    {
+      name: 'description',
+      content: t('empty'),
+    },
+  ],
+}));
 
 function handleAdd(text: string) {
   if (!text.trim()) return;
   store.add(text.trim());
   nextTick(() => {
     if (containerRef.value) {
-      containerRef.value.scrollTop = containerRef.value.scrollHeight;
+      containerRef.value.scrollTo({ top: containerRef.value.scrollHeight, behavior: 'smooth' });
     }
   });
 }
@@ -23,67 +38,29 @@ function handleAdd(text: string) {
 function remove(id: string) {
   store.remove(id);
 }
-
-const empty = computed(() => store.notes.length === 0);
 </script>
 
 <template>
-  <div class="layout">
-    <header class="app-header brutal-surface">
-      <h1>{{ t('appName') }}</h1>
-    </header>
-    <main class="main brutal-surface">
-      <div ref="containerRef" class="notes" :data-empty="empty">
-        <TransitionGroup name="fade" tag="div">
-          <NoteItem
-            v-for="n in store.notes"
-            :key="n.id"
-            :note="n"
-            @delete="remove(n.id)"
-          />
-        </TransitionGroup>
-        <p v-if="empty" class="empty">{{ t('empty') }}</p>
-      </div>
-      <Composer @submit="handleAdd" />
-    </main>
+  <div class="min-h-screen bg-bg text-ink flex justify-center px-4 py-6 md:px-8">
+    <div class="w-full max-w-3xl flex flex-col gap-4">
+      <header class="surface flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
+        <h1 class="text-lg font-semibold tracking-wide">{{ appTitle }}</h1>
+      </header>
+
+      <main class="surface flex flex-col gap-4 p-4 md:p-6">
+        <div ref="containerRef" class="scroll-y" :data-empty="empty">
+          <TransitionGroup name="fade" tag="div" class="flex flex-col gap-3">
+            <NoteItem
+              v-for="n in notes"
+              :key="n.id"
+              :note="n"
+              @delete="remove(n.id)"
+            />
+          </TransitionGroup>
+          <p v-if="empty" class="text-center text-sm opacity-70 py-8">{{ t('empty') }}</p>
+        </div>
+        <Composer class="pt-2 border-t border-ink/20" @submit="handleAdd" />
+      </main>
+    </div>
   </div>
 </template>
-
-<style scoped>
-.layout {
-  flex: 1;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  padding: var(--gap);
-  gap: var(--gap);
-  max-width: 900px;
-  margin: 0 auto;
-  width: 100%;
-}
-.app-header {
-  padding: 0.85rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.app-header h1 { font-size: 1.15rem; margin: 0; letter-spacing: .5px; }
-
-.main { display: flex; flex-direction: column; padding: var(--gap); gap: var(--gap); }
-
-.notes {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap);
-  padding: .25rem .25rem 0 .25rem;
-  position: relative;
-}
-.empty {
-  margin: 0;
-  opacity: 0.6;
-  font-size: 0.9rem;
-  text-align: center;
-  padding: 2rem 1rem;
-}
-</style>
