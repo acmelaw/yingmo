@@ -421,10 +421,7 @@ export const useNotesStore = defineStore("notes", () => {
     }
   }
 
-  function reconcileCategories(
-    previous: string | null,
-    next: string | null
-  ) {
+  function reconcileCategories(previous: string | null, next: string | null) {
     if (normalizeCategory(previous) === normalizeCategory(next)) {
       return;
     }
@@ -441,7 +438,9 @@ export const useNotesStore = defineStore("notes", () => {
     });
   }
 
-  function normalizeCategory(category: string | null | undefined): string | null {
+  function normalizeCategory(
+    category: string | null | undefined
+  ): string | null {
     if (!category) return null;
     const trimmed = category.trim();
     return trimmed.length ? trimmed : null;

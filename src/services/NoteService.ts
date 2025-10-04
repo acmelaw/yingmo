@@ -162,7 +162,8 @@ export class DefaultNoteService implements NoteService {
       return false;
     }
 
-    const type = typeof (note as any).type === "string" ? (note as any).type : "";
+    const type =
+      typeof (note as any).type === "string" ? (note as any).type : "";
     const isRegisteredType = moduleRegistry.hasTypeHandler(type);
     if (!isRegisteredType && type !== "unknown") {
       return false;

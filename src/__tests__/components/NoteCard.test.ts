@@ -124,8 +124,8 @@ describe("NoteCard", () => {
       });
 
       // In view mode, should use viewer component
-  const props = wrapper.props() as Record<string, any>;
-  expect(props.mode).toBeUndefined();
+      const props = wrapper.props() as Record<string, any>;
+      expect(props.mode).toBeUndefined();
     });
 
     it("should render in edit mode", () => {
@@ -140,8 +140,8 @@ describe("NoteCard", () => {
         },
       });
 
-  const props = wrapper.props() as Record<string, any>;
-  expect(props.mode).toBe("edit");
+      const props = wrapper.props() as Record<string, any>;
+      expect(props.mode).toBe("edit");
     });
 
     it("should render in preview mode", () => {
@@ -156,8 +156,8 @@ describe("NoteCard", () => {
         },
       });
 
-  const props = wrapper.props() as Record<string, any>;
-  expect(props.mode).toBe("preview");
+      const props = wrapper.props() as Record<string, any>;
+      expect(props.mode).toBe("preview");
     });
   });
 
