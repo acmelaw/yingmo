@@ -283,7 +283,7 @@ describe("NoteCard", () => {
       expect(vm.wasUpdated).toBe(true);
     });
 
-    it("should get correct note component", () => {
+    it("should resolve viewer component for note type", () => {
       const note = createTextNote();
       const wrapper = mount(NoteCard, {
         props: { note },
@@ -296,7 +296,8 @@ describe("NoteCard", () => {
       });
 
       const vm = wrapper.vm as any;
-      expect(vm.noteComponent).toBeDefined();
+      expect(vm.viewerComponent).toBeDefined();
+      expect(vm.editorComponent).toBeDefined();
     });
   });
 });

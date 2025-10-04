@@ -4,7 +4,7 @@
  */
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Note } from '@/types/note';
 import { moduleRegistry } from '@/core/ModuleRegistry';
@@ -23,6 +23,13 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
+const isEditing = ref(false);
+
+const moduleDefinition = computed(() => {
+  const modules = moduleRegistry.getModulesForType(props.note.type);
+  return modules.length > 0 ? modules[0] : null;
+});
+
 const createdAt = computed(() => new Date(props.note.created));
 const updatedAt = computed(() => new Date(props.note.updated));
 const timeLabel = computed(() =>
@@ -33,24 +40,11 @@ const timeLabel = computed(() =>
 const titleLabel = computed(() => createdAt.value.toLocaleString());
 const wasUpdated = computed(() => props.note.updated > props.note.created);
 
-// Get the appropriate component for this note type
-const noteComponent = computed(() => {
-  const modules = moduleRegistry.getModulesForType(props.note.type);
-  if (modules.length === 0) return null;
+// Determine components for viewing/editing
+const viewerComponent = computed(() => moduleDefinition.value?.components?.viewer ?? null);
+const editorComponent = computed(() => moduleDefinition.value?.components?.editor ?? null);
 
-  const module = modules[0];
-  const mode = props.mode || 'view';
-
-  if (mode === 'edit' && module.components?.editor) {
-    return module.components.editor;
-  }
-
-  if (mode === 'preview' && module.components?.preview) {
-    return module.components.preview;
-  }
-
-  return module.components?.viewer || null;
-});
+const supportsEditing = computed(() => Boolean(editorComponent.value));
 
 // Get available actions for this note
 const noteActions = computed(() => moduleRegistry.getActionsForNote(props.note));
@@ -59,6 +53,11 @@ const noteActions = computed(() => moduleRegistry.getActionsForNote(props.note))
 const noteTransforms = computed(() => moduleRegistry.getTransformsForType(props.note.type));
 
 const hasTransforms = computed(() => noteTransforms.value.length > 0);
+
+function toggleEdit() {
+  if (!supportsEditing.value) return;
+  isEditing.value = !isEditing.value;
+}
 </script>
 
 <template>
@@ -88,11 +87,18 @@ const hasTransforms = computed(() => noteTransforms.value.length > 0);
 
       <!-- Note content - dynamically rendered based on type -->
       <component
-        v-if="noteComponent"
-        :is="noteComponent"
+        v-if="isEditing && editorComponent"
+        :is="editorComponent"
         :note="note"
-        :readonly="mode === 'view'"
+        :readonly="false"
         @update="(updates: Partial<Note>) => emit('update', updates)"
+        class="mb-2"
+      />
+      <component
+        v-else-if="viewerComponent"
+        :is="viewerComponent"
+        :note="note"
+        :readonly="true"
         class="mb-2"
       />
       <div v-else class="mb-2 text-sm opacity-70">
@@ -122,7 +128,16 @@ const hasTransforms = computed(() => noteTransforms.value.length > 0);
     <!-- Actions -->
     <div class="flex flex-col gap-2">
       <button
-        v-if="mode === 'view'"
+        v-if="supportsEditing"
+        class="chip-brutal grid h-10 w-10 place-items-center text-sm"
+        type="button"
+        :aria-label="isEditing ? t('done') || 'Done' : t('edit') || 'Edit'"
+        @click="toggleEdit"
+      >
+        <span v-if="isEditing">✅</span>
+        <span v-else>✏️</span>
+      </button>
+      <button
         class="chip-brutal grid h-10 w-10 place-items-center text-sm"
         type="button"
         :aria-label="t('archive')"

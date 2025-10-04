@@ -3,9 +3,10 @@
  */
 
 <script setup lang="ts">
-import { computed, nextTick, ref, onMounted } from 'vue';
+import { computed, nextTick, ref, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
+import { storeToRefs } from 'pinia';
 
 import Composer, { type ComposerAction, type ComposerActionContext } from './Composer.vue';
 import NoteCard from './NoteCard.vue';
@@ -15,15 +16,24 @@ import { useDataExport } from '../composables/useDataExport';
 import { usePlatform } from '../composables/usePlatform';
 import { initializeModules } from '../core/initModules';
 import { moduleRegistry } from '../core/ModuleRegistry';
+import { useAuthStore } from '@/stores/auth';
+
+const emit = defineEmits<{
+  (e: 'open-server-selector'): void;
+}>();
 
 const { t } = useI18n();
 const store = useNotesStore();
 const settingsStore = useSettingsStore();
+const authStore = useAuthStore();
 const { exportToJSON, exportToText, importFromFile } = useDataExport();
 const { platformName } = usePlatform();
 
 const notes = computed(() => store.filteredNotes);
 const categories = computed(() => store.categories);
+
+const { hasRemoteSession, shouldSync, syncing, lastSyncedAt, syncError } = storeToRefs(store);
+const { syncEnabled, currentServer } = storeToRefs(settingsStore);
 
 const containerRef = ref<HTMLElement | null>(null);
 const composerOpen = ref(true);
@@ -34,6 +44,38 @@ const modulesInitialized = ref(false);
 const appTitle = computed(() => `${t('appName')} - ${platformName.value}`);
 const empty = computed(() => notes.value.length === 0);
 const fabLabel = computed(() => t('openComposer'));
+
+const remoteStatus = computed(() => {
+  if (!syncEnabled.value) {
+    return t('syncDisabled') || 'Sync disabled';
+  }
+  if (!hasRemoteSession.value) {
+    return t('syncAwaitingAuth') || 'Awaiting authentication';
+  }
+  if (syncing.value) {
+    return t('syncInProgress') || 'Syncing…';
+  }
+  if (syncError.value) {
+    return `${t('syncError') || 'Error'}: ${syncError.value}`;
+  }
+  if (lastSyncedAt.value) {
+    return `${t('lastSynced') || 'Last synced'} ${formatRelativeTime(lastSyncedAt.value)}`;
+  }
+  return t('syncReady') || 'Ready to sync';
+});
+
+function formatRelativeTime(timestamp: number): string {
+  const diff = Date.now() - timestamp;
+  if (diff < 5_000) return t('justNow') || 'just now';
+  const seconds = Math.floor(diff / 1_000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
 
 // Get available note types from registered modules
 const availableNoteTypes = computed(() => {
@@ -73,6 +115,15 @@ onMounted(async () => {
   await initializeModules();
   modulesInitialized.value = true;
 });
+
+watch(
+  () => store.filteredNotes.length,
+  () => {
+    if (modulesInitialized.value) {
+      scrollToLatest();
+    }
+  }
+);
 
 function scrollToLatest() {
   if (containerRef.value) {
@@ -119,6 +170,19 @@ function openComposer() {
 
 function toggleSettings() {
   showSettings.value = !showSettings.value;
+}
+
+function openServerSelector() {
+  emit('open-server-selector');
+}
+
+async function manualSync() {
+  if (!shouldSync.value || syncing.value) return;
+  try {
+    await store.syncFromServer();
+  } catch (error) {
+    console.error('Manual sync failed:', error);
+  }
 }
 
 async function handleExportJSON() {
@@ -184,6 +248,75 @@ function handleClearAll() {
         <Transition name="fade">
           <div v-if="showSettings" class="surface p-4 md:p-6">
             <h2 class="mb-4 text-base font-semibold">{{ t('settings') }}</h2>
+
+            <div class="mb-6 space-y-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1">
+                  <label class="block text-sm font-medium uppercase tracking-wide">🌐 Server Sync</label>
+                  <p class="text-xs opacity-70">
+                    {{ t('syncDescription') || 'Connect to your sync server for collaboration and backup.' }}
+                  </p>
+                  <p
+                    class="mt-2 text-xs font-semibold"
+                    :class="store.syncError ? 'text-red-500' : 'text-ink/70 dark:text-white/70'"
+                  >
+                    {{ remoteStatus }}
+                  </p>
+                </div>
+                <label class="relative inline-flex cursor-pointer items-center">
+                  <input type="checkbox" v-model="settingsStore.syncEnabled" class="peer sr-only" />
+                  <div
+                    class="h-6 w-11 rounded-full border-2 border-ink/80 bg-gray-300 transition peer-checked:bg-accent dark:border-white/60 dark:bg-white/10"
+                  >
+                    <span
+                      class="absolute top-[2px] left-[2px] h-5 w-5 rounded-full bg-white transition-all peer-checked:translate-x-full"
+                    ></span>
+                  </div>
+                </label>
+              </div>
+
+              <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <button
+                  class="chip-brutal px-4 py-2 text-sm font-semibold"
+                  type="button"
+                  @click="openServerSelector"
+                >
+                  <span v-if="currentServer">📡 {{ t('changeServer') || 'Change Server' }}</span>
+                  <span v-else>🔌 {{ t('connectServer') || 'Connect to Server' }}</span>
+                </button>
+                <div class="text-xs opacity-60">
+                  <template v-if="currentServer">
+                    {{ currentServer }}
+                    <template v-if="authStore.state.email">
+                      • {{ authStore.state.email }}
+                    </template>
+                  </template>
+                  <template v-else>
+                    {{ t('noServerConnected') || 'No server connected' }}
+                  </template>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <button
+                  class="chip-brutal px-3 py-1 text-xs font-semibold"
+                  type="button"
+                  :disabled="!shouldSync || syncing"
+                  @click="manualSync"
+                >
+                  <span v-if="syncing">⏳ {{ t('syncing') || 'Syncing…' }}</span>
+                  <span v-else>🔄 {{ t('syncNow') || 'Sync Now' }}</span>
+                </button>
+                <button
+                  v-if="syncError"
+                  class="chip-brutal px-3 py-1 text-xs font-semibold"
+                  type="button"
+                  @click="manualSync"
+                >
+                  {{ t('retry') || 'Retry' }}
+                </button>
+              </div>
+            </div>
 
             <div class="mb-4 flex flex-col gap-3">
               <div class="flex items-center justify-between">

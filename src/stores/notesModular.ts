@@ -2,12 +2,15 @@
  * Refactored notes store with modular architecture support
  */
 
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useStorage } from "@vueuse/core";
 import type { Note, NoteType, TextNote } from "@/types/note";
 import { DefaultNoteService } from "@/services/NoteService";
 import { moduleRegistry } from "@/core/ModuleRegistry";
+import { useAuthStore } from "@/stores/auth";
+import { useSettingsStore } from "@/stores/settings";
+import { apiClient } from "@/services/apiClient";
 
 export interface NotesState {
   notes: Note[];
@@ -73,14 +76,28 @@ export const useNotesStore = defineStore("notes", () => {
     },
   });
 
+  const auth = useAuthStore();
+  const settings = useSettingsStore();
+  const syncing = ref(false);
+  const lastSyncedAt = ref<number | null>(null);
+  const syncError = ref<string | null>(null);
+  const remoteSearchResults = ref<Note[] | null>(null);
+  const searchGeneration = ref(0);
+
+  const hasRemoteSession = computed(
+    () => Boolean(auth.token) && Boolean(auth.tenantId) && Boolean(auth.userId)
+  );
+  const shouldSync = computed(
+    () => settings.syncEnabled && hasRemoteSession.value
+  );
+
   // Register this store with the module registry
   moduleRegistry.registerStore("notes", {
     get notes() {
       return state.value.notes;
     },
     add: (note: Note) => {
-      state.value.notes.push(note);
-      trackCategory(note.category ?? null);
+      upsertNote(note);
     },
     update: (id: string, updates: Partial<Note>) => {
       const index = state.value.notes.findIndex((n) => n.id === id);
@@ -90,21 +107,142 @@ export const useNotesStore = defineStore("notes", () => {
           ...updates,
           updated: ensureFutureTimestamp(state.value.notes[index].updated),
         } as Note;
-        const previousCategory = state.value.notes[index].category ?? null;
-        state.value.notes[index] = updated;
-        reconcileCategories(previousCategory, updated.category ?? null);
+        upsertNote(updated);
       }
     },
     remove: (id: string) => {
-      const index = state.value.notes.findIndex((n) => n.id === id);
-      if (index !== -1) {
-        const [removed] = state.value.notes.splice(index, 1);
-        if (removed) {
-          trackRemoval(removed.category ?? null);
-        }
-      }
+      deleteFromState(id);
     },
   });
+
+  async function syncFromServer(): Promise<void> {
+    if (!shouldSync.value || !auth.tenantId || !auth.userId) {
+      return;
+    }
+
+    if (syncing.value) {
+      return;
+    }
+
+    syncing.value = true;
+    try {
+      const remoteNotes = await apiClient.listNotes({
+        tenantId: auth.tenantId,
+        userId: auth.userId,
+      });
+
+      const localNotes = state.value.notes;
+      const localMap = new Map(localNotes.map((note) => [note.id, note]));
+      const mergedMap = new Map<string, Note>();
+
+      for (const remote of remoteNotes) {
+        const local = localMap.get(remote.id);
+        if (local && local.updated > remote.updated) {
+          mergedMap.set(remote.id, local);
+        } else {
+          mergedMap.set(remote.id, remote);
+        }
+      }
+
+      for (const local of localNotes) {
+        if (!mergedMap.has(local.id)) {
+          mergedMap.set(local.id, local);
+        }
+      }
+
+      const merged = Array.from(mergedMap.values()).sort((a, b) =>
+        a.created === b.created ? a.updated - b.updated : a.created - b.created
+      );
+
+      state.value.notes = merged;
+      rebuildCategoryIndex(merged);
+      lastSyncedAt.value = Date.now();
+      syncError.value = null;
+    } catch (error) {
+      syncError.value =
+        error instanceof Error ? error.message : String(error);
+    } finally {
+      syncing.value = false;
+    }
+  }
+
+  function upsertNote(note: Note) {
+    const index = state.value.notes.findIndex((existing) => existing.id === note.id);
+    if (index === -1) {
+      state.value.notes.push(note);
+      trackCategory(note.category ?? null);
+      return;
+    }
+
+    const previous = state.value.notes[index];
+    state.value.notes[index] = note;
+    reconcileCategories(previous.category ?? null, note.category ?? null);
+  }
+
+  function deleteFromState(id: string) {
+    const index = state.value.notes.findIndex((note) => note.id === id);
+    if (index !== -1) {
+      const [removed] = state.value.notes.splice(index, 1);
+      if (removed) {
+        trackRemoval(removed.category ?? null);
+      }
+    }
+  }
+
+  watch(
+    () => ({
+      sync: shouldSync.value,
+      tenantId: auth.tenantId,
+      userId: auth.userId,
+    }),
+    async ({ sync, tenantId, userId }) => {
+      if (sync && tenantId && userId) {
+        await syncFromServer();
+      }
+    },
+    { immediate: true }
+  );
+
+  watch(
+    () => state.value.searchQuery,
+    async (query) => {
+      if (!shouldSync.value) {
+        remoteSearchResults.value = null;
+        return;
+      }
+
+      const trimmed = query.trim();
+      if (!trimmed) {
+        remoteSearchResults.value = null;
+        return;
+      }
+
+      if (!auth.tenantId || !auth.userId) {
+        return;
+      }
+
+      const generation = ++searchGeneration.value;
+
+      try {
+        const results = await apiClient.searchNotes(
+          auth.tenantId,
+          auth.userId,
+          trimmed
+        );
+
+        if (generation === searchGeneration.value) {
+          remoteSearchResults.value = results;
+          syncError.value = null;
+        }
+      } catch (error) {
+        if (generation === searchGeneration.value) {
+          remoteSearchResults.value = null;
+          syncError.value =
+            error instanceof Error ? error.message : String(error);
+        }
+      }
+    }
+  );
 
   const notes = computed(() => state.value.notes);
   const categories = computed(() => state.value.categories);
@@ -138,9 +276,10 @@ export const useNotesStore = defineStore("notes", () => {
   });
 
   const filteredNotes = computed(() => {
-    let result = state.value.notes.filter((note) => !note.archived);
+    const source = remoteSearchResults.value ?? state.value.notes;
+    let result = source.filter((note) => !note.archived);
 
-    if (state.value.searchQuery) {
+    if (!remoteSearchResults.value && state.value.searchQuery) {
       const query = state.value.searchQuery.toLowerCase();
       result = result.filter((note) => {
         // Basic text search
@@ -202,11 +341,11 @@ export const useNotesStore = defineStore("notes", () => {
    */
   async function create(
     type: NoteType,
-    data: any,
+    data: Record<string, unknown>,
     category?: string,
     tags?: string[]
   ): Promise<string> {
-    const payload: Record<string, any> = {
+    const payload: Record<string, unknown> = {
       ...data,
       archived: false,
     };
@@ -219,11 +358,25 @@ export const useNotesStore = defineStore("notes", () => {
       payload.tags = tags;
     }
 
+    if (shouldSync.value && auth.tenantId && auth.userId) {
+      try {
+        const created = await apiClient.createNote(type, {
+          ...payload,
+          tenantId: auth.tenantId,
+          userId: auth.userId,
+        });
+        upsertNote(created);
+        lastSyncedAt.value = Date.now();
+        syncError.value = null;
+        return created.id;
+      } catch (error) {
+        syncError.value =
+          error instanceof Error ? error.message : String(error);
+      }
+    }
+
     const note = await noteService.create(type, payload);
-
-    state.value.notes.push(note);
-    trackCategory(note.category ?? null);
-
+    upsertNote(note);
     return note.id;
   }
 
@@ -250,8 +403,7 @@ export const useNotesStore = defineStore("notes", () => {
       archived: false,
     };
 
-    state.value.notes.push(note);
-    trackCategory(note.category ?? null);
+    upsertNote(note);
 
     return note.id;
   }
@@ -263,26 +415,42 @@ export const useNotesStore = defineStore("notes", () => {
     const note = state.value.notes.find((n) => n.id === id);
     if (!note) return;
 
-    const updatedNote = await noteService.update(note, updates);
+    if (shouldSync.value && auth.tenantId && auth.userId) {
+      try {
+        const remoteNote = await apiClient.updateNote(id, updates);
+        upsertNote(remoteNote);
+        lastSyncedAt.value = Date.now();
+        syncError.value = null;
+        return;
+      } catch (error) {
+        syncError.value =
+          error instanceof Error ? error.message : String(error);
+      }
+    }
 
-    const index = state.value.notes.findIndex((n) => n.id === id);
-    const previousCategory = note.category ?? null;
-    state.value.notes[index] = updatedNote;
-    reconcileCategories(previousCategory, updatedNote.category ?? null);
+    const updatedNote = await noteService.update(note, updates);
+    upsertNote(updatedNote);
   }
 
   /**
    * Remove a note
    */
   async function remove(id: string): Promise<void> {
-    await noteService.delete(id);
-    const index = state.value.notes.findIndex((note) => note.id === id);
-    if (index !== -1) {
-      const [removed] = state.value.notes.splice(index, 1);
-      if (removed) {
-        trackRemoval(removed.category ?? null);
+    if (shouldSync.value && auth.tenantId && auth.userId) {
+      try {
+        await apiClient.deleteNote(id);
+        lastSyncedAt.value = Date.now();
+        syncError.value = null;
+      } catch (error) {
+        syncError.value =
+          error instanceof Error ? error.message : String(error);
+        return;
       }
+    } else {
+      await noteService.delete(id);
     }
+
+    deleteFromState(id);
   }
 
   /**
@@ -382,6 +550,12 @@ export const useNotesStore = defineStore("notes", () => {
     totalNotes,
     activeNotes,
     getNotesByType,
+  hasRemoteSession,
+  shouldSync,
+  syncing,
+  lastSyncedAt,
+  syncError,
+  syncFromServer,
     create,
     add,
     update,

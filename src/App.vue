@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import ChatShell from "./components/ChatShell.vue";
+import ChatShellModular from "./components/ChatShellModular.vue";
 import ServerSelector from "./components/ServerSelector.vue";
 import { useSettingsStore } from "@/stores/settings";
 
@@ -30,7 +30,7 @@ function openServerSelector() {
 
 <template>
   <div>
-    <ChatShell @open-server-selector="openServerSelector" />
+  <ChatShellModular @open-server-selector="openServerSelector" />
     <ServerSelector
       v-model="showServerSelector"
       @connected="handleConnected"

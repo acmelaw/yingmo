@@ -5,10 +5,25 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
+import { createPinia, setActivePinia } from "pinia";
 import TextNoteEditor from "@/modules/text/components/TextNoteEditor.vue";
 import type { TextNote } from "@/types/note";
+import { useAuthStore } from "@/stores/auth";
+import { useSettingsStore } from "@/stores/settings";
 
 describe("TextNoteEditor", () => {
+  beforeEach(() => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+
+    const auth = useAuthStore();
+    auth.clearSession();
+
+    const settings = useSettingsStore();
+    settings.reset();
+    settings.syncEnabled = false;
+  });
+
   const createTextNote = (text = "Test note"): TextNote => ({
     id: "test-id",
     type: "text",

@@ -87,6 +87,55 @@
           </q-input>
         </div>
 
+        <!-- Authentication Input -->
+        <div class="q-mb-md">
+          <q-input
+            v-model="email"
+            type="email"
+            label="Email"
+            placeholder="you@example.com"
+            outlined
+            :disable="connectionState.connecting"
+            :error="!!authError"
+            :error-message="authError"
+          >
+            <template #prepend>
+              <q-icon name="mail" />
+            </template>
+          </q-input>
+
+          <q-input
+            v-model="displayName"
+            label="Display Name (optional)"
+            placeholder="Your name"
+            outlined
+            class="q-mt-sm"
+            :disable="connectionState.connecting"
+          >
+            <template #prepend>
+              <q-icon name="badge" />
+            </template>
+          </q-input>
+
+          <q-input
+            v-model="tenantSlug"
+            label="Workspace Slug (optional)"
+            placeholder="default"
+            outlined
+            class="q-mt-sm"
+            :disable="connectionState.connecting"
+          >
+            <template #prepend>
+              <q-icon name="domain" />
+            </template>
+            <template #append>
+              <q-tooltip>
+                Leave blank to use the default workspace
+              </q-tooltip>
+            </template>
+          </q-input>
+        </div>
+
         <!-- Quick Connect -->
         <div class="q-mb-md">
           <div class="text-subtitle2 q-mb-xs">Quick Connect</div>
@@ -240,6 +289,7 @@
 import { ref, computed } from "vue";
 import { useServerConnection } from "@/composables/useServerConnection";
 import type { ServerConfig } from "@/stores/settings";
+import { useAuthStore } from "@/stores/auth";
 
 interface Props {
   modelValue: boolean;
@@ -264,6 +314,8 @@ const {
   autoDiscover,
 } = useServerConnection();
 
+const auth = useAuthStore();
+
 const serverUrl = ref("http://localhost:4444");
 const serverName = ref("");
 const urlError = ref("");
@@ -271,6 +323,10 @@ const discovering = ref(false);
 const discoveredServers = ref<ServerConfig[]>([]);
 const showCustomPort = ref(false);
 const customPort = ref(4444);
+const email = ref(auth.state.email ?? "");
+const displayName = ref(auth.state.name ?? "");
+const tenantSlug = ref(auth.state.tenantSlug ?? "");
+const authError = ref("");
 
 const isOpen = computed({
   get: () => props.modelValue,
@@ -300,19 +356,41 @@ function validateUrl(): boolean {
 
 async function handleConnect() {
   if (!validateUrl()) return;
+  if (!email.value || !email.value.includes("@")) {
+    authError.value = "Valid email is required";
+    return;
+  }
+
+  authError.value = "";
 
   const success = await connect(serverUrl.value, serverName.value || undefined);
   if (success) {
-    emit("connected");
-    isOpen.value = false;
+    try {
+      await auth.login(
+        serverUrl.value,
+        email.value.trim(),
+        displayName.value.trim() || undefined,
+        tenantSlug.value.trim() || undefined
+      );
+      emit("connected");
+      isOpen.value = false;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Authentication failed";
+      authError.value = message;
+      await disconnect();
+    }
   }
 }
 
-function handleDisconnect() {
+async function handleDisconnect() {
+  await auth.logout();
   disconnect();
+  authError.value = "";
 }
 
 function handleOfflineMode() {
+  auth.clearSession();
   emit("offline");
   isOpen.value = false;
 }

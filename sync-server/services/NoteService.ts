@@ -3,17 +3,42 @@
  * Provides abstraction over storage and module-specific operations
  */
 
-import type { Note, NoteType, BaseNote } from "../types/note.js";
+import {
+  isTextNote,
+  isRichTextNote,
+  isMarkdownNote,
+  isCodeNote,
+  type Note,
+  type NoteType,
+  type BaseNote,
+} from "../types/note.js";
 import { moduleRegistry } from "./ModuleRegistry.js";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import * as schema from "../db/schema.js";
 import { eq, and, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
+type NoteCreationData = {
+  id?: string;
+  created?: string | number | Date;
+  updated?: string | number | Date;
+  category?: string;
+  tags?: string[];
+  archived?: boolean;
+  metadata?: Record<string, unknown>;
+  text?: string;
+  markdown?: string;
+  code?: string;
+  content?: unknown;
+  html?: string;
+};
+
+type NoteRow = typeof schema.notes.$inferSelect;
+
 export interface NoteService {
   create(
     type: NoteType,
-    data: any,
+    data: NoteCreationData,
     tenantId: string,
     userId: string
   ): Promise<Note>;
@@ -23,6 +48,12 @@ export interface NoteService {
   list(
     tenantId: string,
     userId: string,
+    filters?: NoteFilters
+  ): Promise<Note[]>;
+  search(
+    tenantId: string,
+    userId: string,
+    query: string,
     filters?: NoteFilters
   ): Promise<Note[]>;
   validate(note: Note): boolean;
@@ -40,7 +71,7 @@ export class DefaultNoteService implements NoteService {
 
   async create(
     type: NoteType,
-    data: any,
+    data: Record<string, unknown>,
     tenantId: string,
     userId: string
   ): Promise<Note> {
@@ -49,18 +80,27 @@ export class DefaultNoteService implements NoteService {
       throw new Error(`No handler registered for note type: ${type}`);
     }
 
+    const noteData = data as NoteCreationData;
+
     // Create base note structure
     const baseNote: BaseNote = {
-      id: data.id || this.generateId(),
+      id: noteData.id ?? this.generateId(),
       type,
       tenantId,
       userId,
-      created: new Date(data.created || Date.now()),
-      updated: new Date(data.updated || Date.now()),
-      category: data.category,
-      tags: data.tags,
-      archived: data.archived || false,
-      metadata: data.metadata,
+      created: new Date(noteData.created ?? Date.now()),
+      updated: new Date(noteData.updated ?? Date.now()),
+      category:
+        typeof noteData.category === "string" ? noteData.category : undefined,
+      tags: Array.isArray(noteData.tags)
+        ? noteData.tags.filter((tag): tag is string => typeof tag === "string")
+        : undefined,
+      archived:
+        typeof noteData.archived === "boolean" ? noteData.archived : false,
+      metadata:
+        noteData.metadata && typeof noteData.metadata === "object"
+          ? (noteData.metadata as BaseNote["metadata"])
+          : undefined,
     };
 
     // Use module handler to create note
@@ -81,8 +121,8 @@ export class DefaultNoteService implements NoteService {
       created: note.created,
       updated: note.updated,
       content: serialized,
-      text: (note as any).text, // Legacy support
-      tiptapContent: (note as any).content, // Legacy support
+      text: isTextNote(note) ? note.text : null,
+      tiptapContent: isRichTextNote(note) ? note.content : null,
     });
 
     // Create initial edit history entry
@@ -118,8 +158,8 @@ export class DefaultNoteService implements NoteService {
         metadata: updated.metadata,
         updated: updated.updated,
         content: serialized,
-        text: (updated as any).text, // Legacy support
-        tiptapContent: (updated as any).content, // Legacy support
+        text: isTextNote(updated) ? updated.text : null,
+        tiptapContent: isRichTextNote(updated) ? updated.content : null,
       })
       .where(eq(schema.notes.id, noteId));
 
@@ -137,10 +177,18 @@ export class DefaultNoteService implements NoteService {
     try {
       // Extract text content for history
       let textContent = "";
-      if ("content" in note && typeof note.content === "string") {
-        textContent = note.content;
-      } else if ("text" in note && typeof (note as any).text === "string") {
-        textContent = (note as any).text;
+      if (isTextNote(note)) {
+        textContent = note.text;
+      } else if (isMarkdownNote(note)) {
+        textContent = note.markdown;
+      } else if (isCodeNote(note)) {
+        textContent = note.code;
+      } else if (isRichTextNote(note)) {
+        if (typeof note.html === "string") {
+          textContent = note.html;
+        } else {
+          textContent = JSON.stringify(note.content ?? {});
+        }
       }
 
       await this.db.insert(schema.noteEdits).values({
@@ -204,13 +252,28 @@ export class DefaultNoteService implements NoteService {
       .filter((n): n is Note => n !== null);
   }
 
+  async search(
+    tenantId: string,
+    userId: string,
+    query: string,
+    filters?: NoteFilters
+  ): Promise<Note[]> {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) {
+      return this.list(tenantId, userId, filters);
+    }
+
+    const notes = await this.list(tenantId, userId, filters);
+    return notes.filter((note) => this.matchesQuery(note, normalized));
+  }
+
   validate(note: Note): boolean {
     const handler = moduleRegistry.getTypeHandler(note.type);
     if (!handler) return false;
     return handler.validate(note);
   }
 
-  private deserializeNote(row: any): Note | null {
+  private deserializeNote(row: NoteRow): Note | null {
     const handler = moduleRegistry.getTypeHandler(row.type as NoteType);
     if (!handler) {
       console.error(`No handler for note type: ${row.type}`);
@@ -219,15 +282,20 @@ export class DefaultNoteService implements NoteService {
 
     const baseNote: BaseNote = {
       id: row.id,
-      type: row.type,
+      type: row.type as NoteType,
       tenantId: row.tenantId,
       userId: row.userId,
       created: new Date(row.created),
       updated: new Date(row.updated),
-      category: row.category,
-      tags: row.tags,
-      archived: row.archived,
-      metadata: row.metadata,
+      category: row.category ?? undefined,
+      tags: Array.isArray(row.tags)
+        ? row.tags.filter((tag): tag is string => typeof tag === "string")
+        : undefined,
+      archived: Boolean(row.archived),
+      metadata:
+        row.metadata && typeof row.metadata === "object"
+          ? (row.metadata as BaseNote["metadata"])
+          : undefined,
     };
 
     return handler.deserialize(row.content, baseNote);
@@ -235,5 +303,52 @@ export class DefaultNoteService implements NoteService {
 
   private generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+  }
+
+  private matchesQuery(note: Note, normalized: string): boolean {
+    if (isTextNote(note) && note.text.toLowerCase().includes(normalized)) {
+      return true;
+    }
+
+    if (
+      isMarkdownNote(note) &&
+      note.markdown.toLowerCase().includes(normalized)
+    ) {
+      return true;
+    }
+
+    if (isCodeNote(note) && note.code.toLowerCase().includes(normalized)) {
+      return true;
+    }
+
+    if (isRichTextNote(note)) {
+      if (typeof note.html === "string" && note.html.toLowerCase().includes(normalized)) {
+        return true;
+      }
+
+      const serializedContent = JSON.stringify(note.content ?? {}).toLowerCase();
+      if (serializedContent.includes(normalized)) {
+        return true;
+      }
+    }
+
+    if (note.category && note.category.toLowerCase().includes(normalized)) {
+      return true;
+    }
+
+    if (Array.isArray(note.tags)) {
+      if (note.tags.some((tag) => tag.toLowerCase().includes(normalized))) {
+        return true;
+      }
+    }
+
+    if (note.metadata) {
+      const metadataString = JSON.stringify(note.metadata).toLowerCase();
+      if (metadataString.includes(normalized)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

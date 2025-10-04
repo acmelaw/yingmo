@@ -97,6 +97,51 @@ describe("Tag Routes Integration", () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+
+    const now = new Date();
+
+    // Seed baseline tags
+    await db.insert(schema.tags).values([
+      {
+        id: randomUUID(),
+        name: "#test",
+        displayName: "Test Tag",
+        color: "#FF0000",
+        description: "Seed tag for CRUD tests",
+        tenantId: testTenantId,
+        useCount: 5,
+        lastUsed: now,
+        createdAt: now,
+      },
+      {
+        id: randomUUID(),
+        name: "#important",
+        tenantId: testTenantId,
+        useCount: 5,
+        lastUsed: now,
+        createdAt: now,
+      },
+      {
+        id: randomUUID(),
+        name: "#work",
+        tenantId: testTenantId,
+        useCount: 5,
+        lastUsed: now,
+        createdAt: now,
+      },
+    ]);
+
+    // Seed a baseline note with tags for integration scenarios
+    await db.insert(schema.notes).values({
+      id: randomUUID(),
+      type: "text",
+      tenantId: testTenantId,
+      userId: testUserId,
+      tags: ["#important", "#work"],
+      content: "Seed note with #important and #work tags",
+      created: now,
+      updated: now,
+    });
   });
 
   afterEach(async () => {

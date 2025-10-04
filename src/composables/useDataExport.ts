@@ -1,4 +1,11 @@
-import { useNotesStore, type Note } from "@/stores/notes";
+import { useNotesStore } from "@/stores/notesModular";
+import type { Note } from "@/types/note";
+import {
+  isTextNote,
+  isMarkdownNote,
+  isCodeNote,
+  isRichTextNote,
+} from "@/types/note";
 
 export function useDataExport() {
   const notesStore = useNotesStore();
@@ -19,7 +26,7 @@ export function useDataExport() {
   }
 
   async function exportToText() {
-    const notes = notesStore.notes;
+    const notes = notesStore.notes as Note[];
     const text = notes
       .map((note: Note) => {
         const date = new Date(note.created).toLocaleString();
@@ -27,7 +34,7 @@ export function useDataExport() {
         const tags = note.tags?.length
           ? note.tags.map((t: string) => `#${t}`).join(" ")
           : "";
-        return `${date} ${category} ${tags}\n${note.text}\n${"=".repeat(50)}\n`;
+        return `${date} ${category} ${tags}\n${renderNoteContent(note)}\n${"=".repeat(50)}\n`;
       })
       .join("\n");
 
@@ -72,6 +79,29 @@ export function useDataExport() {
 
       input.click();
     });
+  }
+
+  function renderNoteContent(note: Note): string {
+    if (isTextNote(note)) {
+      return note.text;
+    }
+
+    if (isMarkdownNote(note)) {
+      return note.markdown;
+    }
+
+    if (isCodeNote(note)) {
+      return note.code;
+    }
+
+    if (isRichTextNote(note)) {
+      if (typeof note.html === "string" && note.html.trim().length > 0) {
+        return note.html;
+      }
+      return JSON.stringify(note.content ?? {}, null, 2);
+    }
+
+    return JSON.stringify(note, null, 2);
   }
 
   return {

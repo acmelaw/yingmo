@@ -25,6 +25,7 @@ import { DefaultNoteService } from "./services/NoteService.js";
 import { initializeModules } from "./modules/index.js";
 import { registerNoteRoutes } from "./routes/notes.js";
 import { registerTagRoutes } from "./routes/tags.js";
+import { registerAuthRoutes } from "./routes/auth.js";
 
 // Environment configuration
 const PORT = parseInt(process.env.PORT || "4444", 10);
@@ -63,6 +64,7 @@ const noteService = new DefaultNoteService(db);
 moduleRegistry.registerService("noteService", noteService);
 
 // Register API routes
+await registerAuthRoutes(fastify, db);
 await registerNoteRoutes(fastify, noteService);
 await registerTagRoutes(fastify, db);
 
@@ -71,10 +73,19 @@ interface Room {
   name: string;
   doc: Y.Doc;
   awareness: awarenessProtocol.Awareness;
-  connections: Set<any>;
+  connections: Set<WebSocketLike>;
 }
 
 const rooms = new Map<string, Room>();
+
+type WebSocketLike = {
+  send: (data: Uint8Array | Buffer) => void;
+  readyState: number;
+  on(event: "message", listener: (message: Buffer) => void): void;
+  on(event: "close", listener: () => void): void;
+  on(event: string, listener: (...args: unknown[]) => void): void;
+  close: () => void;
+};
 
 /**
  * Get or create a Yjs room
@@ -221,18 +232,19 @@ fastify.get("/api/sync", { websocket: true }, (connection, request) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
   const roomName = url.searchParams.get("room") || "default";
   const room = getRoom(roomName);
+  const socket = connection as unknown as WebSocketLike;
 
   fastify.log.info(`WebSocket connected to room: ${roomName}`);
-  room.connections.add(connection);
+  room.connections.add(socket);
 
   // Send initial sync
   const encoder = encoding.createEncoder();
   encoding.writeVarUint(encoder, 0); // MESSAGE_SYNC
   syncProtocol.writeSyncStep1(encoder, room.doc);
-  connection.send(encoding.toUint8Array(encoder));
+  socket.send(encoding.toUint8Array(encoder));
 
   // Handle messages
-  connection.on("message", (message: Buffer) => {
+  socket.on("message", (message: Buffer) => {
     try {
       const decoder = decoding.createDecoder(new Uint8Array(message));
       const messageType = decoding.readVarUint(decoder);
@@ -241,9 +253,9 @@ fastify.get("/api/sync", { websocket: true }, (connection, request) => {
       switch (messageType) {
         case 0: // MESSAGE_SYNC
           encoding.writeVarUint(encoder, 0);
-          syncProtocol.readSyncMessage(decoder, encoder, room.doc, connection);
+          syncProtocol.readSyncMessage(decoder, encoder, room.doc, socket);
           if (encoding.length(encoder) > 1) {
-            connection.send(encoding.toUint8Array(encoder));
+            socket.send(encoding.toUint8Array(encoder));
           }
           break;
 
@@ -261,8 +273,8 @@ fastify.get("/api/sync", { websocket: true }, (connection, request) => {
   });
 
   // Handle disconnection
-  connection.on("close", () => {
-    room.connections.delete(connection);
+  socket.on("close", () => {
+    room.connections.delete(socket);
     awarenessProtocol.removeAwarenessStates(
       room.awareness,
       [room.doc.clientID],
@@ -282,7 +294,9 @@ fastify.get("/api/sync", { websocket: true }, (connection, request) => {
   });
 
   // Broadcast awareness changes
-  room.awareness.on("update", ({ added, updated, removed }: any) => {
+  room.awareness.on(
+    "update",
+    ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }) => {
     const changedClients = added.concat(updated).concat(removed);
     const encoder = encoding.createEncoder();
     encoding.writeVarUint(encoder, 1); // MESSAGE_AWARENESS
@@ -293,11 +307,12 @@ fastify.get("/api/sync", { websocket: true }, (connection, request) => {
     const message = encoding.toUint8Array(encoder);
 
     room.connections.forEach((conn) => {
-      if (conn !== connection && conn.readyState === 1) {
+        if (conn !== socket && conn.readyState === 1) {
         conn.send(message);
       }
     });
-  });
+    }
+  );
 });
 
 /**

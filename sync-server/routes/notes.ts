@@ -3,8 +3,9 @@
  */
 
 import type { FastifyInstance } from "fastify";
-import type { NoteService } from "../services/NoteService.js";
-import type { NoteType } from "../types/note.js";
+import type { NoteService, NoteFilters } from "../services/NoteService.js";
+import { moduleRegistry } from "../services/ModuleRegistry.js";
+import type { Note, NoteType } from "../types/note.js";
 
 export async function registerNoteRoutes(
   fastify: FastifyInstance,
@@ -19,7 +20,7 @@ export async function registerNoteRoutes(
       type: NoteType;
       tenantId: string;
       userId: string;
-      data: any;
+      data: Record<string, unknown>;
     };
   }>("/api/notes", async (request, reply) => {
     try {
@@ -48,7 +49,7 @@ export async function registerNoteRoutes(
    */
   fastify.put<{
     Params: { id: string };
-    Body: { updates: any };
+    Body: { updates: Partial<Note> };
   }>("/api/notes/:id", async (request, reply) => {
     try {
       const { id } = request.params;
@@ -136,7 +137,7 @@ export async function registerNoteRoutes(
     try {
       const { tenantId, userId, type, category, archived } = request.query;
 
-      const filters: any = {};
+  const filters: NoteFilters = {};
       if (type) filters.type = type;
       if (category) filters.category = category;
       if (archived !== undefined) filters.archived = archived === "true";
@@ -158,6 +159,47 @@ export async function registerNoteRoutes(
   });
 
   /**
+   * Search notes
+   * GET /api/notes/search?q=term&tenantId=x&userId=y
+   */
+  fastify.get<{
+    Querystring: {
+      tenantId: string;
+      userId: string;
+      q: string;
+      type?: NoteType;
+      category?: string;
+    };
+  }>("/api/notes/search", async (request, reply) => {
+    try {
+      const { tenantId, userId, q, type, category } = request.query;
+
+      if (!q) {
+        reply.code(400);
+        return { error: "Query parameter q is required" };
+      }
+
+  const filters: NoteFilters = {};
+      if (type) filters.type = type;
+      if (category) filters.category = category;
+
+      const notes = await noteService.search(tenantId, userId, q, filters);
+
+      return {
+        notes: notes.map((note) => ({
+          ...note,
+          created: note.created.getTime(),
+          updated: note.updated.getTime(),
+        })),
+      };
+    } catch (error) {
+      fastify.log.error(`Search notes error: ${error}`);
+      reply.code(500);
+      return { error: String(error) };
+    }
+  });
+
+  /**
    * Bulk sync notes (legacy compatibility)
    * POST /api/notes/sync
    */
@@ -165,24 +207,35 @@ export async function registerNoteRoutes(
     Body: {
       tenantId: string;
       userId: string;
-      notes: Array<any>;
+      notes: Array<Record<string, unknown>>;
     };
   }>("/api/notes/sync", async (request, reply) => {
     try {
       const { tenantId, userId, notes: clientNotes } = request.body;
 
       // Upsert each note
-      for (const noteData of clientNotes) {
-        const existing = await noteService.get(noteData.id);
+      for (const noteRecord of clientNotes) {
+        const noteData = noteRecord as Record<string, unknown>;
+        const rawId = noteData["id"];
+        const noteId = typeof rawId === "string" ? rawId : undefined;
 
-        if (existing) {
-          // Update existing note
-          await noteService.update(noteData.id, noteData);
-        } else {
-          // Create new note
-          const type = noteData.type || "text";
-          await noteService.create(type, noteData, tenantId, userId);
+        if (noteId) {
+          const existing = await noteService.get(noteId);
+
+          if (existing) {
+            await noteService.update(noteId, noteData as Partial<Note>);
+            continue;
+          }
         }
+
+        const rawType = noteData["type"];
+        const candidateType =
+          typeof rawType === "string" &&
+          moduleRegistry.hasTypeHandler(rawType)
+            ? (rawType as NoteType)
+            : "text";
+
+        await noteService.create(candidateType, noteData, tenantId, userId);
       }
 
       // Return all server notes
