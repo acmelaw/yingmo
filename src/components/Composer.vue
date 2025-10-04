@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { NoteType } from '@/types/note';
 
 export interface ComposerActionItem {
   id: string;
@@ -28,19 +29,23 @@ export interface ComposerAction {
 const props = withDefaults(
   defineProps<{
     actions?: ComposerAction[];
+    availableTypes?: NoteType[];
   }>(),
   {
     actions: () => [],
+    availableTypes: () => ['text'],
   }
 );
 
 const emit = defineEmits<{
-  (e: 'submit', text: string): void;
+  (e: 'submit', text: string, type: NoteType): void;
+  (e: 'create-advanced', type: NoteType): void;
 }>();
 
 const { t } = useI18n();
 
 const draft = ref('');
+const selectedType = ref<NoteType>('text');
 const menuOpen = ref<string | null>(null);
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 const showHashtagHelper = ref(false);
@@ -107,11 +112,32 @@ function closeMenus() {
 
 function send() {
   if (!draft.value.trim()) return;
-  emit('submit', draft.value.trim());
+  emit('submit', draft.value.trim(), selectedType.value);
   draft.value = '';
   closeMenus();
   focusInput();
   adjustTextareaHeight();
+}
+
+function createAdvanced(type: NoteType) {
+  emit('create-advanced', type);
+}
+
+function selectType(type: NoteType) {
+  selectedType.value = type;
+  menuOpen.value = null;
+}
+
+function getNoteTypeIcon(type: NoteType): string {
+  const icons: Record<NoteType, string> = {
+    text: '📝',
+    markdown: '📄',
+    code: '💻',
+    'rich-text': '✏️',
+    image: '🖼️',
+    'smart-layer': '🤖',
+  };
+  return icons[type] || '📋';
 }
 
 function onKey(e: KeyboardEvent) {
@@ -260,6 +286,38 @@ watch(draft, () => {
         </Transition>
       </div>
 
+      <!-- Note Type Selector -->
+      <div v-if="availableTypes.length > 1" class="relative">
+        <button
+          type="button"
+          class="brutal-btn-icon h-[52px] px-3"
+          :aria-label="'Note type: ' + selectedType"
+          @click="menuOpen = menuOpen === 'note-type' ? null : 'note-type'"
+          :title="'Current: ' + selectedType"
+        >
+          <span class="text-sm font-bold">{{ getNoteTypeIcon(selectedType) }}</span>
+        </button>
+
+        <!-- Type Picker Dropdown -->
+        <Transition name="slide-up">
+          <div
+            v-if="menuOpen === 'note-type'"
+            class="brutal-type-picker"
+          >
+            <button
+              v-for="type in availableTypes"
+              :key="type"
+              type="button"
+              :class="['brutal-type-btn', { active: selectedType === type }]"
+              @click="selectType(type)"
+            >
+              <span class="text-lg">{{ getNoteTypeIcon(type) }}</span>
+              <span class="text-xs font-bold">{{ type }}</span>
+            </button>
+          </div>
+        </Transition>
+      </div>
+
       <!-- Send Button -->
       <button
         type="button"
@@ -279,5 +337,43 @@ textarea {
   min-height: 52px;
   max-height: 150px;
   line-height: 1.5;
+}
+
+.brutal-type-picker {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 8px;
+  background: white;
+  border: 3px solid black;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+  z-index: 100;
+}
+
+.brutal-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border: 2px solid black;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.brutal-type-btn:hover {
+  background: #f0f0f0;
+  transform: translateX(-2px);
+}
+
+.brutal-type-btn.active {
+  background: black;
+  color: white;
 }
 </style>

@@ -10,6 +10,8 @@ import { storeToRefs } from 'pinia';
 
 import Composer, { type ComposerAction, type ComposerActionContext } from './Composer.vue';
 import NoteCard from './NoteCard.vue';
+import ModulePicker from './ModulePicker.vue';
+import NoteTypeTransformDialog from './NoteTypeTransformDialog.vue';
 import { useNotesStore } from '../stores/notes';
 import { useSettingsStore } from '../stores/settings';
 import { useDataExport } from '../composables/useDataExport';
@@ -17,6 +19,8 @@ import { usePlatform } from '../composables/usePlatform';
 import { initializeModules } from '../core/initModules';
 import { moduleRegistry } from '../core/ModuleRegistry';
 import { useAuthStore } from '@/stores/auth';
+import type { NoteType } from '@/types/note';
+
 
 const emit = defineEmits<{
   (e: 'open-server-selector'): void;
@@ -40,6 +44,9 @@ const composerOpen = ref(true);
 const composerFocusKey = ref(1);
 const showSettings = ref(false);
 const modulesInitialized = ref(false);
+const showModulePicker = ref(false);
+const showTransformDialog = ref(false);
+const transformingNoteId = ref<string | null>(null);
 
 const appTitle = computed(() => `${t('appName')} - ${platformName.value}`);
 const empty = computed(() => notes.value.length === 0);
@@ -134,15 +141,39 @@ function scrollToLatest() {
   }
 }
 
-async function handleAdd(text: string) {
+async function handleAdd(text: string, type: NoteType = 'text') {
   if (!text.trim()) return;
 
-  // Create text note via modular system
-  await store.create('text', { text: text.trim() });
+  // Create note via modular system with specified type
+  if (type === 'text') {
+    await store.create('text', { text: text.trim() });
+  } else {
+    // For non-text types, we'll need to show a more advanced editor
+    // For now, just create with default data
+    const defaultData = getDefaultDataForType(type);
+    await store.create(type, { ...defaultData, text: text.trim() });
+  }
 
   nextTick(() => {
     scrollToLatest();
   });
+}
+
+function getDefaultDataForType(type: NoteType): Record<string, any> {
+  switch (type) {
+    case 'markdown':
+      return { markdown: '' };
+    case 'code':
+      return { code: '', language: 'javascript' };
+    case 'rich-text':
+      return { content: { type: 'doc', content: [] }, html: '' };
+    case 'image':
+      return { blob: '', url: '' };
+    case 'smart-layer':
+      return { source: { type: 'text', data: '' }, layers: [] };
+    default:
+      return { text: '' };
+  }
 }
 
 async function handleUpdate(noteId: string, updates: any) {
@@ -155,6 +186,84 @@ async function handleDelete(id: string) {
 
 async function handleArchive(id: string) {
   await store.archive(id);
+}
+
+function handleTransform(noteId: string) {
+  transformingNoteId.value = noteId;
+  showTransformDialog.value = true;
+}
+
+async function transformNote(toType: NoteType) {
+  if (!transformingNoteId.value) return;
+  
+  const note = store.notes.find(n => n.id === transformingNoteId.value);
+  if (!note) return;
+
+  try {
+    // Basic transformation logic - convert content based on type
+    const transformedData = await transformNoteData(note, toType);
+    
+    // Create new note with transformed data
+    await store.create(toType, transformedData);
+    
+    // Archive the old note
+    await store.archive(transformingNoteId.value);
+    
+    showTransformDialog.value = false;
+    transformingNoteId.value = null;
+  } catch (error) {
+    console.error('Failed to transform note:', error);
+  }
+}
+
+async function transformNoteData(note: any, toType: NoteType): Promise<Record<string, any>> {
+  // Extract text content from source note
+  let textContent = '';
+  
+  switch (note.type) {
+    case 'text':
+      textContent = note.text;
+      break;
+    case 'markdown':
+      textContent = note.markdown;
+      break;
+    case 'code':
+      textContent = note.code;
+      break;
+    case 'rich-text':
+      textContent = note.html || '';
+      break;
+    default:
+      textContent = JSON.stringify(note);
+  }
+
+  // Transform to target type
+  switch (toType) {
+    case 'text':
+      return { text: textContent };
+    case 'markdown':
+      return { markdown: textContent };
+    case 'code':
+      return { code: textContent, language: 'text' };
+    case 'rich-text':
+      return { html: `<p>${textContent}</p>`, content: { type: 'doc', content: [] } };
+    case 'image':
+      return { blob: '', url: '', alt: textContent };
+    case 'smart-layer':
+      return { 
+        source: { type: 'text', data: textContent },
+        layers: []
+      };
+    default:
+      return { text: textContent };
+  }
+}
+
+function handleCreateAdvanced(type: NoteType) {
+  showModulePicker.value = false;
+  // Create note with empty data for the selected type
+  const defaultData = getDefaultDataForType(type);
+  store.create(type, defaultData);
 }
 
 function closeComposer() {
@@ -391,6 +500,7 @@ function handleClearAll() {
                 @delete="handleDelete(note.id)"
                 @update="(updates) => handleUpdate(note.id, updates)"
                 @archive="handleArchive(note.id)"
+                @transform="handleTransform(note.id)"
               />
             </TransitionGroup>
             <p v-if="empty" class="py-8 text-center text-sm opacity-70">
@@ -405,6 +515,7 @@ function handleClearAll() {
       <div v-if="composerOpen && modulesInitialized" class="fixed inset-x-4 bottom-6 z-40 flex justify-center md:bottom-8">
         <Composer
           :actions="composerActions"
+          :available-types="availableNoteTypes"
           :focus-key="composerFocusKey"
           class="w-full max-w-3xl md:w-[36rem]"
           @submit="handleAdd"
@@ -423,6 +534,27 @@ function handleClearAll() {
       >
         +
       </button>
+    </Transition>
+
+    <!-- Module Picker Dialog -->
+    <Transition name="fade">
+      <div v-if="showModulePicker" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModulePicker
+          @select="handleCreateAdvanced"
+          @close="showModulePicker = false"
+        />
+      </div>
+    </Transition>
+
+    <!-- Transform Dialog -->
+    <Transition name="fade">
+      <NoteTypeTransformDialog
+        v-if="showTransformDialog && transformingNoteId"
+        :current-type="store.notes.find(n => n.id === transformingNoteId)?.type || 'text'"
+        :available-types="availableNoteTypes"
+        @transform="transformNote"
+        @close="showTransformDialog = false; transformingNoteId = null"
+      />
     </Transition>
   </div>
 </template>

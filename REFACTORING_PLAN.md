@@ -36,10 +36,10 @@ Complete refactoring to create a unified, clean, cross-platform note-taking app 
 
 ## Phase 2: Module System Completion
 
-### 2.1 Core Modules
-- [ ] Ensure all module types work: text, rich-text, markdown, code, image, smart-layer
-- [ ] Complete module registration in `initModules.ts`
-- [ ] Add module picker UI
+### 2.1 Core Modules ✅
+- [x] Ensure all module types work: text, rich-text, markdown, code, image, smart-layer
+- [x] Complete module registration in `initModules.ts`
+- [x] Add module picker UI
 - [ ] Implement transforms between note types
 
 ### 2.2 CRDT Integration

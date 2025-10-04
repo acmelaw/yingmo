@@ -140,6 +140,15 @@ function toggleEdit() {
       <button
         class="chip-brutal grid h-10 w-10 place-items-center text-sm"
         type="button"
+        :aria-label="'Transform'"
+        @click="emit('transform')"
+        title="Transform to different type"
+      >
+        🔄
+      </button>
+      <button
+        class="chip-brutal grid h-10 w-10 place-items-center text-sm"
+        type="button"
         :aria-label="t('archive')"
         @click="emit('archive')"
         title="Archive"
