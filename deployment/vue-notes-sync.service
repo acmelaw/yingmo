@@ -1,0 +1,41 @@
+[Unit]
+Description=Vue Notes Sync Server
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/vue-notes/sync-server
+Environment="NODE_ENV=production"
+Environment="PORT=4444"
+Environment="PERSISTENCE=true"
+Environment="PERSISTENCE_DIR=/var/lib/vue-notes/data"
+Environment="ALLOWED_ORIGINS=https://notes.yourdomain.com"
+ExecStart=/usr/bin/node dist/server.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vue-notes-sync
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/vue-notes/data
+CapabilityBoundingSet=
+AmbientCapabilities=
+SecureBits=noroot-locked
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RemoveIPC=yes
+
+[Install]
+WantedBy=multi-user.target

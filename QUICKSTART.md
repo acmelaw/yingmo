@@ -1,4 +1,22 @@
-# Quick Start Guide
+# 🚀 Quick Reference - Self-Hosted Vue Notes
+
+## One-Line Deployments
+
+```bash
+# Offline-Only (No Server) - FREE
+npm install && npm run deploy:offline
+
+# Docker (Small Team) - $5/month
+docker-compose up -d
+
+# VPS (Production) - $24/month
+./deployment/deploy.sh vps notes.yourdomain.com
+
+# Kubernetes (Enterprise) - $150/month
+./deployment/deploy.sh kubernetes notes.yourdomain.com
+```
+
+## Quick Start Guide
 
 ## First Time Setup
 

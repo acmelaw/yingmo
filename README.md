@@ -1,4 +1,164 @@
-# Vue Notes - Production Ready Multi-Platform App
+# 📝 Vue Notes - Production-Ready Self-Hosted Notes App
+
+A modern, **offline-first** collaborative notes application with **CRDT-based** real-time synchronization. Works completely offline or with optional server for multi-user collaboration.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)](https://www.typescriptlang.org/)
+[![Vue 3](https://img.shields.io/badge/Vue-3.4-green)](https://vuejs.org/)
+[![Yjs](https://img.shields.io/badge/Yjs-13.6-orange)](https://docs.yjs.dev/)
+
+## ✨ Features
+
+### Core Features
+- ✅ **Offline-First** - Works without any server, data stored locally
+- ✅ **Real-Time Collaboration** - Optional multi-user editing with CRDT
+- ✅ **Graceful Degradation** - Auto-switches between online/offline modes
+- ✅ **Rich Text Editing** - Tiptap editor with full formatting
+- ✅ **Cross-Platform** - PWA, Electron (Windows/Mac/Linux), Mobile (iOS/Android)
+- ✅ **Self-Hosted** - Complete control, no external dependencies
+- ✅ **Production-Ready** - Docker, Kubernetes, bare metal deployment
+
+### Advanced Features
+- 🔄 **CRDT Synchronization** - Conflict-free collaborative editing with Yjs
+- 💾 **Multi-Layer Persistence** - IndexedDB → WebSocket → Server storage
+- 🎨 **Dark Mode** - Eye-friendly interface
+- 🔍 **Search** - Full-text search across all notes
+- 🏷️ **Categories & Tags** - Organize your notes
+- 📤 **Export/Import** - JSON, Markdown, plain text
+- 🔐 **Privacy-Focused** - Data stays local (or on your server)
+- 📱 **Mobile-Optimized** - Responsive design for all devices
+
+## 🚀 Quick Start
+
+### Option 1: Offline-Only (No Server)
+
+Perfect for personal use with zero setup:
+
+```bash
+# Install dependencies
+npm install
+
+# Run in development
+npm run dev
+
+# Build for production
+npm run deploy:offline
+
+# Serve the dist folder with any static host
+npx serve dist
+```
+
+Open http://localhost:3000 - **works completely offline!**
+
+### Option 2: With Collaboration (Docker)
+
+For teams with real-time sync:
+
+```bash
+# One-line deploy with Docker Compose
+npm run deploy:docker
+
+# Or manually:
+docker-compose up -d
+```
+
+- **Frontend:** http://localhost
+- **Sync Server:** ws://localhost:4444
+
+### Option 3: Full Development Setup
+
+```bash
+# Install dependencies
+npm install
+cd sync-server && npm install && cd ..
+
+# Run frontend + sync server
+npm run dev:fullstack
+```
+
+- **Frontend:** http://localhost:5173
+- **Sync Server:** ws://localhost:4444
+
+## 📦 Deployment Options
+
+| Mode | Setup | Cost/mo | Users | Use Case |
+|------|-------|---------|-------|----------|
+| **Offline** | Static hosting | $0 | 1 | Personal use |
+| **Docker** | Small VPS | $5 | 1-50 | Small team |
+| **VPS** | Medium VPS | $24 | 50-100 | Growing team |
+| **Kubernetes** | K8s cluster | $150+ | 100+ | Enterprise |
+
+### Quick Deploy Commands
+
+```bash
+# Offline mode (no server)
+./deployment/deploy.sh offline
+
+# Docker Compose
+./deployment/deploy.sh docker notes.yourdomain.com
+
+# VPS / Bare Metal
+./deployment/deploy.sh vps notes.yourdomain.com
+
+# Kubernetes (Helm)
+./deployment/deploy.sh kubernetes notes.yourdomain.com
+```
+
+See **[SELF_HOSTED.md](./SELF_HOSTED.md)** for complete deployment guide.
+
+## 🏗️ Architecture
+
+### Three Deployment Modes
+
+#### 1. Offline-Only Mode (Zero Cost)
+```
+┌──────────────────────────┐
+│  Vue 3 Frontend          │
+│  ├─ Tiptap Editor        │
+│  ├─ Yjs (Local CRDT)     │
+│  └─ IndexedDB Storage    │
+└──────────────────────────┘
+```
+- ✅ No server needed
+- ✅ Data in browser (IndexedDB)
+- ✅ Export/import for backup
+
+#### 2. Auto Mode (Graceful Degradation)
+```
+┌────────────────────────────┐
+│  Frontend                  │
+│  ├─ Offline: IndexedDB     │
+│  └─ Online: WebSocket ──┐  │
+└─────────────────────────┼──┘
+                          │
+┌─────────────────────────▼──┐
+│  Sync Server (Optional)    │
+│  └─ Node.js + Yjs          │
+└────────────────────────────┘
+```
+- ✅ Works offline by default
+- ✅ Syncs when server available
+- ✅ Auto-reconnects
+- ✅ No data loss during outages
+
+#### 3. Server Mode (Enterprise)
+```
+┌────────────────────────────┐
+│  Frontend (Always Online)  │
+└──────────────┬─────────────┘
+               │ WebSocket
+┌──────────────▼─────────────┐
+│  Sync Server Cluster       │
+│  ├─ Node.js instances (3+) │
+│  ├─ Redis (coordination)   │
+│  └─ Load balancer          │
+└────────────────────────────┘
+```
+- ✅ Real-time required
+- ✅ Horizontal scaling
+- ✅ High availability
+
+**See [SELF_HOSTED.md](./SELF_HOSTED.md) for architecture details.**
 
 A modern, feature-rich notes application built with Vue 3, TypeScript, and Vite. Supports deployment as a PWA, Electron desktop app, and Capacitor mobile app.
 

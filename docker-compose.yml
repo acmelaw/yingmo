@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # Frontend - Static files served by Nginx
+  frontend:
+    image: nginx:alpine
+    container_name: vue-notes-frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./dist:/usr/share/nginx/html:ro
+      - ./deployment/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deployment/ssl:/etc/nginx/ssl:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - sync-server
+    networks:
+      - vue-notes
+
+  # Sync Server - WebSocket server for real-time collaboration
+  sync-server:
+    build:
+      context: ./sync-server
+      dockerfile: Dockerfile
+    container_name: vue-notes-sync
+    ports:
+      - "4444:4444"
+    environment:
+      - NODE_ENV=production
+      - PORT=4444
+      - PERSISTENCE=true
+      - PERSISTENCE_DIR=/app/data
+      - ALLOWED_ORIGINS=http://localhost,https://localhost,https://notes.yourdomain.com
+      # Uncomment for Redis horizontal scaling:
+      # - REDIS_URL=redis://redis:6379
+    volumes:
+      - sync-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4444/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - vue-notes
+    # Uncomment for Redis:
+    # depends_on:
+    #   - redis
+
+  # Redis - Optional for horizontal scaling (multiple sync servers)
+  # Uncomment when you need to scale beyond single instance
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: vue-notes-redis
+  #   command: redis-server --appendonly yes
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #   networks:
+  #     - vue-notes
+
+networks:
+  vue-notes:
+    driver: bridge
+
+volumes:
+  sync-data:
+    driver: local
+  # redis-data:
+  #   driver: local

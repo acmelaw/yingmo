@@ -1,0 +1,30 @@
+{
+  "name": "vue-notes-sync-server",
+  "version": "1.0.0",
+  "description": "Lightweight WebSocket sync server for Vue Notes",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "docker:build": "docker build -t vue-notes-sync .",
+    "docker:run": "docker run -p 4444:4444 vue-notes-sync"
+  },
+  "dependencies": {
+    "lib0": "^0.2.94",
+    "redis": "^4.6.12",
+    "ws": "^8.16.0",
+    "y-protocols": "^1.0.6",
+    "yjs": "^13.6.10"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/ws": "^8.5.10",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

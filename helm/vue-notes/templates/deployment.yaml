@@ -1,0 +1,156 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vue-notes.fullname" . }}-frontend
+  labels:
+    {{- include "vue-notes.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "vue-notes.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "vue-notes.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "vue-notes.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: nginx
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "nginx:alpine"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: static-files
+          mountPath: /usr/share/nginx/html
+      initContainers:
+      - name: copy-static
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        command: ['sh', '-c', 'cp -r /app/* /static/']
+        volumeMounts:
+        - name: static-files
+          mountPath: /static
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: {{ include "vue-notes.fullname" . }}-nginx
+      - name: static-files
+        emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+{{- if .Values.syncServer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vue-notes.fullname" . }}-sync
+  labels:
+    {{- include "vue-notes.labels" . | nindent 4 }}
+    app.kubernetes.io/component: sync
+spec:
+  {{- if not .Values.syncServer.autoscaling.enabled }}
+  replicas: {{ .Values.syncServer.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "vue-notes.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: sync
+  template:
+    metadata:
+      labels:
+        {{- include "vue-notes.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: sync
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "vue-notes.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: sync-server
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.syncServer.image.repository }}:{{ .Values.syncServer.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.syncServer.image.pullPolicy }}
+        ports:
+        - name: sync
+          containerPort: 4444
+          protocol: TCP
+        env:
+        {{- toYaml .Values.syncServer.env | nindent 8 }}
+        {{- if .Values.redis.enabled }}
+        - name: REDIS_URL
+          value: "redis://:{{ .Values.redis.auth.password }}@{{ include "vue-notes.fullname" . }}-redis-master:6379"
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: sync
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: sync
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          {{- toYaml .Values.syncServer.resources | nindent 12 }}
+        {{- if .Values.syncServer.persistence.enabled }}
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        {{- end }}
+      {{- if .Values.syncServer.persistence.enabled }}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ include "vue-notes.fullname" . }}-sync-data
+      {{- end }}
+{{- end }}

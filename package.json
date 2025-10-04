@@ -23,9 +23,15 @@
     "capacitor:sync": "vite build && cap sync",
     "capacitor:open:ios": "cap open ios",
     "capacitor:open:android": "cap open android",
-    "server:dev": "cd server && python -m uvicorn main:app --reload --port 8000",
-    "server:prod": "cd server && python -m uvicorn main:app --host 0.0.0.0 --port 8000",
-    "dev:fullstack": "concurrently \"npm run dev\" \"npm run server:dev\""
+    "sync-server:install": "cd sync-server && npm install",
+    "sync-server:dev": "cd sync-server && npm run dev",
+    "sync-server:build": "cd sync-server && npm run build",
+    "sync-server:start": "cd sync-server && npm start",
+    "dev:fullstack": "concurrently \"npm run dev\" \"npm run sync-server:dev\"",
+    "deploy:docker": "bash deployment/deploy.sh docker",
+    "deploy:vps": "bash deployment/deploy.sh vps",
+    "deploy:k8s": "bash deployment/deploy.sh kubernetes",
+    "deploy:offline": "bash deployment/deploy.sh offline"
   },
   "dependencies": {
     "@tiptap/core": "^2.1.13",
