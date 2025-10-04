@@ -4,3 +4,17 @@ node_modules
 .idea
 .DS_Store
 .env*
+
+# Python
+server/venv/
+server/__pycache__/
+server/*.pyc
+server/.pytest_cache/
+server/data/
+
+# Yjs/IndexedDB  
+.yjs/
+
+# Build outputs
+dist
+dist-electron
