@@ -2,8 +2,8 @@
  * Module system types for extensible note features
  */
 
-import type { Component } from 'vue';
-import type { Note, NoteType } from './note';
+import type { Component } from "vue";
+import type { Note, NoteType } from "./note";
 
 export interface NoteModule {
   id: string;
@@ -11,11 +11,11 @@ export interface NoteModule {
   version: string;
   description?: string;
   supportedTypes: NoteType[];
-  
+
   // Module lifecycle hooks
   install?: (context: ModuleContext) => void | Promise<void>;
   uninstall?: (context: ModuleContext) => void | Promise<void>;
-  
+
   // UI components for this module
   components?: {
     editor?: Component;
@@ -23,10 +23,10 @@ export interface NoteModule {
     preview?: Component;
     settings?: Component;
   };
-  
+
   // Module capabilities
   capabilities?: ModuleCapabilities;
-  
+
   // Module configuration
   config?: Record<string, any>;
 }
@@ -72,7 +72,10 @@ export interface NoteAction {
 export interface ActionContext {
   store: any;
   router?: any;
-  notify: (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
+  notify: (
+    message: string,
+    type?: "success" | "error" | "warning" | "info"
+  ) => void;
 }
 
 export interface TransformDefinition {
@@ -80,7 +83,7 @@ export interface TransformDefinition {
   name: string;
   type: string;
   inputTypes: NoteType[];
-  outputType: NoteType | 'same';
+  outputType: NoteType | "same";
   configSchema?: Record<string, any>;
   transform: (note: Note, config: any) => Promise<Note>;
 }

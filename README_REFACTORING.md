@@ -6,10 +6,10 @@ The Vue Notes codebase has been **completely refactored** to support a modular, 
 
 ## ✅ What Was Accomplished
 
-### 1. **Modular Plugin Architecture** 
+### 1. **Modular Plugin Architecture**
 Created a complete module system allowing new note types to be added as self-contained plugins without modifying core code.
 
-### 2. **Type System** 
+### 2. **Type System**
 Defined 6 note types (text, rich-text, image, smart-layer, markdown, code) with full TypeScript safety.
 
 ### 3. **Service Layer**
@@ -93,11 +93,11 @@ export const myModule: NoteModule = {
   name: 'My Note Type',
   version: '1.0.0',
   supportedTypes: ['my-type'],
-  
+
   async install(context) {
     context.registerNoteType('my-type', myHandler);
   },
-  
+
   components: {
     editor: MyEditor,
     viewer: MyViewer,
@@ -119,7 +119,7 @@ const myTransform: TransformDefinition = {
   name: 'Extract Text',
   inputTypes: ['image'],
   outputType: 'smart-layer',
-  
+
   async transform(note, config) {
     // Call API, cache result, return transformed note
   },

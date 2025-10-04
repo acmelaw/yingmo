@@ -2,15 +2,15 @@
  * Central registry for managing note modules
  */
 
-import type { Component } from 'vue';
+import type { Component } from "vue";
 import type {
   NoteModule,
   ModuleContext,
   NoteTypeHandler,
   NoteAction,
   TransformDefinition,
-} from '@/types/module';
-import type { NoteType } from '@/types/note';
+} from "@/types/module";
+import type { NoteType } from "@/types/note";
 
 class ModuleRegistry {
   private modules = new Map<string, NoteModule>();
@@ -31,7 +31,7 @@ class ModuleRegistry {
     }
 
     const context = this.createContext();
-    
+
     // Call install hook if present
     if (module.install) {
       await module.install(context);
@@ -61,17 +61,17 @@ class ModuleRegistry {
     }
 
     const context = this.createContext();
-    
+
     // Call uninstall hook if present
     if (module.uninstall) {
       await module.uninstall(context);
     }
 
     // Remove module components
-    const componentKeys = Array.from(this.components.keys()).filter(key =>
+    const componentKeys = Array.from(this.components.keys()).filter((key) =>
       key.startsWith(`${moduleId}.`)
     );
-    componentKeys.forEach(key => this.components.delete(key));
+    componentKeys.forEach((key) => this.components.delete(key));
 
     this.modules.delete(moduleId);
     console.log(`Module ${moduleId} unregistered successfully`);
@@ -95,7 +95,7 @@ class ModuleRegistry {
    * Get modules that support a specific note type
    */
   getModulesForType(type: NoteType): NoteModule[] {
-    return Array.from(this.modules.values()).filter(module =>
+    return Array.from(this.modules.values()).filter((module) =>
       module.supportedTypes.includes(type)
     );
   }
@@ -139,7 +139,7 @@ class ModuleRegistry {
    * Get all actions applicable to a note
    */
   getActionsForNote(note: any): NoteAction[] {
-    return Array.from(this.actions.values()).filter(action =>
+    return Array.from(this.actions.values()).filter((action) =>
       action.appliesTo(note)
     );
   }
@@ -155,7 +155,7 @@ class ModuleRegistry {
    * Get all transforms applicable to a note type
    */
   getTransformsForType(type: NoteType): TransformDefinition[] {
-    return Array.from(this.transforms.values()).filter(transform =>
+    return Array.from(this.transforms.values()).filter((transform) =>
       transform.inputTypes.includes(type)
     );
   }
@@ -179,8 +179,10 @@ class ModuleRegistry {
    */
   private createContext(): ModuleContext {
     return {
-      registerNoteType: (type, handler) => this.registerTypeHandler(type, handler),
-      registerComponent: (name, component) => this.registerComponent(name, component),
+      registerNoteType: (type, handler) =>
+        this.registerTypeHandler(type, handler),
+      registerComponent: (name, component) =>
+        this.registerComponent(name, component),
       registerAction: (action) => this.registerAction(action),
       registerTransform: (transform) => this.registerTransform(transform),
       getStore: <T = any>(name: string): T => this.stores.get(name),

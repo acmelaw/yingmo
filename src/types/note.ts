@@ -2,7 +2,13 @@
  * Core note type definitions for the modular note system
  */
 
-export type NoteType = 'text' | 'rich-text' | 'image' | 'smart-layer' | 'markdown' | 'code';
+export type NoteType =
+  | "text"
+  | "rich-text"
+  | "image"
+  | "smart-layer"
+  | "markdown"
+  | "code";
 
 export interface BaseNote {
   id: string;
@@ -17,20 +23,20 @@ export interface BaseNote {
 
 // Text-based note (legacy compatibility)
 export interface TextNote extends BaseNote {
-  type: 'text';
+  type: "text";
   text: string;
 }
 
 // Rich text note (TipTap/HTML)
 export interface RichTextNote extends BaseNote {
-  type: 'rich-text';
+  type: "rich-text";
   content: any; // TipTap JSON content
   html?: string; // Cached HTML representation
 }
 
 // Image note with transformation capabilities
 export interface ImageNote extends BaseNote {
-  type: 'image';
+  type: "image";
   blob: Blob | string; // Blob or base64
   url?: string; // Object URL or external URL
   width?: number;
@@ -41,7 +47,7 @@ export interface ImageNote extends BaseNote {
 
 export interface ImageTransform {
   id: string;
-  type: 'ocr' | 'caption' | 'resize' | 'filter';
+  type: "ocr" | "caption" | "resize" | "filter";
   config: Record<string, any>;
   result?: any;
   cached?: boolean;
@@ -50,9 +56,9 @@ export interface ImageTransform {
 
 // Smart layer note with API-driven transformations
 export interface SmartLayerNote extends BaseNote {
-  type: 'smart-layer';
+  type: "smart-layer";
   source: {
-    type: 'image' | 'text' | 'url' | 'file';
+    type: "image" | "text" | "url" | "file";
     data: any;
   };
   layers: SmartLayer[];
@@ -80,43 +86,49 @@ export interface SmartLayerConfig {
 
 // Markdown note
 export interface MarkdownNote extends BaseNote {
-  type: 'markdown';
+  type: "markdown";
   markdown: string;
   html?: string; // Cached rendered HTML
 }
 
 // Code snippet note
 export interface CodeNote extends BaseNote {
-  type: 'code';
+  type: "code";
   code: string;
   language: string;
   filename?: string;
 }
 
 // Union type for all note types
-export type Note = TextNote | RichTextNote | ImageNote | SmartLayerNote | MarkdownNote | CodeNote;
+export type Note =
+  | TextNote
+  | RichTextNote
+  | ImageNote
+  | SmartLayerNote
+  | MarkdownNote
+  | CodeNote;
 
 // Type guards
 export function isTextNote(note: Note): note is TextNote {
-  return note.type === 'text';
+  return note.type === "text";
 }
 
 export function isRichTextNote(note: Note): note is RichTextNote {
-  return note.type === 'rich-text';
+  return note.type === "rich-text";
 }
 
 export function isImageNote(note: Note): note is ImageNote {
-  return note.type === 'image';
+  return note.type === "image";
 }
 
 export function isSmartLayerNote(note: Note): note is SmartLayerNote {
-  return note.type === 'smart-layer';
+  return note.type === "smart-layer";
 }
 
 export function isMarkdownNote(note: Note): note is MarkdownNote {
-  return note.type === 'markdown';
+  return note.type === "markdown";
 }
 
 export function isCodeNote(note: Note): note is CodeNote {
-  return note.type === 'code';
+  return note.type === "code";
 }

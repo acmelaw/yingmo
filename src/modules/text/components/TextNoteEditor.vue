@@ -19,7 +19,7 @@ watch(() => props.note.text, (newText) => {
 
 function handleUpdate() {
   if (props.readonly) return;
-  
+
   if (localText.value !== props.note.text) {
     emit('update', { text: localText.value });
   }

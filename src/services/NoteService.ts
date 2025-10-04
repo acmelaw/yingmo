@@ -3,8 +3,8 @@
  * Provides abstraction over storage and module-specific operations
  */
 
-import type { Note, NoteType, BaseNote } from '@/types/note';
-import { moduleRegistry } from '@/core/ModuleRegistry';
+import type { Note, NoteType, BaseNote } from "@/types/note";
+import { moduleRegistry } from "@/core/ModuleRegistry";
 
 export interface NoteService {
   create(type: NoteType, data: any): Promise<Note>;
@@ -25,7 +25,7 @@ export class DefaultNoteService implements NoteService {
 
   async create(type: NoteType, data: any): Promise<Note> {
     const handler = moduleRegistry.getTypeHandler(type);
-    
+
     if (handler) {
       return handler.create(data);
     }
@@ -44,7 +44,7 @@ export class DefaultNoteService implements NoteService {
 
   async update(note: Note, updates: Partial<Note>): Promise<Note> {
     const handler = moduleRegistry.getTypeHandler(note.type);
-    
+
     if (handler) {
       return handler.update(note, updates);
     }
@@ -62,7 +62,7 @@ export class DefaultNoteService implements NoteService {
     if (!note) return;
 
     const handler = moduleRegistry.getTypeHandler(note.type);
-    
+
     if (handler && handler.delete) {
       await handler.delete(note);
     }
@@ -86,18 +86,19 @@ export class DefaultNoteService implements NoteService {
     return notes.filter((note: Note) => {
       // Search in common fields
       if (note.category?.toLowerCase().includes(lowerQuery)) return true;
-      if (note.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))) return true;
+      if (note.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery)))
+        return true;
 
       // Type-specific search
-      if ('text' in note && typeof note.text === 'string') {
+      if ("text" in note && typeof note.text === "string") {
         return note.text.toLowerCase().includes(lowerQuery);
       }
 
-      if ('markdown' in note && typeof note.markdown === 'string') {
+      if ("markdown" in note && typeof note.markdown === "string") {
         return note.markdown.toLowerCase().includes(lowerQuery);
       }
 
-      if ('code' in note && typeof note.code === 'string') {
+      if ("code" in note && typeof note.code === "string") {
         return note.code.toLowerCase().includes(lowerQuery);
       }
 
@@ -107,7 +108,7 @@ export class DefaultNoteService implements NoteService {
 
   validate(note: Note): boolean {
     const handler = moduleRegistry.getTypeHandler(note.type);
-    
+
     if (handler && handler.validate) {
       return handler.validate(note);
     }
@@ -117,7 +118,7 @@ export class DefaultNoteService implements NoteService {
   }
 
   private generateId(): string {
-    return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    return typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   }

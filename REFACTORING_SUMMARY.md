@@ -71,7 +71,7 @@ Demonstrates:
   - Type handler functionality
   - Component resolution
   - Validation and serialization
-  
+
 - `src/__tests__/NotesStore.test.ts` (11 tests)
   - Multi-type note creation
   - Legacy compatibility
@@ -189,7 +189,7 @@ The architecture is now ready for implementing the **Smart Layer** feature:
    store.add('My note');
    store.update(id, { text: 'Updated' });
    store.remove(id);
-   
+
    // New way also available:
    await store.create('text', { text: 'My note' });
    await store.update(id, { text: 'Updated' });

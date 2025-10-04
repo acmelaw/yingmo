@@ -123,18 +123,18 @@ export const smartLayerModule: NoteModule = {
   name: 'Smart Layer Notes',
   version: '1.0.0',
   supportedTypes: ['smart-layer'],
-  
+
   async install(context) {
     context.registerNoteType('smart-layer', smartLayerHandler);
     context.registerTransform(ocrTransform);
     context.registerTransform(captionTransform);
   },
-  
+
   components: {
     editor: SmartLayerEditor,
     viewer: SmartLayerViewer,
   },
-  
+
   capabilities: {
     canCreate: true,
     canEdit: true,
@@ -237,8 +237,8 @@ await store.create('image', { blob: imageBlob, alt: 'Screenshot' });
 
 **New NoteCard:**
 ```vue
-<NoteCard 
-  :note="note" 
+<NoteCard
+  :note="note"
   @delete="remove(note.id)"
   @update="(updates) => store.update(note.id, updates)"
   @archive="archive(note.id)"
@@ -288,7 +288,7 @@ src/
    - AI caption generation
    - Concept extraction
    - Folder watching (Electron)
-   
+
 3. **Transform UI**:
    - Layer switching interface
    - Transform configuration

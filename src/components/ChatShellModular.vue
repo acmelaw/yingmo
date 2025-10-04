@@ -85,10 +85,10 @@ function scrollToLatest() {
 
 async function handleAdd(text: string) {
   if (!text.trim()) return;
-  
+
   // Create text note via modular system
   await store.create('text', { text: text.trim() });
-  
+
   nextTick(() => {
     scrollToLatest();
   });

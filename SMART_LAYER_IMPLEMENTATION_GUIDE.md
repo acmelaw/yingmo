@@ -141,12 +141,12 @@ export function watchFolder(path, callback) {
     persistent: true,
     ignoreInitial: true,
   });
-  
+
   watcher.on('add', (filePath) => {
     // Auto-import new images
     callback(filePath);
   });
-  
+
   return () => watcher.close();
 }
 ```
@@ -172,7 +172,7 @@ export function useCamera() {
     });
     return image.base64String;
   }
-  
+
   return { capturePhoto };
 }
 ```
@@ -248,7 +248,7 @@ export interface SmartLayerConfig {
 export class TransformService {
   private apiClients: Map<string, APIClient>;
   private cache: LayerCache;
-  
+
   async executeTransform(
     layer: SmartLayer,
     sourceData: any,
@@ -259,21 +259,21 @@ export class TransformService {
     if (cached && !options?.forceRefresh) {
       return cached;
     }
-    
+
     // Get appropriate API client
     const client = this.getClient(layer.config.apiProvider);
-    
+
     // Execute transform with retry logic
     const result = await this.executeWithRetry(async () => {
       return await client.transform(layer.type, sourceData, layer.config);
     });
-    
+
     // Cache result
     await this.cache.set(layer.id, result);
-    
+
     return result;
   }
-  
+
   private async executeWithRetry(
     fn: () => Promise<any>,
     maxRetries = 3
@@ -303,18 +303,18 @@ Add image upload button and preview:
 <template>
   <form class="floating-surface">
     <!-- Existing actions -->
-    
+
     <!-- New: Image upload -->
     <button type="button" @click="triggerImageUpload">
       📷
     </button>
-    
+
     <!-- New: Image preview if attached -->
     <div v-if="attachedImage" class="image-preview">
       <img :src="attachedImage.url" />
       <button @click="removeImage">×</button>
     </div>
-    
+
     <!-- Existing textarea -->
   </form>
 </template>
@@ -330,7 +330,7 @@ Add image upload button and preview:
       <h3>Smart Layers</h3>
       <button @click="addLayer">+ Add Layer</button>
     </div>
-    
+
     <draggable v-model="layers" item-key="id">
       <template #item="{ element: layer }">
         <LayerCard
@@ -354,19 +354,19 @@ Add image upload button and preview:
 
 export const useAPIKeysStore = defineStore('apiKeys', () => {
   const keys = useStorage<Record<string, string>>('api-keys', {});
-  
+
   function setKey(provider: string, key: string) {
     keys.value[provider] = key;
   }
-  
+
   function getKey(provider: string): string | undefined {
     return keys.value[provider];
   }
-  
+
   function deleteKey(provider: string) {
     delete keys.value[provider];
   }
-  
+
   return { keys, setKey, getKey, deleteKey };
 });
 ```

@@ -6,7 +6,7 @@
   - [x] BaseNote interface
   - [x] TextNote type
   - [x] RichTextNote type
-  - [x] ImageNote type  
+  - [x] ImageNote type
   - [x] SmartLayerNote type
   - [x] MarkdownNote type
   - [x] CodeNote type

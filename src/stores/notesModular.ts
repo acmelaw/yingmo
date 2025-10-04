@@ -40,18 +40,28 @@ export const useNotesStore = defineStore("notes", () => {
   });
 
   // Initialize service
-  const noteService = new DefaultNoteService({ get notes() { return state.value.notes; } });
+  const noteService = new DefaultNoteService({
+    get notes() {
+      return state.value.notes;
+    },
+  });
 
   // Register this store with the module registry
-  moduleRegistry.registerStore('notes', {
-    get notes() { return state.value.notes; },
+  moduleRegistry.registerStore("notes", {
+    get notes() {
+      return state.value.notes;
+    },
     add: (note: Note) => {
       state.value.notes = [...state.value.notes, note];
     },
     update: (id: string, updates: Partial<Note>) => {
-      const index = state.value.notes.findIndex(n => n.id === id);
+      const index = state.value.notes.findIndex((n) => n.id === id);
       if (index !== -1) {
-        const updated = { ...state.value.notes[index], ...updates, updated: Date.now() } as Note;
+        const updated = {
+          ...state.value.notes[index],
+          ...updates,
+          updated: Date.now(),
+        } as Note;
         state.value.notes = [
           ...state.value.notes.slice(0, index),
           updated,
@@ -60,34 +70,34 @@ export const useNotesStore = defineStore("notes", () => {
       }
     },
     remove: (id: string) => {
-      state.value.notes = state.value.notes.filter(n => n.id !== id);
+      state.value.notes = state.value.notes.filter((n) => n.id !== id);
     },
   });
 
   const notes = computed(() => state.value.notes);
   const categories = computed(() => state.value.categories);
-  
+
   const searchQuery = computed({
     get: () => state.value.searchQuery,
     set: (value: string) => {
       state.value.searchQuery = value;
     },
   });
-  
+
   const selectedCategory = computed({
     get: () => state.value.selectedCategory,
     set: (value: string | null) => {
       state.value.selectedCategory = value;
     },
   });
-  
+
   const sortBy = computed({
     get: () => state.value.sortBy,
     set: (value: "created" | "updated" | "text") => {
       state.value.sortBy = value;
     },
   });
-  
+
   const sortOrder = computed({
     get: () => state.value.sortOrder,
     set: (value: "asc" | "desc") => {
@@ -102,13 +112,14 @@ export const useNotesStore = defineStore("notes", () => {
       const query = state.value.searchQuery.toLowerCase();
       result = result.filter((note) => {
         // Basic text search
-        if ('text' in note && typeof note.text === 'string') {
+        if ("text" in note && typeof note.text === "string") {
           if (note.text.toLowerCase().includes(query)) return true;
         }
-        
+
         // Search in category and tags
         if (note.category?.toLowerCase().includes(query)) return true;
-        if (note.tags?.some((tag) => tag.toLowerCase().includes(query))) return true;
+        if (note.tags?.some((tag) => tag.toLowerCase().includes(query)))
+          return true;
 
         return false;
       });
@@ -131,8 +142,8 @@ export const useNotesStore = defineStore("notes", () => {
           break;
         case "text":
           // Try to get text content for sorting
-          const aText = 'text' in a ? String(a.text) : '';
-          const bText = 'text' in b ? String(b.text) : '';
+          const aText = "text" in a ? String(a.text) : "";
+          const bText = "text" in b ? String(b.text) : "";
           comparison = aText.localeCompare(bText);
           break;
       }
@@ -151,13 +162,18 @@ export const useNotesStore = defineStore("notes", () => {
 
   // Get notes by type
   const getNotesByType = computed(() => (type: NoteType) => {
-    return state.value.notes.filter(note => note.type === type);
+    return state.value.notes.filter((note) => note.type === type);
   });
 
   /**
    * Create a new note (supports all note types via modules)
    */
-  async function create(type: NoteType, data: any, category?: string, tags?: string[]): Promise<string> {
+  async function create(
+    type: NoteType,
+    data: any,
+    category?: string,
+    tags?: string[]
+  ): Promise<string> {
     const note = await noteService.create(type, {
       ...data,
       category,
@@ -177,14 +193,18 @@ export const useNotesStore = defineStore("notes", () => {
   /**
    * Add a text note (legacy compatibility)
    */
-  function add(text: string, category?: string, tags?: string[]): string | undefined {
+  function add(
+    text: string,
+    category?: string,
+    tags?: string[]
+  ): string | undefined {
     const payload = text.trim();
     if (!payload) return;
 
     const now = Date.now();
     const note: TextNote = {
       id: createId(),
-      type: 'text',
+      type: "text",
       text: payload,
       created: now,
       updated: now,
@@ -206,20 +226,26 @@ export const useNotesStore = defineStore("notes", () => {
    * Update a note
    */
   async function update(id: string, updates: Partial<Note>): Promise<void> {
-    const note = state.value.notes.find(n => n.id === id);
+    const note = state.value.notes.find((n) => n.id === id);
     if (!note) return;
 
     const updatedNote = await noteService.update(note, updates);
 
-    const index = state.value.notes.findIndex(n => n.id === id);
+    const index = state.value.notes.findIndex((n) => n.id === id);
     state.value.notes = [
       ...state.value.notes.slice(0, index),
       updatedNote,
       ...state.value.notes.slice(index + 1),
     ];
 
-    if (updatedNote.category && !state.value.categories.includes(updatedNote.category)) {
-      state.value.categories = [...state.value.categories, updatedNote.category];
+    if (
+      updatedNote.category &&
+      !state.value.categories.includes(updatedNote.category)
+    ) {
+      state.value.categories = [
+        ...state.value.categories,
+        updatedNote.category,
+      ];
     }
   }
 
@@ -274,7 +300,7 @@ export const useNotesStore = defineStore("notes", () => {
       if (data.version && data.data) {
         // Migrate old notes to new format if needed
         const migratedNotes = migrateNotes(data.data.notes || []);
-        
+
         state.value = {
           ...state.value,
           ...data.data,
@@ -293,15 +319,15 @@ export const useNotesStore = defineStore("notes", () => {
    * Migrate old note format to new modular format
    */
   function migrateNotes(oldNotes: any[]): Note[] {
-    return oldNotes.map(oldNote => {
+    return oldNotes.map((oldNote) => {
       // If already in new format, return as is
       if (oldNote.type) return oldNote;
 
       // Migrate old format to TextNote
       const migratedNote: TextNote = {
         id: oldNote.id || createId(),
-        type: 'text',
-        text: oldNote.text || '',
+        type: "text",
+        text: oldNote.text || "",
         created: oldNote.created || Date.now(),
         updated: oldNote.updated || Date.now(),
         category: oldNote.category,

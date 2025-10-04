@@ -2,13 +2,13 @@
  * Text Note Module - handles basic text notes
  */
 
-import type { NoteModule, NoteTypeHandler } from '@/types/module';
-import type { TextNote } from '@/types/note';
-import TextNoteEditor from './components/TextNoteEditor.vue';
-import TextNoteViewer from './components/TextNoteViewer.vue';
+import type { NoteModule, NoteTypeHandler } from "@/types/module";
+import type { TextNote } from "@/types/note";
+import TextNoteEditor from "./components/TextNoteEditor.vue";
+import TextNoteViewer from "./components/TextNoteViewer.vue";
 
 function createId(): string {
-  return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
@@ -17,8 +17,8 @@ const textNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<TextNote> {
     return {
       id: createId(),
-      type: 'text',
-      text: data.text || '',
+      type: "text",
+      text: data.text || "",
       created: Date.now(),
       updated: Date.now(),
       category: data.category,
@@ -33,7 +33,7 @@ const textNoteHandler: NoteTypeHandler = {
     return {
       ...textNote,
       ...updates,
-      type: 'text', // Ensure type doesn't change
+      type: "text", // Ensure type doesn't change
       updated: Date.now(),
     } as TextNote;
   },
@@ -47,8 +47,8 @@ const textNoteHandler: NoteTypeHandler = {
     const textNote = note as TextNote;
     return (
       !!textNote.id &&
-      textNote.type === 'text' &&
-      typeof textNote.text === 'string' &&
+      textNote.type === "text" &&
+      typeof textNote.text === "string" &&
       !!textNote.created
     );
   },
@@ -63,15 +63,15 @@ const textNoteHandler: NoteTypeHandler = {
 };
 
 export const textNoteModule: NoteModule = {
-  id: 'text-note',
-  name: 'Text Notes',
-  version: '1.0.0',
-  description: 'Basic text note support',
-  supportedTypes: ['text'],
+  id: "text-note",
+  name: "Text Notes",
+  version: "1.0.0",
+  description: "Basic text note support",
+  supportedTypes: ["text"],
 
   async install(context) {
-    context.registerNoteType('text', textNoteHandler);
-    console.log('Text note module installed');
+    context.registerNoteType("text", textNoteHandler);
+    console.log("Text note module installed");
   },
 
   components: {

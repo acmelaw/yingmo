@@ -9,12 +9,12 @@ import { useI18n } from 'vue-i18n';
 import type { Note } from '@/types/note';
 import { moduleRegistry } from '@/core/ModuleRegistry';
 
-const props = defineProps<{ 
+const props = defineProps<{
   note: Note;
   mode?: 'view' | 'edit' | 'preview';
 }>();
 
-const emit = defineEmits<{ 
+const emit = defineEmits<{
   (e: 'delete'): void;
   (e: 'update', updates: Partial<Note>): void;
   (e: 'archive'): void;
@@ -44,7 +44,7 @@ const noteComponent = computed(() => {
   if (mode === 'edit' && module.components?.editor) {
     return module.components.editor;
   }
-  
+
   if (mode === 'preview' && module.components?.preview) {
     return module.components.preview;
   }
