@@ -69,7 +69,7 @@ function scrollToLatest() {
 
 function handleAdd(text: string) {
   if (!text.trim()) return;
-  
+
   // Tags are now handled by auto-extract setting in the store
   // No need to extract manually here
   store.add(text.trim());
@@ -222,7 +222,7 @@ function handleClearAll() {
             </label>
           </div>
 
-          <div 
+          <div
             v-if="store.autoExtractTags"
             class="flex items-center justify-between gap-4 p-4 bg-brutal-surface-secondary rounded-lg border-2 border-brutal-border"
           >
@@ -264,9 +264,9 @@ function handleClearAll() {
       <div v-if="store.selectedTags.length > 0" class="brutal-search flex items-center justify-between">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="text-sm font-bold">Filtering by:</span>
-          <span 
-            v-for="tag in store.selectedTags" 
-            :key="tag" 
+          <span
+            v-for="tag in store.selectedTags"
+            :key="tag"
             class="brutal-tag cursor-pointer hover:opacity-70"
             @click="selectTag(tag)"
           >
@@ -293,11 +293,11 @@ function handleClearAll() {
               ✕
             </button>
           </div>
-          
+
           <div v-if="allTags.length === 0" class="text-sm opacity-60 text-center py-8">
             No tags yet. Add #hashtags to your notes!
           </div>
-          
+
           <div v-else class="flex flex-col gap-2">
             <button
               v-for="tag in allTags"
@@ -336,7 +336,7 @@ function handleClearAll() {
             {{ store.selectedTags.length > 0 ? 'Try different tags or clear the filters' : 'Start your first note below! 👇' }}
           </p>
         </div>
-        
+
         <TransitionGroup
           v-else
           name="slide-left"

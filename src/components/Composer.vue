@@ -124,7 +124,7 @@ function onKey(e: KeyboardEvent) {
     e.preventDefault();
     closeMenus();
   }
-  
+
   // Show hashtag helper when # is typed
   if (e.key === '#') {
     showHashtagHelper.value = true;
@@ -215,7 +215,7 @@ watch(draft, () => {
             <span v-if="action.icon" aria-hidden="true">{{ action.icon }}</span>
             <span v-else class="text-xs font-bold">{{ action.label }}</span>
           </button>
-          
+
           <!-- Emoji Picker -->
           <Transition name="slide-up">
             <div
@@ -248,7 +248,7 @@ watch(draft, () => {
           @keydown="onKey"
           @input="adjustTextareaHeight"
         />
-        
+
         <!-- Typing indicator -->
         <Transition name="fade">
           <div

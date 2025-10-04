@@ -3,9 +3,9 @@
  * Handles version upgrades and schema changes
  */
 
-import type { NotesState } from './notes';
+import type { NotesState } from "./notes";
 
-const MIGRATION_KEY = 'vue-notes.migration-status';
+const MIGRATION_KEY = "vue-notes.migration-status";
 
 export interface MigrationStatus {
   lastMigratedVersion: string;
@@ -17,7 +17,7 @@ export function getMigrationStatus(): MigrationStatus {
   const stored = localStorage.getItem(MIGRATION_KEY);
   if (!stored) {
     return {
-      lastMigratedVersion: '1.0.0',
+      lastMigratedVersion: "1.0.0",
       migrationsApplied: [],
       userPrompted: false,
     };
@@ -44,31 +44,31 @@ export function needsMigration(currentVersion: string): boolean {
  * - Add cleanContentOnExtract field
  */
 export function migrateV1ToV2(state: any): any {
-  console.log('[Migration] Starting v1.0.0 → v2.0.0 migration');
-  
+  console.log("[Migration] Starting v1.0.0 → v2.0.0 migration");
+
   const migrated = { ...state };
-  
+
   // Convert selectedTag to selectedTags
-  if (typeof migrated.selectedTag !== 'undefined') {
+  if (typeof migrated.selectedTag !== "undefined") {
     migrated.selectedTags = migrated.selectedTag ? [migrated.selectedTag] : [];
     delete migrated.selectedTag;
-    console.log('[Migration] Converted selectedTag to selectedTags');
+    console.log("[Migration] Converted selectedTag to selectedTags");
   }
-  
+
   // Add missing fields with defaults
   if (!migrated.selectedTags) {
     migrated.selectedTags = [];
   }
-  
-  if (typeof migrated.autoExtractTags === 'undefined') {
+
+  if (typeof migrated.autoExtractTags === "undefined") {
     migrated.autoExtractTags = true;
   }
-  
-  if (typeof migrated.cleanContentOnExtract === 'undefined') {
+
+  if (typeof migrated.cleanContentOnExtract === "undefined") {
     migrated.cleanContentOnExtract = false; // Don't modify existing notes
   }
-  
-  console.log('[Migration] v1.0.0 → v2.0.0 migration complete');
+
+  console.log("[Migration] v1.0.0 → v2.0.0 migration complete");
   return migrated;
 }
 
@@ -78,17 +78,17 @@ export function migrateV1ToV2(state: any): any {
 export function runMigrations(state: any, targetVersion: string): any {
   const status = getMigrationStatus();
   let migratedState = state;
-  
+
   // Apply migrations in sequence
-  if (!status.migrationsApplied.includes('v1-to-v2')) {
+  if (!status.migrationsApplied.includes("v1-to-v2")) {
     migratedState = migrateV1ToV2(migratedState);
-    status.migrationsApplied.push('v1-to-v2');
+    status.migrationsApplied.push("v1-to-v2");
   }
-  
+
   // Update migration status
   status.lastMigratedVersion = targetVersion;
   setMigrationStatus(status);
-  
+
   return migratedState;
 }
 
@@ -96,29 +96,29 @@ export function runMigrations(state: any, targetVersion: string): any {
  * Prompt user for migration choice
  * Returns: 'migrate' | 'clear' | 'cancel'
  */
-export function promptUserMigration(): 'migrate' | 'clear' | 'cancel' {
+export function promptUserMigration(): "migrate" | "clear" | "cancel" {
   const choice = confirm(
-    '📦 Data Migration Available!\n\n' +
-    'Your notes app has been updated with new features.\n\n' +
-    'Options:\n' +
-    '• OK = Migrate existing data (recommended)\n' +
-    '• Cancel = Keep current data as-is\n\n' +
-    'Click OK to migrate your data now.'
+    "📦 Data Migration Available!\n\n" +
+      "Your notes app has been updated with new features.\n\n" +
+      "Options:\n" +
+      "• OK = Migrate existing data (recommended)\n" +
+      "• Cancel = Keep current data as-is\n\n" +
+      "Click OK to migrate your data now."
   );
-  
+
   if (choice) {
-    return 'migrate';
+    return "migrate";
   }
-  
+
   const clearData = confirm(
-    '⚠️ Alternative: Start Fresh?\n\n' +
-    'Would you like to clear all notes and start fresh?\n' +
-    'This cannot be undone!\n\n' +
-    'OK = Delete all notes\n' +
-    'Cancel = Keep current data'
+    "⚠️ Alternative: Start Fresh?\n\n" +
+      "Would you like to clear all notes and start fresh?\n" +
+      "This cannot be undone!\n\n" +
+      "OK = Delete all notes\n" +
+      "Cancel = Keep current data"
   );
-  
-  return clearData ? 'clear' : 'cancel';
+
+  return clearData ? "clear" : "cancel";
 }
 
 /**
@@ -126,5 +126,5 @@ export function promptUserMigration(): 'migrate' | 'clear' | 'cancel' {
  */
 export function clearMigrationData() {
   localStorage.removeItem(MIGRATION_KEY);
-  console.log('[Migration] Migration data cleared');
+  console.log("[Migration] Migration data cleared");
 }

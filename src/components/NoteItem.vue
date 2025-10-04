@@ -23,17 +23,17 @@ const timeLabel = computed(() => {
   const date = props.note.updated > props.note.created ? updatedAt.value : createdAt.value;
   const today = new Date();
   const isToday = date.toDateString() === today.toDateString();
-  
+
   if (isToday) {
-    return new Intl.DateTimeFormat(undefined, { 
-      hour: '2-digit', 
+    return new Intl.DateTimeFormat(undefined, {
+      hour: '2-digit',
       minute: '2-digit'
     }).format(date);
   } else {
-    return new Intl.DateTimeFormat(undefined, { 
+    return new Intl.DateTimeFormat(undefined, {
       month: 'short',
       day: 'numeric',
-      hour: '2-digit', 
+      hour: '2-digit',
       minute: '2-digit'
     }).format(date);
   }
@@ -78,17 +78,17 @@ function saveEdit() {
   const trimmedText = editText.value.trim();
   if (!trimmedText) return;
 
-  const hasChanged = 
+  const hasChanged =
     trimmedText !== props.note.text ||
     JSON.stringify(editTags.value.sort()) !== JSON.stringify((props.note.tags || []).sort());
 
   if (hasChanged) {
-    store.update(props.note.id, { 
+    store.update(props.note.id, {
       text: trimmedText,
       tags: editTags.value.length > 0 ? editTags.value : undefined
     });
   }
-  
+
   isEditing.value = false;
   editText.value = '';
   editTags.value = [];
@@ -112,7 +112,7 @@ function handleAddTag() {
     newTag.value = '';
     return;
   }
-  
+
   editTags.value.push(tag);
   newTag.value = '';
 }
@@ -164,7 +164,7 @@ function onTagInputKeydown(e: KeyboardEvent) {
     </button>
 
     <!-- Message bubble -->
-    <article 
+    <article
       :class="[
         'relative transition-all duration-150',
         isSent ? 'brutal-message-sent' : 'brutal-message-received',
@@ -309,7 +309,7 @@ function onTagInputKeydown(e: KeyboardEvent) {
               📝
             </span>
           </time>
-          
+
           <button
             @click="startEdit"
             class="brutal-btn-icon opacity-0 group-hover:opacity-100 transition-opacity !w-8 !h-8 !min-w-8 !min-h-8 text-sm"

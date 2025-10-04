@@ -1,11 +1,11 @@
 import { computed, watch } from "vue";
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useStorage } from "@vueuse/core";
-import { 
-  needsMigration, 
-  runMigrations, 
+import {
+  needsMigration,
+  runMigrations,
   getMigrationStatus,
-  promptUserMigration 
+  promptUserMigration,
 } from "./migration";
 
 export interface NoteEdit {
@@ -57,29 +57,38 @@ function extractHashtags(text: string): string[] {
   const matches = text.match(/#[\p{L}\p{N}_]+/gu);
   if (!matches) return [];
   // Remove # and return unique tags (case-insensitive deduplication)
-  const tags = matches.map(tag => tag.substring(1));
-  return [...new Set(tags.map(t => t.toLowerCase()))].map(lowered => 
-    tags.find(t => t.toLowerCase() === lowered) || lowered
+  const tags = matches.map((tag) => tag.substring(1));
+  return [...new Set(tags.map((t) => t.toLowerCase()))].map(
+    (lowered) => tags.find((t) => t.toLowerCase() === lowered) || lowered
   );
 }
 
 // Helper function to merge tags from text and explicit tags (only on creation)
-function mergeTags(text: string, explicitTags?: string[], autoExtract = true): string[] {
+function mergeTags(
+  text: string,
+  explicitTags?: string[],
+  autoExtract = true
+): string[] {
   const extractedTags = autoExtract ? extractHashtags(text) : [];
   const allTags = [...extractedTags, ...(explicitTags || [])];
-  return [...new Set(allTags.map(t => t.toLowerCase()))].map(lowered => 
-    allTags.find(t => t.toLowerCase() === lowered) || lowered
-  ).sort();
+  return [...new Set(allTags.map((t) => t.toLowerCase()))]
+    .map(
+      (lowered) => allTags.find((t) => t.toLowerCase() === lowered) || lowered
+    )
+    .sort();
 }
 
 // Remove hashtags from text for clean content display
 function stripHashtags(text: string): string {
-  return text.replace(/#[\p{L}\p{N}_]+/gu, '').replace(/\s+/g, ' ').trim();
+  return text
+    .replace(/#[\p{L}\p{N}_]+/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export const useNotesStore = defineStore("notes", () => {
   const version = useStorage(VERSION_KEY, CURRENT_VERSION);
-  
+
   // Initialize state with proper defaults
   const state = useStorage<NotesState>(STORAGE_KEY, {
     notes: [],
@@ -96,25 +105,25 @@ export const useNotesStore = defineStore("notes", () => {
   // Handle migration if needed
   if (needsMigration(CURRENT_VERSION)) {
     const migrationStatus = getMigrationStatus();
-    
+
     if (!migrationStatus.userPrompted) {
       const choice = promptUserMigration();
-      
-      if (choice === 'migrate') {
-        console.log('[Store] Running migrations...');
+
+      if (choice === "migrate") {
+        console.log("[Store] Running migrations...");
         const rawData = localStorage.getItem(STORAGE_KEY);
         if (rawData) {
           try {
             const parsed = JSON.parse(rawData);
             const migrated = runMigrations(parsed, CURRENT_VERSION);
             state.value = migrated;
-            console.log('[Store] Migration successful!');
+            console.log("[Store] Migration successful!");
           } catch (error) {
-            console.error('[Store] Migration failed:', error);
+            console.error("[Store] Migration failed:", error);
           }
         }
-      } else if (choice === 'clear') {
-        console.log('[Store] Clearing all data...');
+      } else if (choice === "clear") {
+        console.log("[Store] Clearing all data...");
         state.value = {
           notes: [],
           categories: [],
@@ -127,11 +136,11 @@ export const useNotesStore = defineStore("notes", () => {
           cleanContentOnExtract: false,
         };
       }
-      
+
       // Mark as prompted
       const newStatus = getMigrationStatus();
       newStatus.userPrompted = true;
-      import('./migration').then(m => m.setMigrationStatus(newStatus));
+      import("./migration").then((m) => m.setMigrationStatus(newStatus));
     }
   }
 
@@ -185,7 +194,7 @@ export const useNotesStore = defineStore("notes", () => {
     const tagSet = new Set<string>();
     state.value.notes.forEach((note) => {
       if (note.tags) {
-        note.tags.forEach(tag => tagSet.add(tag));
+        note.tags.forEach((tag) => tagSet.add(tag));
       }
     });
     return Array.from(tagSet).sort();
@@ -212,8 +221,8 @@ export const useNotesStore = defineStore("notes", () => {
 
     // Filter by multiple tags (AND logic - note must have all selected tags)
     if (state.value.selectedTags && state.value.selectedTags.length > 0) {
-      result = result.filter(
-        (note) => state.value.selectedTags.every(tag => note.tags?.includes(tag))
+      result = result.filter((note) =>
+        state.value.selectedTags.every((tag) => note.tags?.includes(tag))
       );
     }
 
@@ -248,17 +257,18 @@ export const useNotesStore = defineStore("notes", () => {
     if (!payload) return;
 
     const now = Date.now();
-    
+
     // Auto-extract tags if enabled
-    const mergedTags = state.value.autoExtractTags 
+    const mergedTags = state.value.autoExtractTags
       ? mergeTags(payload, tags, true)
-      : (tags || []);
-    
+      : tags || [];
+
     // Clean content only if both auto-extract AND clean are enabled
-    const cleanText = (state.value.autoExtractTags && state.value.cleanContentOnExtract)
-      ? stripHashtags(payload) 
-      : payload;
-    
+    const cleanText =
+      state.value.autoExtractTags && state.value.cleanContentOnExtract
+        ? stripHashtags(payload)
+        : payload;
+
     const note: Note = {
       id: createId(),
       text: cleanText,
@@ -267,11 +277,13 @@ export const useNotesStore = defineStore("notes", () => {
       category,
       tags: mergedTags.length > 0 ? mergedTags : undefined,
       archived: false,
-      editHistory: [{
-        timestamp: now,
-        text: cleanText,
-        tags: mergedTags.length > 0 ? mergedTags : undefined,
-      }],
+      editHistory: [
+        {
+          timestamp: now,
+          text: cleanText,
+          tags: mergedTags.length > 0 ? mergedTags : undefined,
+        },
+      ],
     };
 
     state.value.notes = [...state.value.notes, note];
@@ -289,11 +301,11 @@ export const useNotesStore = defineStore("notes", () => {
 
     const note = state.value.notes[index];
     const now = Date.now();
-    
+
     // NEVER auto-extract or modify text on edit - only explicit updates
     // User must manage tags manually through the UI when editing
     let finalUpdates = { ...updates };
-    
+
     // Add to edit history
     const editHistory = note.editHistory || [];
     editHistory.push({
@@ -301,7 +313,7 @@ export const useNotesStore = defineStore("notes", () => {
       text: updates.text !== undefined ? updates.text : note.text,
       tags: updates.tags !== undefined ? updates.tags : note.tags,
     });
-    
+
     const updated = {
       ...note,
       ...finalUpdates,
@@ -324,36 +336,36 @@ export const useNotesStore = defineStore("notes", () => {
   }
 
   function removeTag(noteId: string, tag: string) {
-    const note = state.value.notes.find(n => n.id === noteId);
+    const note = state.value.notes.find((n) => n.id === noteId);
     if (!note || !note.tags) return;
 
-    const updatedTags = note.tags.filter(t => t !== tag);
-    
+    const updatedTags = note.tags.filter((t) => t !== tag);
+
     // DON'T modify the text - just update the tags array
     update(noteId, {
-      tags: updatedTags.length > 0 ? updatedTags : undefined
+      tags: updatedTags.length > 0 ? updatedTags : undefined,
     });
   }
 
   function addTag(noteId: string, tag: string) {
-    const note = state.value.notes.find(n => n.id === noteId);
+    const note = state.value.notes.find((n) => n.id === noteId);
     if (!note) return;
 
-    const cleanTag = tag.replace(/^#/, '').toLowerCase(); // Remove # if present
+    const cleanTag = tag.replace(/^#/, "").toLowerCase(); // Remove # if present
     const currentTags = note.tags || [];
-    
+
     if (currentTags.includes(cleanTag)) return; // Tag already exists
-    
+
     // DON'T modify the text - just add to tags array
     update(noteId, {
-      tags: [...currentTags, cleanTag]
+      tags: [...currentTags, cleanTag],
     });
   }
 
   function toggleTag(tag: string) {
     const currentTags = state.value.selectedTags;
     if (currentTags.includes(tag)) {
-      state.value.selectedTags = currentTags.filter(t => t !== tag);
+      state.value.selectedTags = currentTags.filter((t) => t !== tag);
     } else {
       state.value.selectedTags = [...currentTags, tag];
     }

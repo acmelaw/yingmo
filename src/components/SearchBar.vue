@@ -17,10 +17,10 @@ const searchQuery = computed({
 // Get suggested tags based on search query
 const suggestedTags = computed(() => {
   if (!searchQuery.value) return [];
-  
+
   const query = searchQuery.value.toLowerCase();
   const startsWith = query.startsWith('#') ? query.substring(1) : query;
-  
+
   return store.allTags
     .filter(tag => tag.toLowerCase().includes(startsWith))
     .slice(0, 5);

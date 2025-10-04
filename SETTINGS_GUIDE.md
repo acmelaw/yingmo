@@ -54,7 +54,7 @@ Result:
 
 **Clean Content OFF:**
 ```
-You type: "Meeting tomorrow #work #urgent"  
+You type: "Meeting tomorrow #work #urgent"
 Result:
   Content: "Meeting tomorrow #work #urgent" (hashtags kept!)
   Tags: [work, urgent]

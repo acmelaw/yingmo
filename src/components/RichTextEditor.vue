@@ -73,7 +73,7 @@ const editor = useEditor({
     const html = editor.getHTML();
     const text = editor.getText();
     const json = editor.getJSON();
-    
+
     emit('update:modelValue', text);
     emit('update:json', json);
   },
@@ -118,8 +118,8 @@ defineExpose({
 
 <template>
   <div class="rich-text-editor">
-    <EditorContent 
-      :editor="editor" 
+    <EditorContent
+      :editor="editor"
       class="editor-content"
       :style="{
         minHeight: minHeight,

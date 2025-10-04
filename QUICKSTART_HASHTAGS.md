@@ -222,7 +222,7 @@ Found a bug or have a suggestion? The system is designed to be:
 
 ---
 
-**Version:** 2.0.0  
+**Version:** 2.0.0
 **Last Updated:** October 4, 2025
 
 Enjoy your enhanced note-taking experience! 🚀

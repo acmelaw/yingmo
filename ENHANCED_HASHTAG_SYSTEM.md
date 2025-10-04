@@ -70,7 +70,7 @@ store.autoExtractTags = false; // Manual tag management only
 
 **When Enabled (default):**
 1. User types: "Check out #café in #münchen"
-2. On save: 
+2. On save:
    - `text = "Check out café in münchen"` (hashtags stripped)
    - `tags = ["café", "münchen"]` (extracted & stored)
 
@@ -144,7 +144,7 @@ selectedTags: string[];  // Filter by ALL selected tags
 
 // Filtering logic
 if (selectedTags.length > 0) {
-  result = notes.filter(note => 
+  result = notes.filter(note =>
     selectedTags.every(tag => note.tags?.includes(tag))
   );
 }
@@ -381,7 +381,7 @@ VERSION_KEY = "2.0.0"  // Updated from 1.0.0
 
 ### Tag removal changes content
 
-**Issue:** This was the OLD behavior.  
+**Issue:** This was the OLD behavior.
 **Fix:** Update to v2.0 - tags are now separate.
 
 ### Unicode tags not working
@@ -406,7 +406,7 @@ const matches = text.match(/#[^\s]+/g);  // Less precise but works
 
 ### Multi-tag filter shows no results
 
-**Expected:** AND logic means note must have ALL selected tags.  
+**Expected:** AND logic means note must have ALL selected tags.
 **Example:**
 - Note 1: ["work", "urgent"]
 - Note 2: ["work", "meeting"]
@@ -424,7 +424,7 @@ const matches = text.match(/#[^\s]+/g);  // Less precise but works
 // Fast (ASCII only): ~0.01ms per note
 /#[\w]+/g
 
-// Slower (Unicode): ~0.05ms per note  
+// Slower (Unicode): ~0.05ms per note
 /#[\p{L}\p{N}_]+/gu
 ```
 
@@ -551,7 +551,7 @@ describe('Note editing workflow', () => {
   it('tracks edit history', () => {
     const id = store.add('Original');
     store.update(id, { text: 'Updated' });
-    
+
     const note = store.notes.find(n => n.id === id);
     expect(note.editHistory).toHaveLength(2);
   });
@@ -559,10 +559,10 @@ describe('Note editing workflow', () => {
   it('supports multi-tag filtering', () => {
     store.add('Note 1', undefined, ['work', 'urgent']);
     store.add('Note 2', undefined, ['work']);
-    
+
     store.toggleTag('work');
     store.toggleTag('urgent');
-    
+
     expect(store.filteredNotes).toHaveLength(1);
   });
 });
@@ -598,7 +598,7 @@ None! Fully backward compatible.
 
 ---
 
-**Version:** 2.0.0  
-**Date:** October 4, 2025  
-**Author:** AI Assistant  
+**Version:** 2.0.0
+**Date:** October 4, 2025
+**Author:** AI Assistant
 **License:** MIT

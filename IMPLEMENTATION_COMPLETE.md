@@ -58,7 +58,7 @@ interface NotesState {
 }
 
 // In add() function:
-const cleanText = state.value.autoExtractTags 
+const cleanText = state.value.autoExtractTags
   ? stripHashtags(payload)  // Remove hashtags from content
   : payload;                 // Keep as-is
 ```
@@ -133,7 +133,7 @@ interface Note {
 // Shows: ["café", "cafeteria", "caffeinated"]
 // With counts: (3), (1), (5)
 
-// Type: "#wor"  
+// Type: "#wor"
 // Shows: ["work", "workout", "world"]
 // Header: "Matching Tags" (instead of "Suggested Tags")
 ```
@@ -156,7 +156,7 @@ interface Note {
 
 **UI Changes:**
 ```
-Before: 
+Before:
 [Filtering by: #work] [Clear]
 
 After:
@@ -345,18 +345,18 @@ describe('Tag management', () => {
 ## 🐛 Known Issues & Solutions
 
 ### Issue 1: Migration Error (FIXED ✅)
-**Error:** `Cannot read properties of undefined (reading 'length')`  
-**Cause:** Old data had `selectedTag`, new code expected `selectedTags`  
+**Error:** `Cannot read properties of undefined (reading 'length')`
+**Cause:** Old data had `selectedTag`, new code expected `selectedTags`
 **Solution:** Added migration logic to convert old data structure
 
 ### Issue 2: Unicode Regex Browser Support
-**Issue:** Older browsers don't support `\p{L}` Unicode escapes  
-**Fallback:** Use simpler regex `/#[^\s]+/g` if needed  
+**Issue:** Older browsers don't support `\p{L}` Unicode escapes
+**Fallback:** Use simpler regex `/#[^\s]+/g` if needed
 **Status:** Modern browsers only (acceptable for this app)
 
 ### Issue 3: Edit History Growth
-**Issue:** Could grow unbounded over time  
-**Mitigation:** Future: Limit to last 50 edits, compress old entries  
+**Issue:** Could grow unbounded over time
+**Mitigation:** Future: Limit to last 50 edits, compress old entries
 **Status:** Not critical for current usage
 
 ## 📚 Documentation Created
@@ -385,23 +385,23 @@ describe('Tag management', () => {
 
 All requested features have been successfully implemented:
 
-✅ **Unicode hashtag support** - Works with #café, #日本語, etc.  
-✅ **Separated content & tags** - No more confusion!  
-✅ **Configurable auto-extract** - User controls behavior  
-✅ **Edit history** - Full audit trail  
-✅ **TipTap integration** - Rich text + CRDT ready  
-✅ **Enhanced search** - Smart tag suggestions  
-✅ **Multi-tag filtering** - AND logic for precision  
-✅ **Data migration** - Seamless upgrade  
-✅ **Zero errors** - Clean compilation  
+✅ **Unicode hashtag support** - Works with #café, #日本語, etc.
+✅ **Separated content & tags** - No more confusion!
+✅ **Configurable auto-extract** - User controls behavior
+✅ **Edit history** - Full audit trail
+✅ **TipTap integration** - Rich text + CRDT ready
+✅ **Enhanced search** - Smart tag suggestions
+✅ **Multi-tag filtering** - AND logic for precision
+✅ **Data migration** - Seamless upgrade
+✅ **Zero errors** - Clean compilation
 ✅ **Full documentation** - 3 comprehensive guides
 
 The app is now production-ready with significantly improved UX/UI for hashtag management while maintaining full backward compatibility!
 
 ---
 
-**Implementation Date:** October 4, 2025  
-**Version:** 2.0.0  
-**Status:** ✅ Complete & Tested  
-**Developer:** GitHub Copilot  
+**Implementation Date:** October 4, 2025
+**Version:** 2.0.0
+**Status:** ✅ Complete & Tested
+**Developer:** GitHub Copilot
 **Quality:** Production-ready
