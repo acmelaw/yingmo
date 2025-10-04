@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 export interface ComposerActionItem {
@@ -28,17 +28,14 @@ export interface ComposerAction {
 const props = withDefaults(
   defineProps<{
     actions?: ComposerAction[];
-    focusKey?: number;
   }>(),
   {
     actions: () => [],
-    focusKey: 0
   }
 );
 
 const emit = defineEmits<{
   (e: 'submit', text: string): void;
-  (e: 'close'): void;
 }>();
 
 const { t } = useI18n();
@@ -46,8 +43,18 @@ const { t } = useI18n();
 const draft = ref('');
 const menuOpen = ref<string | null>(null);
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
+const showHashtagHelper = ref(false);
 
 const isTyping = computed(() => draft.value.trim().length > 0);
+
+// Extract hashtags from the current draft (Unicode-aware)
+const detectedHashtags = computed(() => {
+  const matches = draft.value.match(/#[\p{L}\p{N}_]+/gu);
+  return matches ? [...new Set(matches)] : [];
+});
+
+// Show hashtag count and visual feedback
+const hashtagCount = computed(() => detectedHashtags.value.length);
 
 const defaultEmojiAction = computed<ComposerAction>(() => ({
   id: 'emoji',
@@ -55,18 +62,10 @@ const defaultEmojiAction = computed<ComposerAction>(() => ({
   icon: '😊',
   type: 'menu',
   items: [
-    '😀',
-    '😅',
-    '😍',
-    '🤔',
-    '🔥',
-    '🎉',
-    '✅',
-    '🙌',
-    '📌',
-    '🧠',
-    '🚀',
-    '✨'
+    '😀', '😅', '😍', '🤔', '🔥', '🎉',
+    '✅', '🙌', '📌', '🧠', '🚀', '✨',
+    '💡', '⭐', '💯', '👍', '❤️', '�',
+    '🎯', '📝', '💬', '🎨', '🌟', '🏆'
   ].map((emoji) => ({
     id: emoji,
     label: emoji
@@ -77,18 +76,33 @@ const defaultEmojiAction = computed<ComposerAction>(() => ({
   }
 }));
 
-const actions = computed(() => [...props.actions, defaultEmojiAction.value]);
+const quickHashtagAction = computed<ComposerAction>(() => ({
+  id: 'hashtag',
+  label: t('hashtag') || 'Add Tag',
+  icon: '#️⃣',
+  onTrigger: (ctx) => {
+    ctx.append(' #');
+    ctx.focus();
+    showHashtagHelper.value = true;
+  }
+}));
+
+const allActions = computed(() => [quickHashtagAction.value, ...props.actions, defaultEmojiAction.value]);
 
 function focusInput() {
-  textareaRef.value?.focus();
+  nextTick(() => {
+    textareaRef.value?.focus();
+  });
 }
 
 function append(value: string) {
   draft.value += value;
+  adjustTextareaHeight();
 }
 
 function closeMenus() {
   menuOpen.value = null;
+  showHashtagHelper.value = false;
 }
 
 function send() {
@@ -97,6 +111,7 @@ function send() {
   draft.value = '';
   closeMenus();
   focusInput();
+  adjustTextareaHeight();
 }
 
 function onKey(e: KeyboardEvent) {
@@ -109,6 +124,19 @@ function onKey(e: KeyboardEvent) {
     e.preventDefault();
     closeMenus();
   }
+  
+  // Show hashtag helper when # is typed
+  if (e.key === '#') {
+    showHashtagHelper.value = true;
+  }
+}
+
+function adjustTextareaHeight() {
+  if (textareaRef.value) {
+    textareaRef.value.style.height = 'auto';
+    const newHeight = Math.min(textareaRef.value.scrollHeight, 150);
+    textareaRef.value.style.height = newHeight + 'px';
+  }
 }
 
 const context: ComposerActionContext = {
@@ -119,7 +147,7 @@ const context: ComposerActionContext = {
     focusInput();
   },
   close() {
-    emit('close');
+    // Not needed in always-visible composer
   }
 };
 
@@ -141,43 +169,64 @@ function selectActionItem(action: ComposerAction, item: ComposerActionItem) {
   focusInput();
 }
 
-watch(
-  () => props.focusKey,
-  () => {
-    focusInput();
-    closeMenus();
-  },
-  { immediate: true }
-);
+watch(draft, () => {
+  adjustTextareaHeight();
+  // Hide hashtag helper when space is typed
+  if (draft.value.endsWith(' ') || draft.value.endsWith('\n')) {
+    showHashtagHelper.value = false;
+  }
+});
 </script>
 
 <template>
-  <form class="floating-surface relative flex flex-col gap-3 p-3 md:p-4" @submit.prevent="send">
-    <div class="flex items-center justify-between gap-3">
+  <div class="relative">
+    <!-- Hashtag helper tooltip -->
+    <Transition name="slide-up">
+      <div
+        v-if="hashtagCount > 0"
+        class="mb-2 flex items-center gap-2 text-xs font-bold"
+      >
+        <span class="brutal-badge">
+          #️⃣ {{ hashtagCount }} {{ hashtagCount === 1 ? 'tag' : 'tags' }}
+        </span>
+        <div class="flex flex-wrap gap-1">
+          <span
+            v-for="tag in detectedHashtags"
+            :key="tag"
+            class="brutal-tag text-xs"
+          >
+            {{ tag }}
+          </span>
+        </div>
+      </div>
+    </Transition>
+
+    <div class="flex items-end gap-3">
+      <!-- Action Buttons -->
       <div class="flex items-center gap-2">
-        <div v-for="action in actions" :key="action.id" class="relative">
+        <div v-for="action in allActions" :key="action.id" class="relative">
           <button
             type="button"
-            class="chip-brutal flex h-11 w-11 items-center justify-center text-lg"
+            class="brutal-btn-icon"
             :aria-label="action.label"
             @click="triggerAction(action)"
             :aria-expanded="action.type === 'menu' ? menuOpen === action.id : undefined"
           >
             <span v-if="action.icon" aria-hidden="true">{{ action.icon }}</span>
-            <span v-else class="text-[0.6rem] font-semibold uppercase tracking-wide">
-              {{ action.label }}
-            </span>
+            <span v-else class="text-xs font-bold">{{ action.label }}</span>
           </button>
-          <Transition name="fade">
+          
+          <!-- Emoji Picker -->
+          <Transition name="slide-up">
             <div
               v-if="action.type === 'menu' && menuOpen === action.id && action.items?.length"
-              class="surface absolute bottom-[calc(100%+0.5rem)] right-0 z-50 grid grid-cols-6 gap-2 p-2"
+              class="brutal-emoji-picker"
             >
               <button
                 v-for="item in action.items"
                 :key="item.id"
                 type="button"
-                class="chip-brutal flex h-10 w-10 items-center justify-center text-lg"
+                class="brutal-emoji-btn"
                 :aria-label="item.label"
                 @click="selectActionItem(action, item)"
               >
@@ -186,36 +235,49 @@ watch(
             </div>
           </Transition>
         </div>
-        <slot name="actions" :append="context.append" :focus="context.focus" :close="context.close" />
       </div>
-      <div class="flex items-center gap-3">
-        <span v-if="isTyping" class="text-[0.7rem] uppercase tracking-wide text-ink/60">
-          {{ t('writing') }}
-        </span>
-        <button
-          type="button"
-          class="chip-brutal h-9 rounded-full px-4 text-xs font-semibold uppercase tracking-wide"
-          @click="emit('close')"
-        >
-          {{ t('closeComposer') }}
-        </button>
+
+      <!-- Text Input -->
+      <div class="relative flex-1">
+        <textarea
+          ref="textareaRef"
+          v-model="draft"
+          class="brutal-input w-full resize-none"
+          :placeholder="t('placeholder')"
+          rows="1"
+          @keydown="onKey"
+          @input="adjustTextareaHeight"
+        />
+        
+        <!-- Typing indicator -->
+        <Transition name="fade">
+          <div
+            v-if="isTyping && !hashtagCount"
+            class="absolute -top-6 left-0 text-xs font-bold uppercase tracking-wide opacity-60"
+          >
+            ✍️ {{ t('writing') }}
+          </div>
+        </Transition>
       </div>
-    </div>
-    <div class="relative">
-      <textarea
-        ref="textareaRef"
-        v-model="draft"
-        class="textarea-brutal min-h-[5rem] pr-16"
-        :placeholder="t('placeholder')"
-        @keydown="onKey"
-      />
+
+      <!-- Send Button -->
       <button
-        type="submit"
-        class="btn-brutal absolute bottom-3 right-3 h-11 w-11 rounded-full text-lg"
+        type="button"
+        class="brutal-btn-send"
         :aria-label="t('send')"
+        :disabled="!isTyping"
+        @click="send"
       >
-        ➤
+        <span class="text-xl">➤</span>
       </button>
     </div>
-  </form>
+  </div>
 </template>
+
+<style scoped>
+textarea {
+  min-height: 52px;
+  max-height: 150px;
+  line-height: 1.5;
+}
+</style>
