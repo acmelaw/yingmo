@@ -232,11 +232,15 @@ fastify.get<{
  */
 fastify.register(async (fastify) => {
   // Path-based WebSocket endpoint (y-websocket default)
-  fastify.get("/api/sync/:roomName", { websocket: true }, (connection, request) => {
-    const params = request.params as { roomName: string };
-    const roomName = params.roomName || "default";
-    handleWebSocketConnection(connection, request, roomName);
-  });
+  fastify.get(
+    "/api/sync/:roomName",
+    { websocket: true },
+    (connection, request) => {
+      const params = request.params as { roomName: string };
+      const roomName = params.roomName || "default";
+      handleWebSocketConnection(connection, request, roomName);
+    }
+  );
 
   // Query-based WebSocket endpoint (alternative)
   fastify.get("/api/sync", { websocket: true }, (connection, request) => {
@@ -246,7 +250,11 @@ fastify.register(async (fastify) => {
   });
 });
 
-function handleWebSocketConnection(connection: unknown, request: unknown, roomName: string) {
+function handleWebSocketConnection(
+  connection: unknown,
+  request: unknown,
+  roomName: string
+) {
   const room = getRoom(roomName);
   const socket = connection as unknown as WebSocketLike;
 

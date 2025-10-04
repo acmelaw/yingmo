@@ -67,7 +67,7 @@ function extractHashtags(text: string): string[] {
   // \p{L} = any unicode letter, \p{N} = any unicode number
   const matches = text.match(/#[\p{L}\p{N}_]+/gu);
   if (!matches) return [];
-  
+
   // Remove # and return unique tags (case-insensitive deduplication)
   const tags = matches.map((tag) => tag.substring(1));
   return [...new Set(tags.map((t) => t.toLowerCase()))].map(
@@ -252,9 +252,9 @@ export const useNotesStore = defineStore("notes", () => {
           tenantId: auth.tenantId,
           userId: auth.userId,
         });
-        
+
         const remoteNote = remoteNotes.find((n) => n.id === noteId);
-        
+
         if (remoteNote) {
           // Note exists remotely, update it
           if (note.updated > remoteNote.updated) {
@@ -508,11 +508,15 @@ export const useNotesStore = defineStore("notes", () => {
     // Extract hashtags from text if it's a text note and auto-extract is enabled
     let finalTags = tags;
     let finalData = data;
-    
-    if (type === "text" && state.value.autoExtractTags && typeof data.text === "string") {
+
+    if (
+      type === "text" &&
+      state.value.autoExtractTags &&
+      typeof data.text === "string"
+    ) {
       const extractedTags = extractHashtags(data.text);
       finalTags = mergeTags(data.text, tags, true);
-      
+
       // Clean content if enabled
       if (state.value.cleanContentOnExtract) {
         finalData = {
@@ -556,7 +560,7 @@ export const useNotesStore = defineStore("notes", () => {
     // Create locally (either offline or sync failed)
     const note = await noteService.create(type, payload);
     upsertNote(note);
-    
+
     // Add to pending sync queue if we should sync but couldn't
     if (settings.syncEnabled) {
       // Initialize pendingSync if it doesn't exist (backward compatibility)
@@ -567,7 +571,7 @@ export const useNotesStore = defineStore("notes", () => {
         state.value.pendingSync.push(note.id);
       }
     }
-    
+
     return note.id;
   }
 
@@ -644,7 +648,7 @@ export const useNotesStore = defineStore("notes", () => {
 
     const updatedNote = await noteService.update(note, updates);
     upsertNote(updatedNote);
-    
+
     // Add to pending sync queue if we should sync but couldn't
     if (settings.syncEnabled) {
       // Initialize pendingSync if it doesn't exist (backward compatibility)
@@ -676,7 +680,7 @@ export const useNotesStore = defineStore("notes", () => {
     }
 
     deleteFromState(id);
-    
+
     // Remove from pending sync queue
     state.value.pendingSync = state.value.pendingSync.filter(
       (pendingId) => pendingId !== id
@@ -748,7 +752,7 @@ export const useNotesStore = defineStore("notes", () => {
   function toggleTag(tag: string): void {
     const cleanTag = tag.replace(/^#/, "").toLowerCase();
     const currentTags = state.value.selectedTags;
-    
+
     if (currentTags.includes(cleanTag)) {
       state.value.selectedTags = currentTags.filter((t) => t !== cleanTag);
     } else {

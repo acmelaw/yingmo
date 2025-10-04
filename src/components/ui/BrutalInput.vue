@@ -33,7 +33,7 @@ const inputValue = computed({
 
 function handleKeydown(event: KeyboardEvent) {
   emit('keydown', event);
-  
+
   // Submit on Enter (without Shift for textarea)
   if (event.key === 'Enter' && (!props.multiline || !event.shiftKey)) {
     if (!props.multiline || event.ctrlKey || event.metaKey) {

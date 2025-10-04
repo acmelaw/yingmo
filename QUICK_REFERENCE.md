@@ -48,14 +48,14 @@ npm run dev
 
 ### Inputs
 ```vue
-<BrutalInput 
+<BrutalInput
   v-model="text"
   placeholder="Type here..."
   @submit="handleSubmit"
 />
 
 <!-- Multiline -->
-<BrutalInput 
+<BrutalInput
   v-model="text"
   multiline
   :rows="5"
@@ -120,16 +120,16 @@ export const myNoteModule: NoteModule = {
   name: 'My Note Type',
   version: '1.0.0',
   supportedTypes: ['mynote'],
-  
+
   async install(context) {
     context.registerNoteType('mynote', handler);
   },
-  
+
   components: {
     editor: () => import('./components/MyNoteEditor.vue'),
     viewer: () => import('./components/MyNoteViewer.vue'),
   },
-  
+
   capabilities: {
     canCreate: true,
     canEdit: true,
