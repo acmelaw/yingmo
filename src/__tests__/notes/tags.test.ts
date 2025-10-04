@@ -21,7 +21,12 @@ describe("Tag Utilities", () => {
 
     it("should support Unicode hashtags", () => {
       const text = "Testing #café #日本語 #hello_world #test123";
-      expect(extractHashtags(text)).toEqual(["café", "日本語", "hello_world", "test123"]);
+      expect(extractHashtags(text)).toEqual([
+        "café",
+        "日本語",
+        "hello_world",
+        "test123",
+      ]);
     });
 
     it("should handle case-insensitive deduplication", () => {
@@ -40,7 +45,11 @@ describe("Tag Utilities", () => {
     });
 
     it("should handle multiple hashtags in sequence", () => {
-      expect(extractHashtags("#one#two#three")).toEqual(["one", "two", "three"]);
+      expect(extractHashtags("#one#two#three")).toEqual([
+        "one",
+        "two",
+        "three",
+      ]);
     });
   });
 
@@ -49,7 +58,7 @@ describe("Tag Utilities", () => {
       const text = "Note with #extracted tag";
       const explicit = ["explicit", "manual"];
       const result = mergeTags(text, explicit, true);
-      
+
       expect(result).toContain("extracted");
       expect(result).toContain("explicit");
       expect(result).toContain("manual");
@@ -60,7 +69,7 @@ describe("Tag Utilities", () => {
       const text = "Note with #tag1 and #tag2";
       const explicit = ["tag1", "tag3"];
       const result = mergeTags(text, explicit, true);
-      
+
       expect(result).toEqual(["tag1", "tag2", "tag3"]);
     });
 
@@ -68,7 +77,7 @@ describe("Tag Utilities", () => {
       const text = "Note with #ignored tag";
       const explicit = ["explicit"];
       const result = mergeTags(text, explicit, false);
-      
+
       expect(result).not.toContain("ignored");
       expect(result).toContain("explicit");
     });
@@ -76,7 +85,7 @@ describe("Tag Utilities", () => {
     it("should handle undefined explicit tags", () => {
       const text = "Note with #tag";
       const result = mergeTags(text, undefined, true);
-      
+
       expect(result).toEqual(["tag"]);
     });
 
@@ -129,19 +138,15 @@ describe("Tag Utilities", () => {
         { tags: ["tag2", "tag3"] },
         { tags: ["tag1", "tag3"] },
       ];
-      
+
       const result = extractAllTags(notes);
       expect(result).toEqual(["tag1", "tag2", "tag3"]);
       expect(result).toEqual(result.slice().sort());
     });
 
     it("should handle notes without tags", () => {
-      const notes = [
-        { tags: ["tag1"] },
-        {},
-        { tags: undefined },
-      ];
-      
+      const notes = [{ tags: ["tag1"] }, {}, { tags: undefined }];
+
       expect(extractAllTags(notes)).toEqual(["tag1"]);
     });
 
@@ -162,7 +167,7 @@ describe("Tag Utilities", () => {
     it("should filter notes with AND logic", () => {
       const result = filterByTags(notes, ["tag1", "tag2"]);
       expect(result.length).toBe(2);
-      expect(result.map(n => n.id)).toEqual(["1", "4"]);
+      expect(result.map((n) => n.id)).toEqual(["1", "4"]);
     });
 
     it("should return all notes when no tags selected", () => {
@@ -173,7 +178,7 @@ describe("Tag Utilities", () => {
     it("should filter by single tag", () => {
       const result = filterByTags(notes, ["tag1"]);
       expect(result.length).toBe(3);
-      expect(result.map(n => n.id)).toEqual(["1", "2", "4"]);
+      expect(result.map((n) => n.id)).toEqual(["1", "2", "4"]);
     });
 
     it("should return empty array when no matches", () => {
@@ -183,7 +188,7 @@ describe("Tag Utilities", () => {
 
     it("should exclude notes without tags", () => {
       const result = filterByTags(notes, ["tag1"]);
-      expect(result.find(n => n.id === "5")).toBeUndefined();
+      expect(result.find((n) => n.id === "5")).toBeUndefined();
     });
   });
 });

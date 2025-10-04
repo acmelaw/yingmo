@@ -13,7 +13,7 @@
 
       <div class="dialog-body">
         <p class="description">Transform this note into a different type:</p>
-        
+
         <div class="type-grid">
           <button
             v-for="type in availableTypes"

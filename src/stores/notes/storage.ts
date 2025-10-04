@@ -18,7 +18,11 @@ export interface StorageOptions<T> {
  * Create a storage ref that uses localStorage in production and in-memory in tests
  */
 export function createStorageRef<T>(options: StorageOptions<T>) {
-  const { key, initialValue, testMode = import.meta.env.MODE === "test" } = options;
+  const {
+    key,
+    initialValue,
+    testMode = import.meta.env.MODE === "test",
+  } = options;
 
   if (testMode) {
     return ref<T>(clone(initialValue));

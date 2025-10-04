@@ -13,10 +13,21 @@ import { apiClient } from "@/services/apiClient";
 
 // Modular utilities
 import { createId, ensureFutureTimestamp } from "./notes/utils";
-import { extractHashtags, mergeTags, stripHashtags, cleanTag, extractAllTags, filterByTags } from "./notes/tags";
+import {
+  extractHashtags,
+  mergeTags,
+  stripHashtags,
+  cleanTag,
+  extractAllTags,
+  filterByTags,
+} from "./notes/tags";
 import { SyncManager } from "./notes/sync";
 import { CategoryManager } from "./notes/categories";
-import { createStorageRef, STORAGE_KEYS, CURRENT_VERSION } from "./notes/storage";
+import {
+  createStorageRef,
+  STORAGE_KEYS,
+  CURRENT_VERSION,
+} from "./notes/storage";
 
 export interface NotesState {
   notes: Note[];
@@ -35,7 +46,7 @@ export const useNotesStore = defineStore("notes", () => {
   // ===========================
   // State Management
   // ===========================
-  
+
   const version = createStorageRef({
     key: STORAGE_KEYS.VERSION,
     initialValue: CURRENT_VERSION,
@@ -60,10 +71,10 @@ export const useNotesStore = defineStore("notes", () => {
   // ===========================
   // Dependencies
   // ===========================
-  
+
   const auth = useAuthStore();
   const settings = useSettingsStore();
-  
+
   const noteService = new DefaultNoteService({
     get notes() {
       return state.value.notes;
@@ -79,7 +90,7 @@ export const useNotesStore = defineStore("notes", () => {
     getUserId: () => auth.userId,
     getToken: () => auth.token,
   });
-  
+
   // Restore pending sync state
   if (state.value.pendingSync) {
     syncManager.setState(state.value.pendingSync);
@@ -88,7 +99,7 @@ export const useNotesStore = defineStore("notes", () => {
   // ===========================
   // Reactive State
   // ===========================
-  
+
   const syncing = ref(false);
   const lastSyncedAt = ref<number | null>(null);
   const syncError = ref<string | null>(null);
@@ -98,7 +109,7 @@ export const useNotesStore = defineStore("notes", () => {
   // ===========================
   // Computed Properties
   // ===========================
-  
+
   const hasRemoteSession = computed(
     () => Boolean(auth.token) && Boolean(auth.tenantId) && Boolean(auth.userId)
   );
@@ -207,8 +218,12 @@ export const useNotesStore = defineStore("notes", () => {
           bVal = b.updated;
           break;
         case "text":
-          aVal = ("text" in a && typeof a.text === "string" ? a.text : "").toLowerCase();
-          bVal = ("text" in b && typeof b.text === "string" ? b.text : "").toLowerCase();
+          aVal = (
+            "text" in a && typeof a.text === "string" ? a.text : ""
+          ).toLowerCase();
+          bVal = (
+            "text" in b && typeof b.text === "string" ? b.text : ""
+          ).toLowerCase();
           break;
         default:
           return 0;
@@ -227,22 +242,25 @@ export const useNotesStore = defineStore("notes", () => {
 
   const totalNotes = computed(() => state.value.notes.length);
 
-  const activeNotes = computed(() => totalNotes.value - archivedNotes.value.length);
+  const activeNotes = computed(
+    () => totalNotes.value - archivedNotes.value.length
+  );
 
-  const getNotesByType = computed(() => (type: NoteType) =>
-    state.value.notes.filter((note) => note.type === type)
+  const getNotesByType = computed(
+    () => (type: NoteType) =>
+      state.value.notes.filter((note) => note.type === type)
   );
 
   // ===========================
   // Internal Helpers
   // ===========================
-  
+
   function upsertNote(note: Note): void {
     const index = state.value.notes.findIndex((n) => n.id === note.id);
     if (index !== -1) {
       const oldNote = state.value.notes[index];
       state.value.notes[index] = note;
-      
+
       if (oldNote.category !== note.category) {
         categoryManager.untrack(oldNote.category);
         categoryManager.track(note.category);
@@ -265,18 +283,18 @@ export const useNotesStore = defineStore("notes", () => {
   // ===========================
   // Sync Operations
   // ===========================
-  
+
   async function syncFromServer(): Promise<void> {
     if (!shouldSync.value || syncing.value) return;
 
     syncing.value = true;
     try {
       const serverNotes = await syncManager.fetchFromServer();
-      
+
       // Merge server notes with local notes
       serverNotes.forEach((serverNote) => {
         const localNote = state.value.notes.find((n) => n.id === serverNote.id);
-        
+
         if (!localNote) {
           // New note from server
           upsertNote(serverNote);
@@ -300,14 +318,14 @@ export const useNotesStore = defineStore("notes", () => {
     if (!shouldSync.value) return;
 
     const result = await syncManager.syncPendingNotes(state.value.notes);
-    
+
     // Update state with sync results
     state.value.pendingSync = syncManager.getPendingNotes();
-    
+
     if (result.synced > 0) {
       lastSyncedAt.value = Date.now();
     }
-    
+
     if (result.failed > 0) {
       syncError.value = `Failed to sync ${result.failed} notes`;
     }
@@ -316,7 +334,7 @@ export const useNotesStore = defineStore("notes", () => {
   // ===========================
   // CRUD Operations
   // ===========================
-  
+
   async function create(
     type: NoteType,
     data: Record<string, unknown>,
@@ -327,9 +345,13 @@ export const useNotesStore = defineStore("notes", () => {
     let finalTags = tags;
     let finalData = data;
 
-    if (type === "text" && state.value.autoExtractTags && typeof data.text === "string") {
+    if (
+      type === "text" &&
+      state.value.autoExtractTags &&
+      typeof data.text === "string"
+    ) {
       finalTags = mergeTags(data.text, tags, true);
-      
+
       if (state.value.cleanContentOnExtract) {
         finalData = { ...data, text: stripHashtags(data.text) };
       }
@@ -351,7 +373,7 @@ export const useNotesStore = defineStore("notes", () => {
     // Try to create on server if online
     if (shouldSync.value) {
       const serverNote = await syncManager.createOnServer(type, payload);
-      
+
       if (serverNote) {
         upsertNote(serverNote);
         lastSyncedAt.value = Date.now();
@@ -426,7 +448,7 @@ export const useNotesStore = defineStore("notes", () => {
     // Try to update on server if online
     if (shouldSync.value) {
       const serverNote = await syncManager.updateOnServer(id, updates);
-      
+
       if (serverNote) {
         upsertNote(serverNote);
         lastSyncedAt.value = Date.now();
@@ -451,7 +473,7 @@ export const useNotesStore = defineStore("notes", () => {
     // Try to delete on server if online
     if (shouldSync.value) {
       const success = await syncManager.deleteOnServer(id);
-      
+
       if (success) {
         deleteFromState(id);
         syncManager.removeFromPendingQueue(id);
@@ -471,7 +493,7 @@ export const useNotesStore = defineStore("notes", () => {
   // ===========================
   // Tag Operations
   // ===========================
-  
+
   async function addTag(noteId: string, tag: string): Promise<void> {
     const note = state.value.notes.find((n) => n.id === noteId);
     if (!note) return;
@@ -516,7 +538,7 @@ export const useNotesStore = defineStore("notes", () => {
   // ===========================
   // Other Operations
   // ===========================
-  
+
   async function archive(id: string): Promise<void> {
     await update(id, { archived: true });
   }
@@ -553,13 +575,13 @@ export const useNotesStore = defineStore("notes", () => {
   function importData(data: any): boolean {
     try {
       // Validate data structure
-      if (!data || typeof data !== 'object') {
+      if (!data || typeof data !== "object") {
         return false;
       }
 
       // Handle both old and new data formats
       let notes: Note[] = [];
-      
+
       if (data.data?.notes) {
         // New format with nested data
         notes = data.data.notes;
@@ -574,21 +596,23 @@ export const useNotesStore = defineStore("notes", () => {
       // Migrate old data: ensure all notes have required fields
       const migratedNotes = notes.map((note: any) => ({
         ...note,
-        type: note.type || 'text', // Default to text if missing
+        type: note.type || "text", // Default to text if missing
         archived: note.archived ?? false, // Default to false if missing
       }));
 
       state.value.notes = migratedNotes;
-      
+
       // Import other state if available
       if (data.data) {
         if (data.data.categories) state.value.categories = data.data.categories;
-        if (data.data.searchQuery !== undefined) state.value.searchQuery = data.data.searchQuery;
-        if (data.data.selectedCategory !== undefined) state.value.selectedCategory = data.data.selectedCategory;
+        if (data.data.searchQuery !== undefined)
+          state.value.searchQuery = data.data.searchQuery;
+        if (data.data.selectedCategory !== undefined)
+          state.value.selectedCategory = data.data.selectedCategory;
         if (data.data.sortBy) state.value.sortBy = data.data.sortBy;
         if (data.data.sortOrder) state.value.sortOrder = data.data.sortOrder;
       }
-      
+
       categoryManager.rebuild(state.value.notes);
       return true;
     } catch (error) {
@@ -600,7 +624,7 @@ export const useNotesStore = defineStore("notes", () => {
   // ===========================
   // Watchers
   // ===========================
-  
+
   watch(
     () => ({
       sync: shouldSync.value,
@@ -654,7 +678,7 @@ export const useNotesStore = defineStore("notes", () => {
   // ===========================
   // Public API
   // ===========================
-  
+
   return {
     // State
     notes,
@@ -667,7 +691,7 @@ export const useNotesStore = defineStore("notes", () => {
     autoExtractTags,
     cleanContentOnExtract,
     pendingSync,
-    
+
     // Computed
     allTags,
     filteredNotes,
@@ -675,18 +699,18 @@ export const useNotesStore = defineStore("notes", () => {
     totalNotes,
     activeNotes,
     getNotesByType,
-    
+
     // Sync state
     hasRemoteSession,
     shouldSync,
     syncing,
     lastSyncedAt,
     syncError,
-    
+
     // Sync operations
     syncFromServer,
     syncPendingNotes,
-    
+
     // CRUD
     create,
     add, // Legacy compatibility
@@ -694,13 +718,13 @@ export const useNotesStore = defineStore("notes", () => {
     remove,
     archive,
     unarchive,
-    
+
     // Tag operations
     addTag,
     removeTag,
     toggleTag,
     clearTagFilters,
-    
+
     // Other
     clearAll,
     exportData,

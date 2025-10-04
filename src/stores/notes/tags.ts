@@ -72,7 +72,7 @@ export function filterByTags<T extends { tags?: string[] }>(
   selectedTags: string[]
 ): T[] {
   if (selectedTags.length === 0) return notes;
-  
+
   return notes.filter((note) => {
     if (!note.tags || note.tags.length === 0) return false;
     // All selected tags must be present (AND logic)

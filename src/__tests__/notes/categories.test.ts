@@ -99,7 +99,7 @@ describe("CategoryManager", () => {
     it("should remove category when count reaches zero", () => {
       manager.track("work");
       manager.untrack("work");
-      
+
       expect(manager.getAll()).not.toContain("work");
       expect(manager.getCount("work")).toBe(0);
     });
@@ -121,7 +121,7 @@ describe("CategoryManager", () => {
       manager.untrack("work");
       manager.untrack("work");
       manager.untrack("work");
-      
+
       expect(manager.getCount("work")).toBe(0);
       expect(manager.getAll()).not.toContain("work");
     });
@@ -205,10 +205,7 @@ describe("CategoryManager", () => {
       manager.track("old1");
       manager.track("old2");
 
-      const notes = [
-        { category: "new1" },
-        { category: "new2" },
-      ];
+      const notes = [{ category: "new1" }, { category: "new2" }];
       manager.rebuild(notes);
 
       expect(manager.getAll()).toEqual(["new1", "new2"]);

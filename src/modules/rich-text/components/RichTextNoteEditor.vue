@@ -52,16 +52,16 @@ function handleInput() {
   if (editorRef.value) {
     const html = editorRef.value.innerHTML;
     localHtml.value = html;
-    
+
     // Convert HTML to simple content structure
     const content = htmlToContent(html);
-    
+
     emit("update", {
       html,
       content,
     });
   }
-  
+
   updateToolbarState();
 }
 

@@ -15,7 +15,7 @@ describe("Utility Functions", () => {
     it("should deep clone objects", () => {
       const original = { a: 1, b: { c: 2 } };
       const cloned = clone(original);
-      
+
       expect(cloned).toEqual(original);
       expect(cloned).not.toBe(original);
       expect(cloned.b).not.toBe(original.b);
@@ -24,7 +24,7 @@ describe("Utility Functions", () => {
     it("should clone arrays", () => {
       const original = [1, [2, 3], { a: 4 }];
       const cloned = clone(original);
-      
+
       expect(cloned).toEqual(original);
       expect(cloned).not.toBe(original);
       expect(cloned[1]).not.toBe(original[1]);
@@ -45,7 +45,7 @@ describe("Utility Functions", () => {
         ],
       };
       const cloned = clone(original);
-      
+
       cloned.notes[0].tags.push("d");
       expect(original.notes[0].tags).toEqual(["a", "b"]);
       expect(cloned.notes[0].tags).toEqual(["a", "b", "d"]);
@@ -56,7 +56,7 @@ describe("Utility Functions", () => {
     it("should generate unique IDs", () => {
       const id1 = createId();
       const id2 = createId();
-      
+
       expect(id1).not.toBe(id2);
       expect(typeof id1).toBe("string");
       expect(typeof id2).toBe("string");
@@ -66,7 +66,9 @@ describe("Utility Functions", () => {
       if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
         const id = createId();
         // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-        expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+        expect(id).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        );
       }
     });
 
@@ -103,7 +105,7 @@ describe("Utility Functions", () => {
 
     it("should ensure monotonically increasing timestamps", () => {
       let timestamp = Date.now();
-      
+
       for (let i = 0; i < 10; i++) {
         const next = ensureFutureTimestamp(timestamp);
         expect(next).toBeGreaterThan(timestamp);

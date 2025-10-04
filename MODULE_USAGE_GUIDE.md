@@ -146,7 +146,7 @@ The `ModulePicker` component provides a beautiful UI for selecting note types:
 ```vue
 <template>
   <button @click="showPicker = true">Create Note</button>
-  
+
   <ModulePicker
     v-if="showPicker"
     @select="handleSelect"
@@ -164,7 +164,7 @@ const store = useNotesStore();
 
 async function handleSelect(noteType) {
   showPicker.value = false;
-  
+
   // Create note based on type
   const data = getDefaultData(noteType);
   await store.create(noteType, data);
@@ -177,7 +177,7 @@ function getDefaultData(type) {
     code: { code: "", language: "javascript" },
     "rich-text": { content: { type: "doc", content: [] } },
     image: { blob: "", url: "" },
-    "smart-layer": { 
+    "smart-layer": {
       source: { type: "text", data: "" },
       layers: []
     }

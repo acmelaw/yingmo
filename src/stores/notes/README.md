@@ -200,10 +200,10 @@ import { useNotesStore } from "@/stores/notesRefactored";
 test("creates note offline and syncs when online", async () => {
   const store = useNotesStore();
   settings.syncEnabled = true;
-  
+
   const id = await store.create("text", { text: "#test" });
   expect(store.pendingSync).toContain(id);
-  
+
   auth.login({ tenantId: "t1", userId: "u1", token: "tk1" });
   await store.syncPendingNotes();
   expect(store.pendingSync).not.toContain(id);
@@ -294,7 +294,7 @@ const allTags = computed(() => {
 // O(1) lookups with Set
 class CategoryManager {
   private categoryCounts = new Map<string, number>();
-  
+
   track(category: string) {
     this.categoryCounts.set(
       category,

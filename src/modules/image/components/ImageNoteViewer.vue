@@ -8,11 +8,11 @@
       :height="note.height"
       class="viewer-image"
     />
-    
+
     <div v-if="note.alt" class="image-caption">
       {{ note.alt }}
     </div>
-    
+
     <div v-if="note.width && note.height" class="image-info">
       {{ note.width }} × {{ note.height }}px
     </div>

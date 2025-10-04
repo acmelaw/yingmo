@@ -9,7 +9,7 @@
         class="file-input"
         hidden
       />
-      
+
       <div
         @click="triggerFileInput"
         @dragover.prevent
@@ -24,7 +24,7 @@
 
     <div v-else class="image-preview">
       <img :src="imageUrl" :alt="localAlt" class="preview-image" />
-      
+
       <div class="image-controls">
         <input
           v-model="localAlt"
@@ -32,7 +32,7 @@
           placeholder="Image description (optional)"
           class="alt-input"
         />
-        
+
         <button @click="removeImage" class="remove-btn">
           Remove Image
         </button>
@@ -92,7 +92,7 @@ async function processFile(file: File) {
   const reader = new FileReader();
   reader.onload = (e) => {
     const base64 = e.target?.result as string;
-    
+
     emit("update", {
       blob: base64,
       url,

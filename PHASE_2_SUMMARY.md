@@ -18,7 +18,7 @@ All modules follow the same clean architecture pattern with TypeScript, Vue 3 Co
 
 #### **Code Module** (`src/modules/code/`)
 - Multi-language code snippet support (16 languages)
-- Syntax highlighting-ready structure  
+- Syntax highlighting-ready structure
 - Optional filename metadata
 - Character and line counting
 - Monospace font rendering

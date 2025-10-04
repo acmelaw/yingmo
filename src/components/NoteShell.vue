@@ -195,20 +195,20 @@ function handleTransform(noteId: string) {
 
 async function transformNote(toType: NoteType) {
   if (!transformingNoteId.value) return;
-  
+
   const note = store.notes.find(n => n.id === transformingNoteId.value);
   if (!note) return;
 
   try {
     // Basic transformation logic - convert content based on type
     const transformedData = await transformNoteData(note, toType);
-    
+
     // Create new note with transformed data
     await store.create(toType, transformedData);
-    
+
     // Archive the old note
     await store.archive(transformingNoteId.value);
-    
+
     showTransformDialog.value = false;
     transformingNoteId.value = null;
   } catch (error) {
@@ -219,7 +219,7 @@ async function transformNote(toType: NoteType) {
 async function transformNoteData(note: any, toType: NoteType): Promise<Record<string, any>> {
   // Extract text content from source note
   let textContent = '';
-  
+
   switch (note.type) {
     case 'text':
       textContent = note.text;
@@ -250,7 +250,7 @@ async function transformNoteData(note: any, toType: NoteType): Promise<Record<st
     case 'image':
       return { blob: '', url: '', alt: textContent };
     case 'smart-layer':
-      return { 
+      return {
         source: { type: 'text', data: textContent },
         layers: []
       };

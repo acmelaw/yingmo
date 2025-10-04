@@ -2,7 +2,7 @@
   <div class="smart-layer-editor">
     <div class="source-section">
       <h3 class="section-title">Source Content</h3>
-      
+
       <select v-model="sourceType" @change="handleSourceTypeChange" class="source-type-select">
         <option value="text">Text</option>
         <option value="image">Image</option>
@@ -53,11 +53,11 @@
             <strong>{{ layer.name }}</strong>
             <span class="layer-type">{{ layer.type }}</span>
           </div>
-          
+
           <div v-if="layer.result" class="layer-result">
             {{ truncate(String(layer.result), 100) }}
           </div>
-          
+
           <div v-else class="layer-pending">
             Not yet processed
           </div>
@@ -112,7 +112,7 @@ function addLayer() {
     cached: false,
     timestamp: Date.now(),
   };
-  
+
   localLayers.value.push(newLayer);
   emit("update", { layers: localLayers.value });
 }

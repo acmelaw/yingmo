@@ -67,7 +67,7 @@ export class SyncManager {
    */
   async syncPendingNotes(notes: Note[]): Promise<SyncResult> {
     const { getTenantId, getUserId, getToken, apiClient } = this.config;
-    
+
     const tenantId = getTenantId();
     const userId = getUserId();
     const token = getToken();
@@ -87,7 +87,7 @@ export class SyncManager {
     try {
       for (const noteId of pending) {
         const note = notes.find((n) => n.id === noteId);
-        
+
         if (!note) {
           // Note was deleted, remove from pending
           this.removeFromPendingQueue(noteId);
@@ -116,7 +116,8 @@ export class SyncManager {
           this.removeFromPendingQueue(noteId);
           result.synced++;
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           result.failed++;
           result.errors.push({ noteId, error: errorMessage });
           console.error(`Failed to sync note ${noteId}:`, error);
@@ -137,7 +138,7 @@ export class SyncManager {
     data: Record<string, unknown>
   ): Promise<Note | null> {
     const { getTenantId, getUserId, apiClient } = this.config;
-    
+
     const tenantId = getTenantId();
     const userId = getUserId();
 
@@ -192,7 +193,7 @@ export class SyncManager {
    */
   async fetchFromServer(): Promise<Note[]> {
     const { getTenantId, getUserId, apiClient } = this.config;
-    
+
     const tenantId = getTenantId();
     const userId = getUserId();
 
