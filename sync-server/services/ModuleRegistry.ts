@@ -2,7 +2,11 @@
  * Central registry for managing note modules on the backend
  */
 
-import type { NoteModule, ModuleContext, NoteTypeHandler } from "../types/module.js";
+import type {
+  NoteModule,
+  ModuleContext,
+  NoteTypeHandler,
+} from "../types/module.js";
 import type { NoteType } from "../types/note.js";
 import type { FastifyInstance } from "fastify";
 
@@ -154,7 +158,10 @@ class ModuleRegistry {
   /**
    * Log messages
    */
-  private log(message: string, level: "info" | "warn" | "error" = "info"): void {
+  private log(
+    message: string,
+    level: "info" | "warn" | "error" = "info"
+  ): void {
     if (this.fastify) {
       this.fastify.log[level](message);
     } else {

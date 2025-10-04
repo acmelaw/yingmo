@@ -28,7 +28,7 @@ function addServer(server: ServerConfig) {
   if (!settings.value.servers) {
     settings.value.servers = [];
   }
-  
+
   const existing = settings.value.servers.findIndex((s) => s.url === server.url);
   // ...
 }

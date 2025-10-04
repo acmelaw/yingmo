@@ -174,7 +174,7 @@ export async function registerNoteRoutes(
       // Upsert each note
       for (const noteData of clientNotes) {
         const existing = await noteService.get(noteData.id);
-        
+
         if (existing) {
           // Update existing note
           await noteService.update(noteData.id, noteData);

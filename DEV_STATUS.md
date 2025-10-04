@@ -82,7 +82,7 @@ npm run dev
 cd sync-server
 npm run dev
 
-# Terminal 2 - Frontend  
+# Terminal 2 - Frontend
 cd ..
 npm run dev
 ```

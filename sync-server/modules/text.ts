@@ -2,7 +2,11 @@
  * Text note module - handles basic text notes
  */
 
-import type { NoteModule, NoteTypeHandler, ModuleContext } from "../types/module.js";
+import type {
+  NoteModule,
+  NoteTypeHandler,
+  ModuleContext,
+} from "../types/module.js";
 import type { TextNote, BaseNote, Note } from "../types/note.js";
 
 const textNoteHandler: NoteTypeHandler = {

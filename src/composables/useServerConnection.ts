@@ -33,7 +33,7 @@ export interface ConnectionState {
 
 export function useServerConnection() {
   const settings = useSettingsStore();
-  
+
   const state = ref<ConnectionState>({
     connected: false,
     connecting: false,
@@ -42,7 +42,9 @@ export function useServerConnection() {
 
   const currentServerConfig = computed(() => {
     if (!settings.currentServer) return null;
-    return settings.servers.find((s) => s.url === settings.currentServer) || null;
+    return (
+      settings.servers.find((s) => s.url === settings.currentServer) || null
+    );
   });
 
   /**
@@ -50,7 +52,7 @@ export function useServerConnection() {
    */
   async function testServer(url: string): Promise<ServerHealth> {
     const healthUrl = url.replace(/\/$/, "") + "/health";
-    
+
     const response = await fetch(healthUrl, {
       method: "GET",
       headers: {
@@ -60,7 +62,9 @@ export function useServerConnection() {
     });
 
     if (!response.ok) {
-      throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      throw new Error(
+        `Server returned ${response.status}: ${response.statusText}`
+      );
     }
 
     const health = await response.json();
@@ -187,7 +191,11 @@ export function useServerConnection() {
   }
 
   // Auto-connect to last server on mount
-  if (settings.syncEnabled && settings.currentServer && !state.value.connected) {
+  if (
+    settings.syncEnabled &&
+    settings.currentServer &&
+    !state.value.connected
+  ) {
     reconnect().catch((err) => {
       console.warn("Auto-reconnect failed:", err);
     });

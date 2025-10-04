@@ -209,8 +209,8 @@ function handleClearAll() {
                 <div class="w-11 h-6 bg-gray-400 peer-focus:ring-2 peer-focus:ring-brutal-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brutal-primary border-2 border-brutal-border"></div>
               </label>
             </div>
-            
-            <button 
+
+            <button
               @click="$emit('openServerSelector')"
               class="brutal-btn-sm brutal-btn-secondary w-full"
             >
@@ -221,7 +221,7 @@ function handleClearAll() {
                 🔌 Connect to Server
               </span>
             </button>
-            
+
             <div v-if="settingsStore.currentServer" class="mt-2 text-xs opacity-70">
               Connected to: {{ settingsStore.currentServer }}
             </div>

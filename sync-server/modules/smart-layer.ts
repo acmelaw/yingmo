@@ -2,7 +2,11 @@
  * Smart layer note module
  */
 
-import type { NoteModule, NoteTypeHandler, ModuleContext } from "../types/module.js";
+import type {
+  NoteModule,
+  NoteTypeHandler,
+  ModuleContext,
+} from "../types/module.js";
 import type { SmartLayerNote, BaseNote, Note } from "../types/note.js";
 
 const smartLayerNoteHandler: NoteTypeHandler = {

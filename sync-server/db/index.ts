@@ -15,7 +15,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Use absolute path relative to the sync-server directory
-const DATABASE_URL = process.env.DATABASE_URL || resolve(__dirname, "../data/vue-notes.db");
+const DATABASE_URL =
+  process.env.DATABASE_URL || resolve(__dirname, "../data/vue-notes.db");
 
 /**
  * Create SQLite database connection
@@ -25,7 +26,7 @@ export function createDatabase() {
   // Ensure the directory exists
   const dbDir = dirname(DATABASE_URL);
   mkdirSync(dbDir, { recursive: true });
-  
+
   const sqlite = new Database(DATABASE_URL);
   sqlite.pragma("journal_mode = WAL");
   return drizzle(sqlite, { schema });

@@ -280,14 +280,14 @@ All documentation is in `/sync-server/`:
 
 ### Key Achievements
 
-✅ **6 Note Types Supported**: text, rich-text, markdown, code, image, smart-layer  
-✅ **Modular Architecture**: Easy to extend and maintain  
-✅ **Type Safety**: Full TypeScript coverage  
-✅ **Service Layer**: Clean CRUD abstractions  
-✅ **REST API**: Comprehensive endpoints  
-✅ **Real-time Sync**: WebSocket/Yjs maintained  
-✅ **Migration Ready**: Database migration generated  
-✅ **Documentation**: Extensive guides and examples  
+✅ **6 Note Types Supported**: text, rich-text, markdown, code, image, smart-layer
+✅ **Modular Architecture**: Easy to extend and maintain
+✅ **Type Safety**: Full TypeScript coverage
+✅ **Service Layer**: Clean CRUD abstractions
+✅ **REST API**: Comprehensive endpoints
+✅ **Real-time Sync**: WebSocket/Yjs maintained
+✅ **Migration Ready**: Database migration generated
+✅ **Documentation**: Extensive guides and examples
 
 ### Impact
 

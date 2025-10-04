@@ -2,7 +2,11 @@
  * Markdown note module
  */
 
-import type { NoteModule, NoteTypeHandler, ModuleContext } from "../types/module.js";
+import type {
+  NoteModule,
+  NoteTypeHandler,
+  ModuleContext,
+} from "../types/module.js";
 import type { MarkdownNote, BaseNote, Note } from "../types/note.js";
 
 const markdownNoteHandler: NoteTypeHandler = {

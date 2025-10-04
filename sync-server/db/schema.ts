@@ -51,7 +51,7 @@ export const notes = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    
+
     // Common fields
     tags: text("tags", { mode: "json" }).$type<string[]>(),
     category: text("category"),
@@ -59,10 +59,10 @@ export const notes = sqliteTable(
     metadata: text("metadata", { mode: "json" }),
     created: integer("created", { mode: "timestamp" }).notNull(),
     updated: integer("updated", { mode: "timestamp" }).notNull(),
-    
+
     // Type-specific content stored as JSON
     content: text("content", { mode: "json" }).notNull(),
-    
+
     // Legacy fields for backward compatibility
     text: text("text"), // For text notes
     tiptapContent: text("tiptap_content", { mode: "json" }), // Legacy rich text

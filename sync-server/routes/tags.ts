@@ -46,8 +46,8 @@ export async function registerTagRoutes(fastify: FastifyInstance, db: DB) {
           sort === "name"
             ? schema.tags.name
             : sort === "recent"
-              ? desc(schema.tags.lastUsed)
-              : desc(schema.tags.useCount)
+            ? desc(schema.tags.lastUsed)
+            : desc(schema.tags.useCount)
         )
         .limit(limit);
 
@@ -109,7 +109,9 @@ export async function registerTagRoutes(fastify: FastifyInstance, db: DB) {
         .from(schema.notes)
         .where(
           and(
-            sql`json_extract(${schema.notes.tags}, '$') LIKE ${"%" + decodedName + "%"}`,
+            sql`json_extract(${schema.notes.tags}, '$') LIKE ${
+              "%" + decodedName + "%"
+            }`,
             eq(schema.notes.tenantId, tenantId)
           )
         );
@@ -257,7 +259,9 @@ export async function registerTagRoutes(fastify: FastifyInstance, db: DB) {
           .from(schema.notes)
           .where(
             and(
-              sql`json_extract(${schema.notes.tags}, '$') LIKE ${"%" + decodedName + "%"}`,
+              sql`json_extract(${schema.notes.tags}, '$') LIKE ${
+                "%" + decodedName + "%"
+              }`,
               eq(schema.notes.tenantId, tenantId)
             )
           );
@@ -323,7 +327,9 @@ export async function registerTagRoutes(fastify: FastifyInstance, db: DB) {
           .from(schema.notes)
           .where(
             and(
-              sql`json_extract(${schema.notes.tags}, '$') LIKE ${"%" + decodedName + "%"}`,
+              sql`json_extract(${schema.notes.tags}, '$') LIKE ${
+                "%" + decodedName + "%"
+              }`,
               eq(schema.notes.tenantId, tenantId)
             )
           );
@@ -371,7 +377,10 @@ export async function registerTagRoutes(fastify: FastifyInstance, db: DB) {
         .select()
         .from(schema.tags)
         .where(
-          and(eq(schema.tags.name, targetTag), eq(schema.tags.tenantId, tenantId))
+          and(
+            eq(schema.tags.name, targetTag),
+            eq(schema.tags.tenantId, tenantId)
+          )
         )
         .limit(1);
 
@@ -400,7 +409,9 @@ export async function registerTagRoutes(fastify: FastifyInstance, db: DB) {
           .from(schema.notes)
           .where(
             and(
-              sql`json_extract(${schema.notes.tags}, '$') LIKE ${"%" + sourceTag + "%"}`,
+              sql`json_extract(${schema.notes.tags}, '$') LIKE ${
+                "%" + sourceTag + "%"
+              }`,
               eq(schema.notes.tenantId, tenantId)
             )
           );

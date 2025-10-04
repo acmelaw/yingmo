@@ -2,7 +2,11 @@
  * Rich text note module - handles TipTap/HTML content
  */
 
-import type { NoteModule, NoteTypeHandler, ModuleContext } from "../types/module.js";
+import type {
+  NoteModule,
+  NoteTypeHandler,
+  ModuleContext,
+} from "../types/module.js";
 import type { RichTextNote, BaseNote, Note } from "../types/note.js";
 
 const richTextNoteHandler: NoteTypeHandler = {

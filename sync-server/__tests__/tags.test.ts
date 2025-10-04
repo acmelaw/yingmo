@@ -21,7 +21,9 @@ describe("Tag Routes Integration", () => {
   beforeEach(async () => {
     // Create test database
     sqlite = new Database(testDbPath);
-    db = drizzle(sqlite, { schema }) as ReturnType<typeof drizzle<typeof schema>>;
+    db = drizzle(sqlite, { schema }) as ReturnType<
+      typeof drizzle<typeof schema>
+    >;
 
     // Create tables
     sqlite.exec(`

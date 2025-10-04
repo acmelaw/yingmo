@@ -11,11 +11,20 @@ import { eq, and, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface NoteService {
-  create(type: NoteType, data: any, tenantId: string, userId: string): Promise<Note>;
+  create(
+    type: NoteType,
+    data: any,
+    tenantId: string,
+    userId: string
+  ): Promise<Note>;
   update(noteId: string, updates: Partial<Note>): Promise<Note>;
   get(noteId: string): Promise<Note | null>;
   delete(noteId: string): Promise<void>;
-  list(tenantId: string, userId: string, filters?: NoteFilters): Promise<Note[]>;
+  list(
+    tenantId: string,
+    userId: string,
+    filters?: NoteFilters
+  ): Promise<Note[]>;
   validate(note: Note): boolean;
 }
 
@@ -59,7 +68,7 @@ export class DefaultNoteService implements NoteService {
 
     // Serialize and save to database
     const serialized = handler.serialize(note);
-    
+
     await this.db.insert(schema.notes).values({
       id: note.id,
       type: note.type,
@@ -99,7 +108,7 @@ export class DefaultNoteService implements NoteService {
 
     // Serialize and save
     const serialized = handler.serialize(updated);
-    
+
     await this.db
       .update(schema.notes)
       .set({
@@ -190,7 +199,9 @@ export class DefaultNoteService implements NoteService {
       .where(and(...conditions))
       .orderBy(desc(schema.notes.updated));
 
-    return rows.map((row) => this.deserializeNote(row)).filter((n): n is Note => n !== null);
+    return rows
+      .map((row) => this.deserializeNote(row))
+      .filter((n): n is Note => n !== null);
   }
 
   validate(note: Note): boolean {

@@ -310,7 +310,10 @@ try {
     📡 WebSocket: ws://${HOST}:${PORT}/api/sync?room=<roomName>
     🌐 HTTP API: http://${HOST}:${PORT}/api/*
     💾 Database: SQLite (auto-configured)
-    🔧 Modules: ${moduleRegistry.getAllModules().map((m) => m.name).join(", ")}
+    🔧 Modules: ${moduleRegistry
+      .getAllModules()
+      .map((m) => m.name)
+      .join(", ")}
     📝 Note Types: ${moduleRegistry.getRegisteredNoteTypes().join(", ")}
   `);
 } catch (error) {

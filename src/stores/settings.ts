@@ -116,8 +116,10 @@ export const useSettingsStore = defineStore("settings", () => {
     if (!settings.value.servers) {
       settings.value.servers = [];
     }
-    
-    const existing = settings.value.servers.findIndex((s) => s.url === server.url);
+
+    const existing = settings.value.servers.findIndex(
+      (s) => s.url === server.url
+    );
     if (existing >= 0) {
       settings.value.servers[existing] = server;
     } else {
@@ -131,8 +133,10 @@ export const useSettingsStore = defineStore("settings", () => {
       settings.value.servers = [];
       return;
     }
-    
-    settings.value.servers = settings.value.servers.filter((s) => s.url !== url);
+
+    settings.value.servers = settings.value.servers.filter(
+      (s) => s.url !== url
+    );
     if (settings.value.currentServer === url) {
       settings.value.currentServer = undefined;
     }
@@ -144,7 +148,7 @@ export const useSettingsStore = defineStore("settings", () => {
       settings.value.servers = [];
       return;
     }
-    
+
     const server = settings.value.servers.find((s) => s.url === url);
     if (server) {
       server.lastConnected = Date.now();

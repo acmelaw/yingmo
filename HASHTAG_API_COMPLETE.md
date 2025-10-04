@@ -68,32 +68,32 @@ File: `src/composables/useTagManager.ts`
 ```typescript
 export function useTagManager() {
   const settingsStore = useSettingsStore();
-  
+
   async function fetchTags(sort?: 'name' | 'count' | 'recent') {
     const tenantId = settingsStore.currentServer?.tenantId;
     // Call GET /api/tags
   }
-  
+
   async function createTag(name: string, color?: string) {
     // Call POST /api/tags
   }
-  
+
   async function updateTag(name: string, updates: Partial<Tag>) {
     // Call PUT /api/tags/:name
   }
-  
+
   async function deleteTag(name: string, removeFromNotes = false) {
     // Call DELETE /api/tags/:name
   }
-  
+
   async function mergeTags(sources: string[], target: string) {
     // Call POST /api/tags/merge
   }
-  
+
   async function getTagStats() {
     // Call GET /api/tags/stats
   }
-  
+
   return { fetchTags, createTag, updateTag, deleteTag, mergeTags, getTagStats };
 }
 ```

@@ -21,5 +21,9 @@ export async function initializeModules() {
   await moduleRegistry.register(imageNoteModule);
   await moduleRegistry.register(smartLayerNoteModule);
 
-  console.log(`All modules initialized. Registered types: ${moduleRegistry.getRegisteredNoteTypes().join(", ")}`);
+  console.log(
+    `All modules initialized. Registered types: ${moduleRegistry
+      .getRegisteredNoteTypes()
+      .join(", ")}`
+  );
 }
