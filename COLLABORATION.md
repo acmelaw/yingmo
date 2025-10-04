@@ -359,7 +359,7 @@ async def websocket_sync(
     if not user:
         await websocket.close(code=4001)
         return
-    
+
     # Check permissions
     if not can_access_room(user, room_id):
         await websocket.close(code=4003)

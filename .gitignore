@@ -12,7 +12,7 @@ server/*.pyc
 server/.pytest_cache/
 server/data/
 
-# Yjs/IndexedDB  
+# Yjs/IndexedDB
 .yjs/
 
 # Build outputs

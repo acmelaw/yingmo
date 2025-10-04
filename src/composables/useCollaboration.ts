@@ -20,7 +20,7 @@ export interface CollaborationState {
 
 /**
  * Composable for Yjs collaboration
- * 
+ *
  * Usage:
  * const { doc, provider, state } = useCollaboration({
  *   roomId: 'note-123',
@@ -38,7 +38,7 @@ export function useCollaboration(config: CollaborationConfig) {
 
   // Create Yjs document
   const doc = new Y.Doc();
-  
+
   // State
   const isConnected = ref(false);
   const isSynced = ref(false);
@@ -52,7 +52,7 @@ export function useCollaboration(config: CollaborationConfig) {
   function setupWebSocketProvider() {
     try {
       const wsUrl = `${serverUrl}/api/sync/${roomId}`;
-      
+
       wsProvider = new WebsocketProvider(wsUrl, roomId, doc, {
         params: {
           username,
@@ -84,7 +84,6 @@ export function useCollaboration(config: CollaborationConfig) {
         error.value = err.message;
         console.error("WebSocket connection error:", err);
       });
-
     } catch (err) {
       error.value = err instanceof Error ? err.message : "Unknown error";
       console.error("Failed to setup WebSocket provider:", err);
@@ -156,7 +155,11 @@ function generateRandomColor(): string {
 /**
  * Helper to get shared type from Yjs document
  */
-export function getSharedType<T = any>(doc: Y.Doc, key: string, type: "map" | "array" | "text" = "map"): T {
+export function getSharedType<T = any>(
+  doc: Y.Doc,
+  key: string,
+  type: "map" | "array" | "text" = "map"
+): T {
   switch (type) {
     case "map":
       return doc.getMap(key) as T;

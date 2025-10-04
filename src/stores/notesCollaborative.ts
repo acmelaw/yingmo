@@ -2,7 +2,10 @@ import { computed, ref, watch } from "vue";
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useStorage } from "@vueuse/core";
 import * as Y from "yjs";
-import { useCollaboration, getSharedType } from "@/composables/useCollaboration";
+import {
+  useCollaboration,
+  getSharedType,
+} from "@/composables/useCollaboration";
 
 export interface Note {
   id: string;
@@ -189,7 +192,10 @@ export const useNotesStore = defineStore("notes", () => {
     ];
 
     // Update categories
-    if (updated.category && !state.value.categories.includes(updated.category)) {
+    if (
+      updated.category &&
+      !state.value.categories.includes(updated.category)
+    ) {
       state.value.categories = [...state.value.categories, updated.category];
     }
   }
@@ -298,7 +304,7 @@ export const useNotesStore = defineStore("notes", () => {
       const ytext = ydoc.getText("content");
       const finalContent = ytext.toString();
       update(noteId, { richContent: finalContent, isCollaborative: false });
-      
+
       ydoc.destroy();
       collaborativeNotes.value.delete(noteId);
     }

@@ -20,7 +20,7 @@ Your Vue Notes app now includes **real-time collaborative editing** using state-
    - Links and Highlighting
    - Collaborative cursors showing other users
 
-3. **CRDT Technology** 
+3. **CRDT Technology**
    - **Yjs** - Conflict-free Replicated Data Type
    - Guarantees eventual consistency
    - Works offline with local persistence
@@ -194,7 +194,7 @@ npm run build
 
 Deploy `dist/` to:
 - Netlify
-- Vercel  
+- Vercel
 - GitHub Pages
 - Any static host
 
@@ -457,7 +457,7 @@ import { Extension } from '@tiptap/core';
 
 const CustomExtension = Extension.create({
   name: 'custom',
-  
+
   addCommands() {
     return {
       doSomething: () => ({ commands }) => {
@@ -482,7 +482,7 @@ awareness.on('change', ({ added, updated, removed }) => {
     const user = awareness.getStates().get(clientId);
     console.log(`${user.name} joined`);
   });
-  
+
   removed.forEach(clientId => {
     console.log(`User ${clientId} left`);
   });
