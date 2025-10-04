@@ -189,7 +189,7 @@ VITE_SYNC_SERVER=ws://localhost:4444  # Leave empty for offline-only
     "sync-server:dev": "cd sync-server && npm run dev",
     "sync-server:build": "cd sync-server && npm run build",
     "sync-server:start": "cd sync-server && npm start",
-    
+
     // NEW: Deployment shortcuts
     "deploy:docker": "bash deployment/deploy.sh docker",
     "deploy:vps": "bash deployment/deploy.sh vps",

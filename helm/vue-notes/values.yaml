@@ -26,7 +26,7 @@ podSecurityContext:
 securityContext:
   capabilities:
     drop:
-    - ALL
+      - ALL
   readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 101
@@ -76,16 +76,16 @@ affinity: {}
 syncServer:
   enabled: true
   replicaCount: 3
-  
+
   image:
     repository: vue-notes-sync
     pullPolicy: IfNotPresent
     tag: "latest"
-  
+
   service:
     type: ClusterIP
     port: 4444
-  
+
   resources:
     limits:
       cpu: 1000m
@@ -93,19 +93,19 @@ syncServer:
     requests:
       cpu: 200m
       memory: 256Mi
-  
+
   autoscaling:
     enabled: true
     minReplicas: 3
     maxReplicas: 20
     targetCPUUtilizationPercentage: 75
-  
+
   persistence:
     enabled: true
     storageClass: ""
     accessMode: ReadWriteOnce
     size: 10Gi
-  
+
   env:
     - name: NODE_ENV
       value: "production"

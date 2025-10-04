@@ -442,7 +442,7 @@ services:
     replicas: 3
     environment:
       - REDIS_URL=redis://redis:6379
-  
+
   redis:
     image: redis:alpine
 ```
