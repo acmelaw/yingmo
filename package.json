@@ -1,126 +1,63 @@
 {
-  "name": "vue-notes-app",
+  "name": "vue-notes-quasar",
   "private": true,
-  "version": "1.0.0",
-  "description": "A production-ready notes application supporting PWA, Electron, and mobile platforms",
+  "version": "0.1.0",
   "type": "module",
-  "author": "",
-  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "typecheck": "vue-tsc --noEmit",
-    "test": "vitest run",
-    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "vite build && electron-builder",
-    "electron:build:win": "vite build && electron-builder --win",
-    "electron:build:mac": "vite build && electron-builder --mac",
-    "electron:build:linux": "vite build && electron-builder --linux",
-    "capacitor:init": "cap init",
-    "capacitor:add:ios": "cap add ios",
-    "capacitor:add:android": "cap add android",
-    "capacitor:sync": "vite build && cap sync",
-    "capacitor:open:ios": "cap open ios",
-    "capacitor:open:android": "cap open android",
-    "sync-server:install": "cd sync-server && npm install",
-    "sync-server:dev": "cd sync-server && npm run dev",
-    "sync-server:build": "cd sync-server && npm run build",
-    "sync-server:start": "cd sync-server && npm start",
-    "dev:fullstack": "concurrently \"npm run dev\" \"npm run sync-server:dev\"",
-    "deploy:docker": "bash deployment/deploy.sh docker",
-    "deploy:vps": "bash deployment/deploy.sh vps",
-    "deploy:k8s": "bash deployment/deploy.sh kubernetes",
-    "deploy:offline": "bash deployment/deploy.sh offline"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@tiptap/core": "^2.1.13",
+    "@tiptap/extension-bold": "^2.1.13",
+    "@tiptap/extension-bullet-list": "^2.1.13",
+    "@tiptap/extension-code": "^2.1.13",
     "@tiptap/extension-collaboration": "^2.1.13",
     "@tiptap/extension-collaboration-cursor": "^2.1.13",
     "@tiptap/extension-document": "^2.1.13",
-    "@tiptap/extension-paragraph": "^2.1.13",
-    "@tiptap/extension-text": "^2.1.13",
-    "@tiptap/extension-placeholder": "^2.1.13",
-    "@tiptap/extension-bold": "^2.1.13",
-    "@tiptap/extension-italic": "^2.1.13",
-    "@tiptap/extension-code": "^2.1.13",
-    "@tiptap/extension-strike": "^2.1.13",
     "@tiptap/extension-heading": "^2.1.13",
-    "@tiptap/extension-bullet-list": "^2.1.13",
-    "@tiptap/extension-ordered-list": "^2.1.13",
-    "@tiptap/extension-list-item": "^2.1.13",
-    "@tiptap/extension-task-list": "^2.1.13",
-    "@tiptap/extension-task-item": "^2.1.13",
-    "@tiptap/extension-link": "^2.1.13",
     "@tiptap/extension-highlight": "^2.1.13",
+    "@tiptap/extension-italic": "^2.1.13",
+    "@tiptap/extension-link": "^2.1.13",
+    "@tiptap/extension-list-item": "^2.1.13",
+    "@tiptap/extension-ordered-list": "^2.1.13",
+    "@tiptap/extension-paragraph": "^2.1.13",
+    "@tiptap/extension-placeholder": "^2.1.13",
+    "@tiptap/extension-strike": "^2.1.13",
+    "@tiptap/extension-task-item": "^2.1.13",
+    "@tiptap/extension-task-list": "^2.1.13",
+    "@tiptap/extension-text": "^2.1.13",
     "@tiptap/pm": "^2.1.13",
     "@tiptap/starter-kit": "^2.1.13",
     "@tiptap/vue-3": "^2.1.13",
     "@unhead/vue": "^1.9.3",
-    "@unocss/reset": "^0.58.9",
     "@vueuse/core": "^11.0.3",
     "idb": "^8.0.0",
     "lib0": "^0.2.94",
     "localforage": "^1.10.0",
     "pinia": "^2.1.7",
+    "quasar": "^2.15.4",
     "vue": "^3.4.21",
     "vue-i18n": "^9.10.2",
+    "vue-router": "^4.3.0",
     "y-indexeddb": "^9.0.12",
     "y-protocols": "^1.0.6",
     "y-websocket": "^2.0.0",
     "yjs": "^13.6.10"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.0.0",
-    "@capacitor/core": "^6.0.0",
-    "@capacitor/ios": "^6.0.0",
-    "@capacitor/android": "^6.0.0",
+    "@quasar/extras": "^1.16.7",
+    "@quasar/vite-plugin": "^1.5.0",
     "@types/node": "^20.11.30",
-    "@unocss/vite": "^0.58.9",
+    "@types/web-bluetooth": "^0.0.20",
     "@vitejs/plugin-vue": "^5.0.4",
-    "concurrently": "^8.2.2",
-    "electron": "^30.0.0",
-    "electron-builder": "^24.13.3",
+    "sass": "^1.75.0",
     "typescript": "^5.4.5",
     "unocss": "^0.58.9",
+    "unplugin-auto-import": "^0.17.5",
+    "unplugin-vue-components": "^0.26.0",
     "vite": "^5.2.8",
-    "vite-plugin-pwa": "^0.20.0",
-    "vitest": "^1.5.0",
-    "vue-tsc": "^2.0.28",
-    "wait-on": "^7.2.0",
-    "workbox-window": "^7.1.0"
-  },
-  "main": "electron/main.cjs",
-  "build": {
-    "appId": "com.vuenotes.app",
-    "productName": "Vue Notes",
-    "directories": {
-      "output": "dist-electron"
-    },
-    "files": [
-      "dist/**/*",
-      "electron/**/*"
-    ],
-    "mac": {
-      "category": "public.app-category.productivity",
-      "target": [
-        "dmg",
-        "zip"
-      ]
-    },
-    "win": {
-      "target": [
-        "nsis",
-        "portable"
-      ]
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb",
-        "rpm"
-      ],
-      "category": "Office"
-    }
+    "vue-tsc": "^2.0.28"
   }
 }

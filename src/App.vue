@@ -5,7 +5,3 @@ import ChatShell from './components/ChatShell.vue';
 <template>
   <ChatShell />
 </template>
-
-<style scoped>
-:host, :root, .app { height: 100%; }
-</style>

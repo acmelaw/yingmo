@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
-import { useI18n } from "vue-i18n";
-import { useHead } from "@unhead/vue";
+import { computed, nextTick, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useHead } from '@unhead/vue';
 
-import Composer, { type ComposerAction } from "./Composer.vue";
-import NoteItem from "./NoteItem.vue";
-import { useNotesStore } from "../stores/notes";
-import { useSettingsStore } from "../stores/settings";
-import { useDataExport } from "../composables/useDataExport";
-import { usePlatform } from "../composables/usePlatform";
+import Composer, { type ComposerAction, type ComposerActionContext } from './Composer.vue';
+import NoteItem from './NoteItem.vue';
+import { useNotesStore } from '../stores/notes';
+import { useSettingsStore } from '../stores/settings';
+import { useDataExport } from '../composables/useDataExport';
+import { usePlatform } from '../composables/usePlatform';
 
 const { t } = useI18n();
 const store = useNotesStore();
@@ -24,41 +24,41 @@ const composerOpen = ref(true);
 const composerFocusKey = ref(1);
 const showSettings = ref(false);
 
-const appTitle = computed(() => `${t("appName")} - ${platformName.value}`);
+const appTitle = computed(() => `${t('appName')} - ${platformName.value}`);
 const empty = computed(() => notes.value.length === 0);
-const fabLabel = computed(() => t("openComposer"));
+const fabLabel = computed(() => t('openComposer'));
 
 const composerActions = computed<ComposerAction[]>(() => [
   {
-    id: "check",
-    label: t("insertCheck"),
-    icon: "✅",
-    onTrigger: (ctx) => {
-      ctx.append(" ✅");
+    id: 'check',
+    label: t('insertCheck'),
+    icon: '✅',
+  onTrigger: (ctx: ComposerActionContext) => {
+      ctx.append(' ✅');
       ctx.focus();
-    },
-  },
+    }
+  }
 ]);
 
 useHead(() => ({
   title: appTitle.value,
   meta: [
     {
-      name: "description",
-      content: t("empty"),
+      name: 'description',
+      content: t('empty')
     },
     {
-      name: "theme-color",
-      content: settingsStore.isDarkMode ? "#1a1a1a" : "#fdfcfa",
-    },
-  ],
+      name: 'theme-color',
+      content: settingsStore.isDarkMode ? '#1a1a1a' : '#fdfcfa'
+    }
+  ]
 }));
 
 function scrollToLatest() {
   if (containerRef.value) {
     containerRef.value.scrollTo({
       top: containerRef.value.scrollHeight,
-      behavior: "smooth",
+      behavior: 'smooth'
     });
   }
 }
@@ -101,14 +101,14 @@ async function handleExportText() {
 async function handleImport() {
   const success = await importFromFile();
   if (success) {
-    alert("Import successful!");
+    alert('Import successful!');
   } else {
-    alert("Import failed. Please check the file format.");
+    alert('Import failed. Please check the file format.');
   }
 }
 
 function handleClearAll() {
-  if (confirm(t("confirmClearAll"))) {
+  if (confirm(t('confirmClearAll'))) {
     store.clearAll();
   }
 }
@@ -137,69 +137,48 @@ function handleClearAll() {
               :aria-label="composerOpen ? t('closeComposer') : t('openComposer')"
               @click="composerOpen ? closeComposer() : openComposer()"
             >
-              <span aria-hidden="true">{{ composerOpen ? "−" : "+" }}</span>
-              <span>{{
-                composerOpen ? t("closeComposer") : t("openComposer")
-              }}</span>
+              <span aria-hidden="true">{{ composerOpen ? '−' : '+' }}</span>
+              <span>{{ composerOpen ? t('closeComposer') : t('openComposer') }}</span>
             </button>
           </div>
         </header>
 
-        <!-- Settings Panel -->
         <Transition name="fade">
           <div v-if="showSettings" class="surface p-4 md:p-6">
-            <h2 class="mb-4 text-base font-semibold">{{ t("settings") }}</h2>
+            <h2 class="mb-4 text-base font-semibold">{{ t('settings') }}</h2>
 
             <div class="mb-4 flex flex-col gap-3">
               <div class="flex items-center justify-between">
-                <label class="text-sm font-medium">{{ t("theme") }}</label>
-                <select
-                  v-model="settingsStore.theme"
-                  class="surface rounded px-3 py-2 text-sm"
-                >
-                  <option value="light">{{ t("light") }}</option>
-                  <option value="dark">{{ t("dark") }}</option>
-                  <option value="auto">{{ t("auto") }}</option>
+                <label class="text-sm font-medium">{{ t('theme') }}</label>
+                <select v-model="settingsStore.theme" class="surface rounded px-3 py-2 text-sm">
+                  <option value="light">{{ t('light') }}</option>
+                  <option value="dark">{{ t('dark') }}</option>
+                  <option value="auto">{{ t('auto') }}</option>
                 </select>
               </div>
 
               <div class="flex items-center justify-between">
-                <label class="text-sm font-medium">{{ t("fontSize") }}</label>
-                <select
-                  v-model="settingsStore.fontSize"
-                  class="surface rounded px-3 py-2 text-sm"
-                >
-                  <option value="small">{{ t("small") }}</option>
-                  <option value="medium">{{ t("medium") }}</option>
-                  <option value="large">{{ t("large") }}</option>
+                <label class="text-sm font-medium">{{ t('fontSize') }}</label>
+                <select v-model="settingsStore.fontSize" class="surface rounded px-3 py-2 text-sm">
+                  <option value="small">{{ t('small') }}</option>
+                  <option value="medium">{{ t('medium') }}</option>
+                  <option value="large">{{ t('large') }}</option>
                 </select>
               </div>
             </div>
 
             <div class="flex flex-wrap gap-2 border-t pt-4 dark:border-gray-700">
-              <button
-                @click="handleExportJSON"
-                class="chip-brutal px-4 py-2 text-sm"
-              >
-                📥 {{ t("exportJSON") }}
+              <button @click="handleExportJSON" class="chip-brutal px-4 py-2 text-sm">
+                📥 {{ t('exportJSON') }}
               </button>
-              <button
-                @click="handleExportText"
-                class="chip-brutal px-4 py-2 text-sm"
-              >
-                📝 {{ t("exportText") }}
+              <button @click="handleExportText" class="chip-brutal px-4 py-2 text-sm">
+                📝 {{ t('exportText') }}
               </button>
-              <button
-                @click="handleImport"
-                class="chip-brutal px-4 py-2 text-sm"
-              >
-                📤 {{ t("importData") }}
+              <button @click="handleImport" class="chip-brutal px-4 py-2 text-sm">
+                📤 {{ t('importData') }}
               </button>
-              <button
-                @click="handleClearAll"
-                class="chip-brutal px-4 py-2 text-sm text-red-600"
-              >
-                🗑️ {{ t("clearAll") }}
+              <button @click="handleClearAll" class="chip-brutal px-4 py-2 text-sm text-red-600">
+                🗑️ {{ t('clearAll') }}
               </button>
             </div>
 
@@ -209,7 +188,6 @@ function handleClearAll() {
           </div>
         </Transition>
 
-        <!-- Search Bar -->
         <div class="surface px-4 py-3">
           <input
             v-model="store.searchQuery"
@@ -222,15 +200,10 @@ function handleClearAll() {
         <main class="surface flex min-h-0 flex-1 flex-col gap-4 p-4 md:p-6">
           <div ref="containerRef" class="scroll-y pb-40" :data-empty="empty">
             <TransitionGroup name="fade" tag="div" class="flex flex-col gap-3">
-              <NoteItem
-                v-for="n in notes"
-                :key="n.id"
-                :note="n"
-                @delete="remove(n.id)"
-              />
+              <NoteItem v-for="n in notes" :key="n.id" :note="n" @delete="remove(n.id)" />
             </TransitionGroup>
-            <p v-if="empty" class="text-center text-sm opacity-70 py-8">
-              {{ t("empty") }}
+            <p v-if="empty" class="py-8 text-center text-sm opacity-70">
+              {{ t('empty') }}
             </p>
           </div>
         </main>
@@ -238,10 +211,7 @@ function handleClearAll() {
     </div>
 
     <Transition name="fade">
-      <div
-        v-if="composerOpen"
-        class="fixed inset-x-4 bottom-6 z-40 flex justify-center md:bottom-8"
-      >
+      <div v-if="composerOpen" class="fixed inset-x-4 bottom-6 z-40 flex justify-center md:bottom-8">
         <Composer
           :actions="composerActions"
           :focus-key="composerFocusKey"

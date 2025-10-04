@@ -1,27 +1,17 @@
 import "@unocss/reset/tailwind.css";
+import "@quasar/extras/material-icons/material-icons.css";
+import "quasar/src/css/index.sass";
 import "uno.css";
 import "./style.css";
 
-import { createApp } from "vue";
+import { createApp, watch } from "vue";
 import { createPinia } from "pinia";
 import { createI18n } from "vue-i18n";
 import { createHead } from "@unhead/vue";
+import { Quasar } from "quasar";
 
 import App from "./App.vue";
-
-// Register service worker
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then((registration) => {
-        console.log("SW registered:", registration);
-      })
-      .catch((error) => {
-        console.log("SW registration failed:", error);
-      });
-  });
-}
+import { useSettingsStore } from "./stores/settings";
 
 const messages = {
   en: {
@@ -71,19 +61,22 @@ const i18n = createI18n({
   messages,
 });
 
+const pinia = createPinia();
+
 const app = createApp(App);
 
-app.use(createPinia());
+app.use(pinia);
 app.use(createHead());
 app.use(i18n);
+app.use(Quasar, {
+  config: {
+    dark: false,
+  },
+});
 
 app.mount("#app");
 
-// Apply dark mode class to document
-import { watch } from "vue";
-import { useSettingsStore } from "./stores/settings";
-
-const settingsStore = useSettingsStore();
+const settingsStore = useSettingsStore(pinia);
 watch(
   () => settingsStore.isDarkMode,
   (isDark) => {

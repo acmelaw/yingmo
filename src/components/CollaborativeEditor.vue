@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, computed } from "vue";
-import { useEditor, EditorContent } from "@tiptap/vue-3";
-import StarterKit from "@tiptap/starter-kit";
-import Collaboration from "@tiptap/extension-collaboration";
-import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
-import Placeholder from "@tiptap/extension-placeholder";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
-import Link from "@tiptap/extension-link";
-import Highlight from "@tiptap/extension-highlight";
-import * as Y from "yjs";
+import { watch, computed, onBeforeUnmount } from 'vue';
+import { useEditor, EditorContent } from '@tiptap/vue-3';
+import StarterKit from '@tiptap/starter-kit';
+import Collaboration from '@tiptap/extension-collaboration';
+import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
+import Placeholder from '@tiptap/extension-placeholder';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import Link from '@tiptap/extension-link';
+import Highlight from '@tiptap/extension-highlight';
+import * as Y from 'yjs';
 
 interface Props {
   ydoc: Y.Doc;
@@ -22,63 +22,63 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  fieldName: "content",
-  placeholder: "Start writing...",
+  fieldName: 'content',
+  placeholder: 'Start writing...',
   editable: true,
-  username: "Anonymous",
-  userColor: "#ff6b6b",
-  autoFocus: false,
+  username: 'Anonymous',
+  userColor: '#ff6b6b',
+  autoFocus: false
 });
 
 const emit = defineEmits<{
-  (e: "update", content: string): void;
-  (e: "ready"): void;
+  (e: 'update', content: string): void;
+  (e: 'ready'): void;
 }>();
 
 const editor = useEditor({
   extensions: [
     StarterKit.configure({
-      history: false, // Disable default history (using Yjs)
+      history: false
     }),
     Collaboration.configure({
       document: props.ydoc,
-      field: props.fieldName,
+      field: props.fieldName
     }),
     CollaborationCursor.configure({
-      provider: null, // Will be set by WebSocketProvider
+      provider: null,
       user: {
         name: props.username,
-        color: props.userColor,
-      },
+        color: props.userColor
+      }
     }),
     Placeholder.configure({
-      placeholder: props.placeholder,
+      placeholder: props.placeholder
     }),
     TaskList,
     TaskItem.configure({
-      nested: true,
+      nested: true
     }),
     Link.configure({
-      openOnClick: false,
+      openOnClick: false
     }),
-    Highlight,
+    Highlight
   ],
   editable: props.editable,
   autofocus: props.autoFocus,
   editorProps: {
     attributes: {
-      class: "prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[200px] px-4 py-3",
-    },
+      class:
+        'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[200px] px-4 py-3'
+    }
   },
   onUpdate: ({ editor }) => {
-    emit("update", editor.getHTML());
+    emit('update', editor.getHTML());
   },
   onCreate: () => {
-    emit("ready");
-  },
+    emit('ready');
+  }
 });
 
-// Watch editable prop
 watch(
   () => props.editable,
   (editable) => {
@@ -86,7 +86,6 @@ watch(
   }
 );
 
-// Update cursor when username or color changes
 watch(
   [() => props.username, () => props.userColor],
   ([name, color]) => {
@@ -125,18 +124,13 @@ defineExpose({
   toggleStrike,
   toggleCode,
   toggleHighlight,
-  setHeading,
+  setHeading
 });
 </script>
 
 <template>
   <div class="collaborative-editor">
-    <!-- Toolbar -->
-    <div
-      v-if="editable"
-      class="toolbar surface mb-2 flex flex-wrap items-center gap-1 p-2"
-    >
-      <!-- Text formatting -->
+    <div v-if="editable" class="toolbar surface mb-2 flex flex-wrap items-center gap-1 p-2">
       <div class="btn-group flex gap-1">
         <button
           @click="toggleBold"
@@ -174,7 +168,6 @@ defineExpose({
 
       <div class="divider"></div>
 
-      <!-- Headings -->
       <div class="btn-group flex gap-1">
         <button
           @click="setHeading(1)"
@@ -204,7 +197,6 @@ defineExpose({
 
       <div class="divider"></div>
 
-      <!-- Lists -->
       <div class="btn-group flex gap-1">
         <button
           @click="toggleBulletList"
@@ -234,7 +226,6 @@ defineExpose({
 
       <div class="divider"></div>
 
-      <!-- Other -->
       <button
         @click="toggleHighlight"
         :class="{ 'is-active': isActive('highlight') }"
@@ -245,7 +236,6 @@ defineExpose({
       </button>
     </div>
 
-    <!-- Editor -->
     <div class="editor-container surface">
       <EditorContent :editor="editor" />
     </div>
@@ -302,7 +292,6 @@ defineExpose({
   min-height: 200px;
 }
 
-/* Tiptap editor styles */
 :deep(.ProseMirror) {
   outline: none;
   min-height: 200px;
@@ -341,23 +330,23 @@ defineExpose({
   margin: 0.5em 0;
 }
 
-:deep(.ProseMirror ul[data-type="taskList"]) {
+:deep(.ProseMirror ul[data-type='taskList']) {
   list-style: none;
   padding-left: 0;
 }
 
-:deep(.ProseMirror ul[data-type="taskList"] li) {
+:deep(.ProseMirror ul[data-type='taskList'] li) {
   display: flex;
   align-items: flex-start;
   margin: 0.25em 0;
 }
 
-:deep(.ProseMirror ul[data-type="taskList"] li > label) {
+:deep(.ProseMirror ul[data-type='taskList'] li > label) {
   margin-right: 0.5em;
   user-select: none;
 }
 
-:deep(.ProseMirror ul[data-type="taskList"] li > div) {
+:deep(.ProseMirror ul[data-type='taskList'] li > div) {
   flex: 1;
 }
 
@@ -379,7 +368,6 @@ defineExpose({
   background-color: #854d0e;
 }
 
-/* Collaboration cursors */
 :deep(.collaboration-cursor__caret) {
   border-left: 2px solid;
   border-right: 2px solid;

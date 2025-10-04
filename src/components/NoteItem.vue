@@ -13,7 +13,7 @@ const updatedAt = computed(() => new Date(props.note.updated));
 const timeLabel = computed(() =>
   new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(
     props.note.updated > props.note.created ? updatedAt.value : createdAt.value
-  ),
+  )
 );
 const titleLabel = computed(() => createdAt.value.toLocaleString());
 const wasUpdated = computed(() => props.note.updated > props.note.created);

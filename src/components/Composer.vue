@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
+import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 export interface ComposerActionItem {
   id: string;
@@ -19,7 +19,7 @@ export interface ComposerAction {
   id: string;
   label: string;
   icon?: string;
-  type?: "button" | "menu";
+  type?: 'button' | 'menu';
   items?: ComposerActionItem[];
   onTrigger?: (ctx: ComposerActionContext) => void;
   onSelect?: (item: ComposerActionItem, ctx: ComposerActionContext) => void;
@@ -32,49 +32,49 @@ const props = withDefaults(
   }>(),
   {
     actions: () => [],
-    focusKey: 0,
+    focusKey: 0
   }
 );
 
 const emit = defineEmits<{
-  (e: "submit", text: string): void;
-  (e: "close"): void;
+  (e: 'submit', text: string): void;
+  (e: 'close'): void;
 }>();
 
 const { t } = useI18n();
 
-const draft = ref("");
+const draft = ref('');
 const menuOpen = ref<string | null>(null);
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 
 const isTyping = computed(() => draft.value.trim().length > 0);
 
 const defaultEmojiAction = computed<ComposerAction>(() => ({
-  id: "emoji",
-  label: t("emoji"),
-  icon: "😊",
-  type: "menu",
+  id: 'emoji',
+  label: t('emoji'),
+  icon: '😊',
+  type: 'menu',
   items: [
-    "😀",
-    "😅",
-    "😍",
-    "🤔",
-    "🔥",
-    "🎉",
-    "✅",
-    "🙌",
-    "📌",
-    "🧠",
-    "🚀",
-    "✨",
+    '😀',
+    '😅',
+    '😍',
+    '🤔',
+    '🔥',
+    '🎉',
+    '✅',
+    '🙌',
+    '📌',
+    '🧠',
+    '🚀',
+    '✨'
   ].map((emoji) => ({
     id: emoji,
-    label: emoji,
+    label: emoji
   })),
   onSelect: (item, ctx) => {
     ctx.append(item.label);
     ctx.focus();
-  },
+  }
 }));
 
 const actions = computed(() => [...props.actions, defaultEmojiAction.value]);
@@ -93,19 +93,19 @@ function closeMenus() {
 
 function send() {
   if (!draft.value.trim()) return;
-  emit("submit", draft.value.trim());
-  draft.value = "";
+  emit('submit', draft.value.trim());
+  draft.value = '';
   closeMenus();
   focusInput();
 }
 
 function onKey(e: KeyboardEvent) {
-  if (e.key === "Enter" && !e.shiftKey) {
+  if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     send();
     return;
   }
-  if (e.key === "Escape") {
+  if (e.key === 'Escape') {
     e.preventDefault();
     closeMenus();
   }
@@ -119,12 +119,12 @@ const context: ComposerActionContext = {
     focusInput();
   },
   close() {
-    emit("close");
-  },
+    emit('close');
+  }
 };
 
 function triggerAction(action: ComposerAction) {
-  if (action.type === "menu") {
+  if (action.type === 'menu') {
     menuOpen.value = menuOpen.value === action.id ? null : action.id;
     return;
   }
@@ -152,10 +152,7 @@ watch(
 </script>
 
 <template>
-  <form
-    class="floating-surface relative flex flex-col gap-3 p-3 md:p-4"
-    @submit.prevent="send"
-  >
+  <form class="floating-surface relative flex flex-col gap-3 p-3 md:p-4" @submit.prevent="send">
     <div class="flex items-center justify-between gap-3">
       <div class="flex items-center gap-2">
         <div v-for="action in actions" :key="action.id" class="relative">
@@ -164,24 +161,16 @@ watch(
             class="chip-brutal flex h-11 w-11 items-center justify-center text-lg"
             :aria-label="action.label"
             @click="triggerAction(action)"
-            :aria-expanded="
-              action.type === 'menu' ? menuOpen === action.id : undefined
-            "
+            :aria-expanded="action.type === 'menu' ? menuOpen === action.id : undefined"
           >
             <span v-if="action.icon" aria-hidden="true">{{ action.icon }}</span>
-            <span
-              v-else
-              class="text-[0.6rem] font-semibold uppercase tracking-wide"
-              >{{ action.label }}</span
-            >
+            <span v-else class="text-[0.6rem] font-semibold uppercase tracking-wide">
+              {{ action.label }}
+            </span>
           </button>
           <Transition name="fade">
             <div
-              v-if="
-                action.type === 'menu' &&
-                menuOpen === action.id &&
-                action.items?.length
-              "
+              v-if="action.type === 'menu' && menuOpen === action.id && action.items?.length"
               class="surface absolute bottom-[calc(100%+0.5rem)] right-0 z-50 grid grid-cols-6 gap-2 p-2"
             >
               <button
@@ -197,25 +186,18 @@ watch(
             </div>
           </Transition>
         </div>
-        <slot
-          name="actions"
-          :append="context.append"
-          :focus="context.focus"
-          :close="context.close"
-        />
+        <slot name="actions" :append="context.append" :focus="context.focus" :close="context.close" />
       </div>
       <div class="flex items-center gap-3">
-        <span
-          v-if="isTyping"
-          class="text-[0.7rem] uppercase tracking-wide text-ink/60"
-          >{{ t("writing") }}</span
-        >
+        <span v-if="isTyping" class="text-[0.7rem] uppercase tracking-wide text-ink/60">
+          {{ t('writing') }}
+        </span>
         <button
           type="button"
           class="chip-brutal h-9 rounded-full px-4 text-xs font-semibold uppercase tracking-wide"
           @click="emit('close')"
         >
-          {{ t("closeComposer") }}
+          {{ t('closeComposer') }}
         </button>
       </div>
     </div>

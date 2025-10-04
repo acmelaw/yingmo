@@ -1,4 +1,4 @@
-import { computed, ref, watch } from "vue";
+import { computed, watch } from "vue";
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useStorage } from "@vueuse/core";
 
@@ -32,7 +32,6 @@ function createId() {
 }
 
 export const useNotesStore = defineStore("notes", () => {
-  // Initialize storage with version check
   const version = useStorage(VERSION_KEY, CURRENT_VERSION);
   const state = useStorage<NotesState>(STORAGE_KEY, {
     notes: [],
@@ -70,11 +69,9 @@ export const useNotesStore = defineStore("notes", () => {
     },
   });
 
-  // Filtered and sorted notes
   const filteredNotes = computed(() => {
     let result = state.value.notes.filter((note) => !note.archived);
 
-    // Filter by search query
     if (state.value.searchQuery) {
       const query = state.value.searchQuery.toLowerCase();
       result = result.filter(
@@ -85,14 +82,12 @@ export const useNotesStore = defineStore("notes", () => {
       );
     }
 
-    // Filter by category
     if (state.value.selectedCategory) {
       result = result.filter(
         (note) => note.category === state.value.selectedCategory
       );
     }
 
-    // Sort
     result.sort((a, b) => {
       let comparison = 0;
       switch (state.value.sortBy) {
@@ -136,7 +131,6 @@ export const useNotesStore = defineStore("notes", () => {
 
     state.value.notes = [...state.value.notes, note];
 
-    // Update categories
     if (category && !state.value.categories.includes(category)) {
       state.value.categories = [...state.value.categories, category];
     }
@@ -161,7 +155,6 @@ export const useNotesStore = defineStore("notes", () => {
       ...state.value.notes.slice(index + 1),
     ];
 
-    // Update categories
     if (
       updated.category &&
       !state.value.categories.includes(updated.category)
@@ -213,7 +206,6 @@ export const useNotesStore = defineStore("notes", () => {
     }
   }
 
-  // Auto-update categories when notes change
   watch(
     () => state.value.notes,
     (notes) => {
@@ -227,19 +219,16 @@ export const useNotesStore = defineStore("notes", () => {
   );
 
   return {
-    // State
     notes,
     categories,
     searchQuery,
     selectedCategory,
     sortBy,
     sortOrder,
-    // Computed
     filteredNotes,
     archivedNotes,
     totalNotes,
     activeNotes,
-    // Actions
     add,
     update,
     remove,
