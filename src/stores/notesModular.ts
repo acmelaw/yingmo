@@ -159,15 +159,16 @@ export const useNotesStore = defineStore("notes", () => {
       lastSyncedAt.value = Date.now();
       syncError.value = null;
     } catch (error) {
-      syncError.value =
-        error instanceof Error ? error.message : String(error);
+      syncError.value = error instanceof Error ? error.message : String(error);
     } finally {
       syncing.value = false;
     }
   }
 
   function upsertNote(note: Note) {
-    const index = state.value.notes.findIndex((existing) => existing.id === note.id);
+    const index = state.value.notes.findIndex(
+      (existing) => existing.id === note.id
+    );
     if (index === -1) {
       state.value.notes.push(note);
       trackCategory(note.category ?? null);
@@ -550,12 +551,12 @@ export const useNotesStore = defineStore("notes", () => {
     totalNotes,
     activeNotes,
     getNotesByType,
-  hasRemoteSession,
-  shouldSync,
-  syncing,
-  lastSyncedAt,
-  syncError,
-  syncFromServer,
+    hasRemoteSession,
+    shouldSync,
+    syncing,
+    lastSyncedAt,
+    syncError,
+    syncFromServer,
     create,
     add,
     update,

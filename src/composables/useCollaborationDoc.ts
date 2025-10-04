@@ -50,9 +50,13 @@ export function useCollaborationDoc(roomId: string): CollaborationHandle {
 
     status.value = "connecting";
 
-    provider.on("status", (event: { status: ProviderStatus | "connected" | "disconnected" }) => {
-      status.value = event.status === "connected" ? "connected" : "disconnected";
-    });
+    provider.on(
+      "status",
+      (event: { status: ProviderStatus | "connected" | "disconnected" }) => {
+        status.value =
+          event.status === "connected" ? "connected" : "disconnected";
+      }
+    );
 
     provider.connect();
   }

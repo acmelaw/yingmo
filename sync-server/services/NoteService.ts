@@ -322,11 +322,16 @@ export class DefaultNoteService implements NoteService {
     }
 
     if (isRichTextNote(note)) {
-      if (typeof note.html === "string" && note.html.toLowerCase().includes(normalized)) {
+      if (
+        typeof note.html === "string" &&
+        note.html.toLowerCase().includes(normalized)
+      ) {
         return true;
       }
 
-      const serializedContent = JSON.stringify(note.content ?? {}).toLowerCase();
+      const serializedContent = JSON.stringify(
+        note.content ?? {}
+      ).toLowerCase();
       if (serializedContent.includes(normalized)) {
         return true;
       }

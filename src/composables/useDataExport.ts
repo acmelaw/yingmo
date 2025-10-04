@@ -34,7 +34,9 @@ export function useDataExport() {
         const tags = note.tags?.length
           ? note.tags.map((t: string) => `#${t}`).join(" ")
           : "";
-        return `${date} ${category} ${tags}\n${renderNoteContent(note)}\n${"=".repeat(50)}\n`;
+        return `${date} ${category} ${tags}\n${renderNoteContent(
+          note
+        )}\n${"=".repeat(50)}\n`;
       })
       .join("\n");
 

@@ -296,21 +296,29 @@ fastify.get("/api/sync", { websocket: true }, (connection, request) => {
   // Broadcast awareness changes
   room.awareness.on(
     "update",
-    ({ added, updated, removed }: { added: number[]; updated: number[]; removed: number[] }) => {
-    const changedClients = added.concat(updated).concat(removed);
-    const encoder = encoding.createEncoder();
-    encoding.writeVarUint(encoder, 1); // MESSAGE_AWARENESS
-    encoding.writeVarUint8Array(
-      encoder,
-      awarenessProtocol.encodeAwarenessUpdate(room.awareness, changedClients)
-    );
-    const message = encoding.toUint8Array(encoder);
+    ({
+      added,
+      updated,
+      removed,
+    }: {
+      added: number[];
+      updated: number[];
+      removed: number[];
+    }) => {
+      const changedClients = added.concat(updated).concat(removed);
+      const encoder = encoding.createEncoder();
+      encoding.writeVarUint(encoder, 1); // MESSAGE_AWARENESS
+      encoding.writeVarUint8Array(
+        encoder,
+        awarenessProtocol.encodeAwarenessUpdate(room.awareness, changedClients)
+      );
+      const message = encoding.toUint8Array(encoder);
 
-    room.connections.forEach((conn) => {
+      room.connections.forEach((conn) => {
         if (conn !== socket && conn.readyState === 1) {
-        conn.send(message);
-      }
-    });
+          conn.send(message);
+        }
+      });
     }
   );
 });

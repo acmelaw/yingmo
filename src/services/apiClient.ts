@@ -127,7 +127,9 @@ class ApiClient {
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `API ${response.status} ${response.statusText}: ${errorText || "Unknown error"}`
+        `API ${response.status} ${response.statusText}: ${
+          errorText || "Unknown error"
+        }`
       );
     }
 
@@ -139,7 +141,11 @@ class ApiClient {
     return data;
   }
 
-  async login(email: string, name?: string, tenantSlug?: string): Promise<LoginResponse> {
+  async login(
+    email: string,
+    name?: string,
+    tenantSlug?: string
+  ): Promise<LoginResponse> {
     const result = await this.request<LoginResponse>("/api/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, name, tenantSlug }),
@@ -162,27 +168,30 @@ class ApiClient {
     this.clearSession();
   }
 
-  async listNotes(filters: NoteListFilters & { tenantId: string; userId: string }): Promise<Note[]> {
+  async listNotes(
+    filters: NoteListFilters & { tenantId: string; userId: string }
+  ): Promise<Note[]> {
     const { tenantId, userId, archived, type, category } = filters;
 
-    const response = await this.request<{ notes: Array<Note & { created: number; updated: number }> }>(
-      "/api/notes",
-      {
-        method: "GET",
-        searchParams: {
-          tenantId,
-          userId,
-          archived: archived !== undefined ? String(archived) : undefined,
-          type,
-          category,
-        },
-      }
-    );
+    const response = await this.request<{
+      notes: Array<Note & { created: number; updated: number }>;
+    }>("/api/notes", {
+      method: "GET",
+      searchParams: {
+        tenantId,
+        userId,
+        archived: archived !== undefined ? String(archived) : undefined,
+        type,
+        category,
+      },
+    });
 
     return response.notes.map((note) => ({
       ...note,
-      created: typeof note.created === "number" ? note.created : Number(note.created),
-      updated: typeof note.updated === "number" ? note.updated : Number(note.updated),
+      created:
+        typeof note.created === "number" ? note.created : Number(note.created),
+      updated:
+        typeof note.updated === "number" ? note.updated : Number(note.updated),
     }));
   }
 
@@ -192,19 +201,18 @@ class ApiClient {
     query: string,
     filters?: NoteSearchFilters
   ): Promise<Note[]> {
-    const response = await this.request<{ notes: Array<Note & { created: number; updated: number }> }>(
-      "/api/notes/search",
-      {
-        method: "GET",
-        searchParams: {
-          tenantId,
-          userId,
-          q: query,
-          type: filters?.type,
-          category: filters?.category,
-        },
-      }
-    );
+    const response = await this.request<{
+      notes: Array<Note & { created: number; updated: number }>;
+    }>("/api/notes/search", {
+      method: "GET",
+      searchParams: {
+        tenantId,
+        userId,
+        q: query,
+        type: filters?.type,
+        category: filters?.category,
+      },
+    });
 
     return response.notes.map((note) => ({
       ...note,
@@ -217,18 +225,18 @@ class ApiClient {
     type: NoteType,
     data: Record<string, unknown> & { tenantId: string; userId: string }
   ): Promise<Note> {
-    const response = await this.request<{ success: boolean; note: Note & { created: number; updated: number } }>(
-      "/api/notes",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          type,
-          tenantId: data.tenantId,
-          userId: data.userId,
-          data,
-        }),
-      }
-    );
+    const response = await this.request<{
+      success: boolean;
+      note: Note & { created: number; updated: number };
+    }>("/api/notes", {
+      method: "POST",
+      body: JSON.stringify({
+        type,
+        tenantId: data.tenantId,
+        userId: data.userId,
+        data,
+      }),
+    });
 
     const { note } = response;
     return {
@@ -238,17 +246,14 @@ class ApiClient {
     };
   }
 
-  async updateNote(
-    noteId: string,
-    updates: Partial<Note>
-  ): Promise<Note> {
-    const response = await this.request<{ success: boolean; note: Note & { created: number; updated: number } }>(
-      `/api/notes/${noteId}`,
-      {
-        method: "PUT",
-        body: JSON.stringify({ updates }),
-      }
-    );
+  async updateNote(noteId: string, updates: Partial<Note>): Promise<Note> {
+    const response = await this.request<{
+      success: boolean;
+      note: Note & { created: number; updated: number };
+    }>(`/api/notes/${noteId}`, {
+      method: "PUT",
+      body: JSON.stringify({ updates }),
+    });
 
     const { note } = response;
     return {
@@ -275,7 +280,10 @@ class ApiClient {
     return response.history;
   }
 
-  async listTags(tenantId: string, sort: "name" | "count" | "recent" = "count") {
+  async listTags(
+    tenantId: string,
+    sort: "name" | "count" | "recent" = "count"
+  ) {
     return this.request<{ tags: Array<Record<string, unknown>> }>("/api/tags", {
       method: "GET",
       searchParams: {

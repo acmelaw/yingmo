@@ -137,7 +137,7 @@ export async function registerNoteRoutes(
     try {
       const { tenantId, userId, type, category, archived } = request.query;
 
-  const filters: NoteFilters = {};
+      const filters: NoteFilters = {};
       if (type) filters.type = type;
       if (category) filters.category = category;
       if (archived !== undefined) filters.archived = archived === "true";
@@ -179,7 +179,7 @@ export async function registerNoteRoutes(
         return { error: "Query parameter q is required" };
       }
 
-  const filters: NoteFilters = {};
+      const filters: NoteFilters = {};
       if (type) filters.type = type;
       if (category) filters.category = category;
 
@@ -230,8 +230,7 @@ export async function registerNoteRoutes(
 
         const rawType = noteData["type"];
         const candidateType =
-          typeof rawType === "string" &&
-          moduleRegistry.hasTypeHandler(rawType)
+          typeof rawType === "string" && moduleRegistry.hasTypeHandler(rawType)
             ? (rawType as NoteType)
             : "text";
 
