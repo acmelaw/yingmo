@@ -1,51 +1,83 @@
 /**
- * Multi-tenant WebSocket Sync Server for Vue Notes
+ * Vue Notes Sync Server v3.0
  *
- * Features:
- * - Multi-tenancy with tenant isolation
- * - Pluggable authentication (none, credentials, OAuth, OIDC)
- * - Database persistence (SQLite, PostgreSQL, MySQL)
- * - WebSocket-based Yjs synchronization
- * - Document-level permissions
- * - Audit logging
- * - Horizontal scaling support
+ * Modern Fastify-based server with:
+ * - Modular note type system (text, rich-text, markdown, code, image, smart-layer)
+ * - Unicode hashtag support
+ * - Edit history tracking
+ * - Real-time Yjs collaboration
+ * - Better Auth integration
+ * - SQLite database with Drizzle ORM
  */
 
-import express from "express";
-import { WebSocketServer, WebSocket } from "ws";
-import http from "http";
+import Fastify from "fastify";
+import fastifyCors from "@fastify/cors";
+import fastifyWebsocket from "@fastify/websocket";
 import * as Y from "yjs";
 import * as awarenessProtocol from "y-protocols/awareness";
 import * as syncProtocol from "y-protocols/sync";
 import * as encoding from "lib0/encoding";
 import * as decoding from "lib0/decoding";
+import { eq } from "drizzle-orm";
+import { db, schema } from "./db/index.js";
+import { moduleRegistry } from "./services/ModuleRegistry.js";
+import { DefaultNoteService } from "./services/NoteService.js";
+import { initializeModules } from "./modules/index.js";
+import { registerNoteRoutes } from "./routes/notes.js";
+import { registerTagRoutes } from "./routes/tags.js";
 
-const PORT = process.env.PORT || 4444;
-const USE_REDIS = process.env.REDIS_URL !== undefined;
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS?.split(",") || [
+// Environment configuration
+const PORT = parseInt(process.env.PORT || "4444", 10);
+const HOST = process.env.HOST || "0.0.0.0";
+const CORS_ORIGIN = process.env.CORS_ORIGIN?.split(",") || [
+  "http://localhost:5174",
   "http://localhost:5173",
 ];
-const PERSISTENCE_ENABLED = process.env.PERSISTENCE === "true";
-const PERSISTENCE_DIR = process.env.PERSISTENCE_DIR || "./data";
 
+// Initialize Fastify
+const fastify = Fastify({
+  logger: {
+    level: process.env.LOG_LEVEL || "info",
+  },
+  trustProxy: true,
+});
+
+// Register plugins
+await fastify.register(fastifyCors, {
+  origin: CORS_ORIGIN,
+  credentials: true,
+});
+
+await fastify.register(fastifyWebsocket, {
+  options: {
+    maxPayload: 1048576, // 1MB
+  },
+});
+
+// Initialize module system
+moduleRegistry.initialize(fastify);
+await initializeModules();
+
+// Initialize note service
+const noteService = new DefaultNoteService(db);
+moduleRegistry.registerService("noteService", noteService);
+
+// Register API routes
+await registerNoteRoutes(fastify, noteService);
+await registerTagRoutes(fastify, db);
+
+// Yjs room management
 interface Room {
   name: string;
   doc: Y.Doc;
   awareness: awarenessProtocol.Awareness;
-  connections: Set<WebSocket>;
+  connections: Set<any>;
 }
 
 const rooms = new Map<string, Room>();
-let redisClient: RedisClientType | null = null;
-let redisSubscriber: RedisClientType | null = null;
-
-// Message types
-const MESSAGE_SYNC = 0;
-const MESSAGE_AWARENESS = 1;
 
 /**
- * Get or create a room
+ * Get or create a Yjs room
  */
 function getRoom(roomName: string): Room {
   let room = rooms.get(roomName);
@@ -63,381 +95,238 @@ function getRoom(roomName: string): Room {
 
     rooms.set(roomName, room);
 
-    // Load persisted state if available
-    if (PERSISTENCE_ENABLED) {
-      loadRoomState(roomName, doc);
-    }
+    // Load persisted state asynchronously
+    loadRoomState(roomName, doc).catch((error) => {
+      fastify.log.error(`Error loading room state: ${error}`);
+    });
 
-    // Setup persistence on updates
-    doc.on("update", (update: Uint8Array) => {
-      if (PERSISTENCE_ENABLED) {
-        saveRoomState(roomName, Y.encodeStateAsUpdate(doc));
-      }
-
-      // Broadcast to Redis for multi-instance sync
-      if (USE_REDIS && redisClient) {
-        redisClient.publish(
-          `yjs:${roomName}:update`,
-          Buffer.from(update).toString("base64")
+    // Auto-save on updates
+    doc.on("update", (_update: Uint8Array) => {
+      try {
+        const state = Buffer.from(Y.encodeStateAsUpdate(doc)).toString(
+          "base64"
         );
+
+        db.insert(schema.documents)
+          .values({
+            id: roomName,
+            tenantId: "default", // TODO: Extract from room name
+            state,
+            lastUpdated: new Date(),
+            version: 0,
+          })
+          .onConflictDoUpdate({
+            target: schema.documents.id,
+            set: {
+              state,
+              lastUpdated: new Date(),
+            },
+          });
+      } catch (error) {
+        fastify.log.error(`Error saving room state: ${error}`);
       }
     });
 
-    console.log(`Room created: ${roomName}`);
+    fastify.log.info(`Room created: ${roomName}`);
   }
 
   return room;
 }
 
 /**
- * Handle WebSocket connection
+ * Load persisted room state from database
  */
-function handleConnection(conn: WebSocket, req: http.IncomingMessage) {
-  const url = new URL(req.url || "", `http://${req.headers.host}`);
+async function loadRoomState(roomName: string, doc: Y.Doc): Promise<void> {
+  const saved = await db
+    .select()
+    .from(schema.documents)
+    .where(eq(schema.documents.id, roomName))
+    .limit(1);
+
+  if (saved.length > 0 && saved[0].state) {
+    const state = Buffer.from(saved[0].state, "base64");
+    Y.applyUpdate(doc, new Uint8Array(state));
+    fastify.log.info(`Loaded room state: ${roomName}`);
+  }
+}
+
+/**
+ * Health check
+ */
+fastify.get("/health", async () => {
+  return {
+    status: "ok",
+    service: "Vue Notes Sync Server",
+    version: "3.0.0",
+    activeRooms: rooms.size,
+    registeredModules: moduleRegistry.getAllModules().map((m) => ({
+      id: m.id,
+      name: m.name,
+      version: m.version,
+      supportedTypes: m.supportedTypes,
+    })),
+    registeredTypes: moduleRegistry.getRegisteredNoteTypes(),
+    timestamp: new Date().toISOString(),
+  };
+});
+
+/**
+ * List active rooms
+ */
+fastify.get("/api/rooms", async () => {
+  return {
+    rooms: Array.from(rooms.entries()).map(([name, room]) => ({
+      name,
+      connections: room.connections.size,
+    })),
+  };
+});
+
+/**
+ * Get edit history for a note
+ * GET /api/notes/:noteId/history
+ */
+fastify.get<{
+  Params: {
+    noteId: string;
+  };
+}>("/api/notes/:noteId/history", async (request, reply) => {
+  const { noteId } = request.params;
+
+  try {
+    const history = await db
+      .select()
+      .from(schema.noteEdits)
+      .where(eq(schema.noteEdits.noteId, noteId))
+      .orderBy(schema.noteEdits.timestamp);
+
+    return {
+      history: history.map((edit) => ({
+        ...edit,
+        timestamp: edit.timestamp.getTime(),
+      })),
+    };
+  } catch (error) {
+    fastify.log.error(`Get history error: ${error}`);
+    reply.code(500);
+    return { error: String(error) };
+  }
+});
+
+/**
+ * WebSocket endpoint for Yjs sync
+ * WS /api/sync?room=roomName
+ */
+fastify.get("/api/sync", { websocket: true }, (connection, request) => {
+  const url = new URL(request.url, `http://${request.headers.host}`);
   const roomName = url.searchParams.get("room") || "default";
   const room = getRoom(roomName);
 
-  room.connections.add(conn);
+  fastify.log.info(`WebSocket connected to room: ${roomName}`);
+  room.connections.add(connection);
 
   // Send initial sync
   const encoder = encoding.createEncoder();
-  encoding.writeVarUint(encoder, MESSAGE_SYNC);
+  encoding.writeVarUint(encoder, 0); // MESSAGE_SYNC
   syncProtocol.writeSyncStep1(encoder, room.doc);
-  conn.send(encoding.toUint8Array(encoder));
-
-  // Send awareness states
-  const awarenessStates = room.awareness.getStates();
-  if (awarenessStates.size > 0) {
-    const awarenessEncoder = encoding.createEncoder();
-    encoding.writeVarUint(awarenessEncoder, MESSAGE_AWARENESS);
-    encoding.writeVarUint8Array(
-      awarenessEncoder,
-      awarenessProtocol.encodeAwarenessUpdate(
-        room.awareness,
-        Array.from(awarenessStates.keys())
-      )
-    );
-    conn.send(encoding.toUint8Array(awarenessEncoder));
-  }
+  connection.send(encoding.toUint8Array(encoder));
 
   // Handle messages
-  conn.on("message", (message: Buffer) => {
-    const decoder = decoding.createDecoder(new Uint8Array(message));
-    const messageType = decoding.readVarUint(decoder);
-
+  connection.on("message", (message: Buffer) => {
     try {
+      const decoder = decoding.createDecoder(new Uint8Array(message));
+      const messageType = decoding.readVarUint(decoder);
+      const encoder = encoding.createEncoder();
+
       switch (messageType) {
-        case MESSAGE_SYNC:
-          handleSyncMessage(decoder, room, conn);
+        case 0: // MESSAGE_SYNC
+          encoding.writeVarUint(encoder, 0);
+          syncProtocol.readSyncMessage(decoder, encoder, room.doc, connection);
+          if (encoding.length(encoder) > 1) {
+            connection.send(encoding.toUint8Array(encoder));
+          }
           break;
-        case MESSAGE_AWARENESS:
-          handleAwarenessMessage(decoder, room, conn);
+
+        case 1: // MESSAGE_AWARENESS
+          awarenessProtocol.applyAwarenessUpdate(
+            room.awareness,
+            decoding.readVarUint8Array(decoder),
+            connection
+          );
           break;
       }
-    } catch (err) {
-      console.error("Error handling message:", err);
+    } catch (error) {
+      fastify.log.error(`WebSocket message error: ${error}`);
     }
   });
 
-  // Handle disconnect
-  conn.on("close", () => {
-    room.connections.delete(conn);
+  // Handle disconnection
+  connection.on("close", () => {
+    room.connections.delete(connection);
     awarenessProtocol.removeAwarenessStates(
       room.awareness,
       [room.doc.clientID],
       null
     );
+    fastify.log.info(`WebSocket disconnected from room: ${roomName}`);
 
-    // Clean up empty rooms
+    // Cleanup empty rooms
     if (room.connections.size === 0) {
       setTimeout(() => {
         if (room.connections.size === 0) {
           rooms.delete(roomName);
-          console.log(`Room cleaned up: ${roomName}`);
+          fastify.log.info(`Room cleaned up: ${roomName}`);
         }
-      }, 60000); // Keep room alive for 1 minute
+      }, 60000); // 1 minute delay
     }
   });
 
-  console.log(
-    `Client connected to room: ${roomName} (${room.connections.size} total)`
-  );
-}
+  // Broadcast awareness changes
+  room.awareness.on("update", ({ added, updated, removed }: any) => {
+    const changedClients = added.concat(updated).concat(removed);
+    const encoder = encoding.createEncoder();
+    encoding.writeVarUint(encoder, 1); // MESSAGE_AWARENESS
+    encoding.writeVarUint8Array(
+      encoder,
+      awarenessProtocol.encodeAwarenessUpdate(room.awareness, changedClients)
+    );
+    const message = encoding.toUint8Array(encoder);
 
-/**
- * Handle sync protocol messages
- */
-function handleSyncMessage(
-  decoder: decoding.Decoder,
-  room: Room,
-  sender: WebSocket
-) {
-  const encoder = encoding.createEncoder();
-  const syncMessageType = syncProtocol.readSyncMessage(
-    decoder,
-    encoder,
-    room.doc,
-    sender
-  );
-
-  if (encoding.length(encoder) > 1) {
-    const responseEncoder = encoding.createEncoder();
-    encoding.writeVarUint(responseEncoder, MESSAGE_SYNC);
-    encoding.writeUint8Array(responseEncoder, encoding.toUint8Array(encoder));
-    sender.send(encoding.toUint8Array(responseEncoder));
-  }
-
-  // Broadcast updates to other clients
-  if (syncMessageType === syncProtocol.messageYjsSyncStep2) {
-    const update = encoding.toUint8Array(encoder);
-    broadcastMessage(room, update, sender);
-  }
-}
-
-/**
- * Handle awareness protocol messages
- */
-function handleAwarenessMessage(
-  decoder: decoding.Decoder,
-  room: Room,
-  sender: WebSocket
-) {
-  awarenessProtocol.applyAwarenessUpdate(
-    room.awareness,
-    decoding.readVarUint8Array(decoder),
-    sender
-  );
-
-  // Broadcast awareness to other clients
-  const encoder = encoding.createEncoder();
-  encoding.writeVarUint(encoder, MESSAGE_AWARENESS);
-  encoding.writeVarUint8Array(
-    encoder,
-    awarenessProtocol.encodeAwarenessUpdate(room.awareness, [room.doc.clientID])
-  );
-  broadcastMessage(room, encoding.toUint8Array(encoder), sender);
-}
-
-/**
- * Broadcast message to all clients in room except sender
- */
-function broadcastMessage(room: Room, message: Uint8Array, sender?: WebSocket) {
-  room.connections.forEach((conn) => {
-    if (conn !== sender && conn.readyState === WebSocket.OPEN) {
-      conn.send(message);
-    }
-  });
-}
-
-/**
- * Load room state from persistence
- */
-async function loadRoomState(roomName: string, doc: Y.Doc) {
-  try {
-    const fs = await import("fs/promises");
-    const path = await import("path");
-    const filePath = path.join(PERSISTENCE_DIR, `${roomName}.yjs`);
-
-    const data = await fs.readFile(filePath);
-    Y.applyUpdate(doc, new Uint8Array(data));
-    console.log(`Loaded state for room: ${roomName}`);
-  } catch (err) {
-    // File doesn't exist or error reading - that's OK
-  }
-}
-
-/**
- * Save room state to persistence
- */
-async function saveRoomState(roomName: string, update: Uint8Array) {
-  try {
-    const fs = await import("fs/promises");
-    const path = await import("path");
-
-    await fs.mkdir(PERSISTENCE_DIR, { recursive: true });
-    const filePath = path.join(PERSISTENCE_DIR, `${roomName}.yjs`);
-    await fs.writeFile(filePath, update);
-  } catch (err) {
-    console.error("Error saving room state:", err);
-  }
-}
-
-/**
- * Setup Redis for horizontal scaling
- */
-async function setupRedis() {
-  if (!USE_REDIS) return;
-
-  try {
-    // Publisher client
-    redisClient = createClient({ url: REDIS_URL });
-    await redisClient.connect();
-
-    // Subscriber client
-    redisSubscriber = createClient({ url: REDIS_URL });
-    await redisSubscriber.connect();
-
-    // Subscribe to all room updates
-    await redisSubscriber.pSubscribe("yjs:*:update", (message, channel) => {
-      const roomName = channel.split(":")[1];
-      const room = rooms.get(roomName);
-
-      if (room) {
-        const update = Buffer.from(message, "base64");
-        // Apply update without re-broadcasting to Redis
-        Y.applyUpdate(room.doc, new Uint8Array(update), "redis");
+    room.connections.forEach((conn) => {
+      if (conn !== connection && conn.readyState === 1) {
+        conn.send(message);
       }
     });
-
-    console.log("Redis connection established for horizontal scaling");
-  } catch (err) {
-    console.error("Redis connection failed:", err);
-    console.warn("Running without Redis - single instance only");
-  }
-}
-
-/**
- * Create HTTP server for health checks
- */
-const server = http.createServer((req, res) => {
-  const url = new URL(req.url || "", `http://${req.headers.host}`);
-
-  // CORS headers
-  const origin = req.headers.origin || "";
-  if (ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes("*")) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  }
-
-  if (req.method === "OPTIONS") {
-    res.writeHead(200);
-    res.end();
-    return;
-  }
-
-  // Health check endpoint
-  if (url.pathname === "/health") {
-    const stats = {
-      status: "ok",
-      rooms: rooms.size,
-      connections: Array.from(rooms.values()).reduce(
-        (sum, room) => sum + room.connections.size,
-        0
-      ),
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      timestamp: new Date().toISOString(),
-    };
-
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(stats, null, 2));
-    return;
-  }
-
-  // Metrics endpoint (Prometheus format)
-  if (url.pathname === "/metrics") {
-    const metrics = [
-      `# HELP yjs_rooms_total Total number of active rooms`,
-      `# TYPE yjs_rooms_total gauge`,
-      `yjs_rooms_total ${rooms.size}`,
-      ``,
-      `# HELP yjs_connections_total Total number of active connections`,
-      `# TYPE yjs_connections_total gauge`,
-      `yjs_connections_total ${Array.from(rooms.values()).reduce(
-        (sum, room) => sum + room.connections.size,
-        0
-      )}`,
-      ``,
-      `# HELP yjs_memory_bytes Memory usage in bytes`,
-      `# TYPE yjs_memory_bytes gauge`,
-      `yjs_memory_bytes ${process.memoryUsage().heapUsed}`,
-    ].join("\n");
-
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end(metrics);
-    return;
-  }
-
-  res.writeHead(404);
-  res.end("Not Found");
-});
-
-/**
- * Create WebSocket server
- */
-const wss = new WebSocketServer({
-  server,
-  path: "/sync",
-});
-
-wss.on("connection", handleConnection);
-
-/**
- * Graceful shutdown
- */
-async function shutdown() {
-  console.log("Shutting down gracefully...");
-
-  // Close all WebSocket connections
-  wss.clients.forEach((client) => {
-    client.close(1000, "Server shutting down");
   });
-
-  // Save all room states
-  if (PERSISTENCE_ENABLED) {
-    for (const [roomName, room] of rooms) {
-      await saveRoomState(roomName, Y.encodeStateAsUpdate(room.doc));
-    }
-  }
-
-  // Close Redis connections
-  if (redisClient) await redisClient.quit();
-  if (redisSubscriber) await redisSubscriber.quit();
-
-  // Close HTTP server
-  server.close(() => {
-    console.log("Server closed");
-    process.exit(0);
-  });
-
-  // Force exit after 10 seconds
-  setTimeout(() => {
-    console.error("Forced shutdown");
-    process.exit(1);
-  }, 10000);
-}
-
-process.on("SIGTERM", shutdown);
-process.on("SIGINT", shutdown);
+});
 
 /**
  * Start server
  */
-async function start() {
-  await setupRedis();
-
-  server.listen(PORT, () => {
-    console.log(`
-╔════════════════════════════════════════════════════╗
-║  Vue Notes Sync Server                             ║
-║                                                    ║
-║  WebSocket: ws://localhost:${PORT}/sync              ║
-║  Health:    http://localhost:${PORT}/health          ║
-║  Metrics:   http://localhost:${PORT}/metrics         ║
-║                                                    ║
-║  Redis:     ${
-      USE_REDIS ? "Enabled" : "Disabled"
-    }                               ║
-║  Persist:   ${
-      PERSISTENCE_ENABLED ? "Enabled" : "Disabled"
-    }                               ║
-╚════════════════════════════════════════════════════╝
-    `);
-  });
+try {
+  await fastify.listen({ port: PORT, host: HOST });
+  fastify.log.info(`
+    🚀 Vue Notes Sync Server v3.0 started
+    📡 WebSocket: ws://${HOST}:${PORT}/api/sync?room=<roomName>
+    🌐 HTTP API: http://${HOST}:${PORT}/api/*
+    💾 Database: SQLite (auto-configured)
+    🔧 Modules: ${moduleRegistry.getAllModules().map((m) => m.name).join(", ")}
+    📝 Note Types: ${moduleRegistry.getRegisteredNoteTypes().join(", ")}
+  `);
+} catch (error) {
+  fastify.log.error(error);
+  process.exit(1);
 }
 
-start().catch((err) => {
-  console.error("Failed to start server:", err);
-  process.exit(1);
+// Graceful shutdown
+process.on("SIGTERM", async () => {
+  fastify.log.info("SIGTERM received, shutting down gracefully...");
+  await fastify.close();
+  process.exit(0);
+});
+
+process.on("SIGINT", async () => {
+  fastify.log.info("SIGINT received, shutting down gracefully...");
+  await fastify.close();
+  process.exit(0);
 });

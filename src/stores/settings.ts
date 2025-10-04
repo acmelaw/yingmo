@@ -2,6 +2,12 @@ import { computed } from "vue";
 import { useStorage, usePreferredDark } from "@vueuse/core";
 import { acceptHMRUpdate, defineStore } from "pinia";
 
+export interface ServerConfig {
+  url: string;
+  name: string;
+  lastConnected?: number;
+}
+
 export interface Settings {
   theme: "light" | "dark" | "auto";
   fontSize: "small" | "medium" | "large";
@@ -9,6 +15,10 @@ export interface Settings {
   autoSave: boolean;
   showTimestamps: boolean;
   compactMode: boolean;
+  // Server connection settings
+  syncEnabled: boolean;
+  currentServer?: string; // URL of current server
+  servers: ServerConfig[]; // List of known servers
 }
 
 const STORAGE_KEY = "vue-notes.settings";
@@ -23,7 +33,18 @@ export const useSettingsStore = defineStore("settings", () => {
     autoSave: true,
     showTimestamps: true,
     compactMode: false,
+    syncEnabled: false,
+    currentServer: undefined,
+    servers: [],
   });
+
+  // Ensure servers array exists (migration for old data)
+  if (!settings.value.servers) {
+    settings.value.servers = [];
+  }
+  if (settings.value.syncEnabled === undefined) {
+    settings.value.syncEnabled = false;
+  }
 
   const isDarkMode = computed(() => {
     if (settings.value.theme === "auto") {
@@ -74,6 +95,63 @@ export const useSettingsStore = defineStore("settings", () => {
     },
   });
 
+  const syncEnabled = computed({
+    get: () => settings.value.syncEnabled,
+    set: (value: boolean) => {
+      settings.value.syncEnabled = value;
+    },
+  });
+
+  const currentServer = computed({
+    get: () => settings.value.currentServer,
+    set: (value: string | undefined) => {
+      settings.value.currentServer = value;
+    },
+  });
+
+  const servers = computed(() => settings.value?.servers || []);
+
+  function addServer(server: ServerConfig) {
+    // Ensure servers array exists
+    if (!settings.value.servers) {
+      settings.value.servers = [];
+    }
+    
+    const existing = settings.value.servers.findIndex((s) => s.url === server.url);
+    if (existing >= 0) {
+      settings.value.servers[existing] = server;
+    } else {
+      settings.value.servers.push(server);
+    }
+  }
+
+  function removeServer(url: string) {
+    // Ensure servers array exists
+    if (!settings.value.servers) {
+      settings.value.servers = [];
+      return;
+    }
+    
+    settings.value.servers = settings.value.servers.filter((s) => s.url !== url);
+    if (settings.value.currentServer === url) {
+      settings.value.currentServer = undefined;
+    }
+  }
+
+  function setCurrentServer(url: string) {
+    // Ensure servers array exists
+    if (!settings.value.servers) {
+      settings.value.servers = [];
+      return;
+    }
+    
+    const server = settings.value.servers.find((s) => s.url === url);
+    if (server) {
+      server.lastConnected = Date.now();
+      settings.value.currentServer = url;
+    }
+  }
+
   function reset() {
     settings.value = {
       theme: "auto",
@@ -82,6 +160,9 @@ export const useSettingsStore = defineStore("settings", () => {
       autoSave: true,
       showTimestamps: true,
       compactMode: false,
+      syncEnabled: false,
+      currentServer: undefined,
+      servers: [],
     };
   }
 
@@ -94,6 +175,12 @@ export const useSettingsStore = defineStore("settings", () => {
     autoSave,
     showTimestamps,
     compactMode,
+    syncEnabled,
+    currentServer,
+    servers,
+    addServer,
+    removeServer,
+    setCurrentServer,
     reset,
   };
 });

@@ -1,45 +1,34 @@
 /**
- * Database connection and initialization
- * Supports SQLite, PostgreSQL, and MySQL
+ * Database connection
+ * SQLite-only setup for vue-notes sync server
  */
 
-import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
-import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
-import { drizzle as drizzleMysql } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
-import postgres from "postgres";
-import mysql from "mysql2/promise";
-import * as schema from "./schema";
+import * as schema from "./schema.js";
+import { mkdirSync } from "fs";
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
 
-const DATABASE_TYPE = process.env.DATABASE_TYPE || "sqlite";
-const DATABASE_URL = process.env.DATABASE_URL || "data/vue-notes.db";
+// Get the directory of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-export type DatabaseType = "sqlite" | "postgres" | "mysql";
+// Use absolute path relative to the sync-server directory
+const DATABASE_URL = process.env.DATABASE_URL || resolve(__dirname, "../data/vue-notes.db");
 
 /**
- * Create database connection based on type
+ * Create SQLite database connection
+ * Automatically creates the directory if it doesn't exist
  */
 export function createDatabase() {
-  const dbType = DATABASE_TYPE.toLowerCase() as DatabaseType;
-
-  switch (dbType) {
-    case "postgres": {
-      const connection = postgres(DATABASE_URL);
-      return drizzlePostgres(connection, { schema });
-    }
-
-    case "mysql": {
-      const connection = mysql.createPool(DATABASE_URL);
-      return drizzleMysql(connection, { schema, mode: "default" });
-    }
-
-    case "sqlite":
-    default: {
-      const sqlite = new Database(DATABASE_URL);
-      sqlite.pragma("journal_mode = WAL");
-      return drizzleSqlite(sqlite, { schema });
-    }
-  }
+  // Ensure the directory exists
+  const dbDir = dirname(DATABASE_URL);
+  mkdirSync(dbDir, { recursive: true });
+  
+  const sqlite = new Database(DATABASE_URL);
+  sqlite.pragma("journal_mode = WAL");
+  return drizzle(sqlite, { schema });
 }
 
 export const db = createDatabase();
