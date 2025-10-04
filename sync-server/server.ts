@@ -1,15 +1,17 @@
 /**
- * Lightweight WebSocket Sync Server for Vue Notes
+ * Multi-tenant WebSocket Sync Server for Vue Notes
  *
  * Features:
+ * - Multi-tenancy with tenant isolation
+ * - Pluggable authentication (none, credentials, OAuth, OIDC)
+ * - Database persistence (SQLite, PostgreSQL, MySQL)
  * - WebSocket-based Yjs synchronization
- * - Multi-room support
- * - Horizontal scaling with Redis (optional)
- * - Health checks
- * - Graceful shutdown
- * - Production-ready
+ * - Document-level permissions
+ * - Audit logging
+ * - Horizontal scaling support
  */
 
+import express from "express";
 import { WebSocketServer, WebSocket } from "ws";
 import http from "http";
 import * as Y from "yjs";
@@ -17,7 +19,6 @@ import * as awarenessProtocol from "y-protocols/awareness";
 import * as syncProtocol from "y-protocols/sync";
 import * as encoding from "lib0/encoding";
 import * as decoding from "lib0/decoding";
-import { createClient, RedisClientType } from "redis";
 
 const PORT = process.env.PORT || 4444;
 const USE_REDIS = process.env.REDIS_URL !== undefined;
