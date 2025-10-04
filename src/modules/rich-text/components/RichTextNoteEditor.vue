@@ -1,148 +1,68 @@
 <template>
   <div class="rich-text-editor">
-    <div class="editor-toolbar">
-      <button @click="toggleBold" :class="{ active: isBold }" class="toolbar-btn" title="Bold">
+    <div v-if="editor" class="editor-toolbar">
+      <button @click="editor.chain().focus().toggleBold().run()" :class="{ active: editor.isActive('bold') }" class="toolbar-btn" title="Bold">
         <strong>B</strong>
       </button>
-      <button @click="toggleItalic" :class="{ active: isItalic }" class="toolbar-btn" title="Italic">
+      <button @click="editor.chain().focus().toggleItalic().run()" :class="{ active: editor.isActive('italic') }" class="toolbar-btn" title="Italic">
         <em>I</em>
       </button>
-      <button @click="toggleUnderline" :class="{ active: isUnderline }" class="toolbar-btn" title="Underline">
-        <u>U</u>
+      <button @click="editor.chain().focus().toggleStrike().run()" :class="{ active: editor.isActive('strike') }" class="toolbar-btn" title="Strikethrough">
+        <s>S</s>
       </button>
       <div class="toolbar-divider"></div>
-      <button @click="insertLink" class="toolbar-btn" title="Insert Link">
-        🔗
-      </button>
-      <button @click="insertList" class="toolbar-btn" title="Bullet List">
+      <button @click="editor.chain().focus().toggleBulletList().run()" :class="{ active: editor.isActive('bulletList') }" class="toolbar-btn" title="Bullet List">
         •
+      </button>
+      <button @click="editor.chain().focus().toggleOrderedList().run()" :class="{ active: editor.isActive('orderedList') }" class="toolbar-btn" title="Numbered List">
+        #
       </button>
     </div>
 
-    <div
-      ref="editorRef"
-      class="editor-content"
-      contenteditable="true"
-      @input="handleInput"
-      @blur="handleBlur"
-      v-html="localHtml"
-    ></div>
+    <EditorContent :editor="editor" class="editor-content" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { watch, onBeforeUnmount } from "vue";
+import { useEditor, EditorContent } from "@tiptap/vue-3";
+import StarterKit from "@tiptap/starter-kit";
 import type { RichTextNote } from "@/types/note";
+import { getNoteContent, getNoteMeta } from "@/types/note";
 
 const props = defineProps<{
   note: RichTextNote;
 }>();
 
 const emit = defineEmits<{
-  (e: "update", updates: Partial<RichTextNote>): void;
+  update: [data: Partial<RichTextNote>];
 }>();
 
-const editorRef = ref<HTMLElement | null>(null);
-const localHtml = ref(props.note.html || "");
-const isBold = ref(false);
-const isItalic = ref(false);
-const isUnderline = ref(false);
-
-function handleInput() {
-  if (editorRef.value) {
-    const html = editorRef.value.innerHTML;
-    localHtml.value = html;
-
-    // Convert HTML to simple content structure
-    const content = htmlToContent(html);
-
-    emit("update", {
-      html,
-      content,
+const editor = useEditor({
+  extensions: [StarterKit],
+  content: getNoteContent(props.note),
+  onUpdate: ({ editor }) => {
+    const html = editor.getHTML();
+    const json = editor.getJSON();
+    emit("update", { 
+      content: html,
+      metadata: {
+        ...props.note.metadata,
+        format: 'html',
+        tiptapContent: json
+      }
     });
+  },
+});
+
+watch(() => getNoteContent(props.note), (newContent) => {
+  if (editor.value && editor.value.getHTML() !== newContent) {
+    editor.value.commands.setContent(newContent);
   }
+});
 
-  updateToolbarState();
-}
-
-function handleBlur() {
-  updateToolbarState();
-}
-
-function updateToolbarState() {
-  isBold.value = document.queryCommandState("bold");
-  isItalic.value = document.queryCommandState("italic");
-  isUnderline.value = document.queryCommandState("underline");
-}
-
-function toggleBold() {
-  document.execCommand("bold", false);
-  editorRef.value?.focus();
-  updateToolbarState();
-  handleInput();
-}
-
-function toggleItalic() {
-  document.execCommand("italic", false);
-  editorRef.value?.focus();
-  updateToolbarState();
-  handleInput();
-}
-
-function toggleUnderline() {
-  document.execCommand("underline", false);
-  editorRef.value?.focus();
-  updateToolbarState();
-  handleInput();
-}
-
-function insertLink() {
-  const url = prompt("Enter URL:");
-  if (url) {
-    document.execCommand("createLink", false, url);
-    editorRef.value?.focus();
-    handleInput();
-  }
-}
-
-function insertList() {
-  document.execCommand("insertUnorderedList", false);
-  editorRef.value?.focus();
-  handleInput();
-}
-
-// Simple HTML to content converter
-function htmlToContent(html: string): any {
-  return {
-    type: "doc",
-    content: [
-      {
-        type: "paragraph",
-        content: [
-          {
-            type: "text",
-            text: editorRef.value?.innerText || "",
-          },
-        ],
-      },
-    ],
-  };
-}
-
-// Watch for external updates
-watch(
-  () => props.note.html,
-  (newValue) => {
-    if (newValue && newValue !== localHtml.value) {
-      localHtml.value = newValue;
-    }
-  }
-);
-
-onMounted(() => {
-  if (editorRef.value && !localHtml.value) {
-    editorRef.value.innerHTML = "";
-  }
+onBeforeUnmount(() => {
+  editor.value?.destroy();
 });
 </script>
 
@@ -158,7 +78,7 @@ onMounted(() => {
   display: flex;
   gap: 4px;
   padding: 8px;
-  border: 2px solid #000;
+  border: 3px solid #000;
   border-bottom: none;
   background: #f0f0f0;
 }
@@ -168,13 +88,22 @@ onMounted(() => {
   background: #fff;
   border: 2px solid #000;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 700;
   min-width: 36px;
-  transition: all 0.2s;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  font-size: 14px;
 }
 
 .toolbar-btn:hover {
   background: #e0e0e0;
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0 #000;
+}
+
+.toolbar-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .toolbar-btn.active {
@@ -190,32 +119,44 @@ onMounted(() => {
 
 .editor-content {
   flex: 1;
-  padding: 12px;
-  border: 2px solid #000;
+  border: 3px solid #000;
   background: #fff;
-  overflow-y: auto;
-  line-height: 1.6;
+}
+
+.editor-content :deep(.ProseMirror) {
+  padding: 16px;
   min-height: 200px;
-  cursor: text;
-}
-
-.editor-content:focus {
   outline: none;
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+  line-height: 1.6;
 }
 
-.editor-content:empty:before {
+.editor-content :deep(.ProseMirror:focus) {
+  outline: none;
+}
+
+.editor-content :deep(.ProseMirror p.is-editor-empty:first-child::before) {
   content: "Start typing...";
   color: #999;
+  pointer-events: none;
+  height: 0;
+  float: left;
 }
 
-.editor-content :deep(a) {
-  color: #0066cc;
-  text-decoration: underline;
+.editor-content :deep(strong) {
+  font-weight: 700;
 }
 
-.editor-content :deep(ul) {
-  margin: 8px 0;
+.editor-content :deep(em) {
+  font-style: italic;
+}
+
+.editor-content :deep(s) {
+  text-decoration: line-through;
+}
+
+.editor-content :deep(ul),
+.editor-content :deep(ol) {
+  margin: 12px 0;
   padding-left: 24px;
 }
 
@@ -223,3 +164,4 @@ onMounted(() => {
   margin: 4px 0;
 }
 </style>
+

@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import * as Y from 'yjs';
 import type { TextNote } from '@/types/note';
+import { getNoteContent } from '@/types/note';
 import { useNotesStore } from '@/stores/notes';
 import { useAuthStore } from '@/stores/auth';
 import { useCollaborationDoc } from '@/composables/useCollaborationDoc';
@@ -25,7 +26,7 @@ const collaborationEnabled = computed(
   () => !props.readonly && Boolean(shouldSync.value) && Boolean(authStore.state.baseUrl)
 );
 
-const localText = ref(props.note.text);
+const localText = ref(getNoteContent(props.note)); // UNIFIED: use helper
 const collaboration = useCollaborationDoc(`note-${props.note.id}`);
 let yText: Y.Text | null = null;
 let observer: ((event: Y.YTextEvent) => void) | null = null;
@@ -33,7 +34,7 @@ let stopWatchLocal: (() => void) | null = null;
 let applyingRemote = false;
 
 watch(
-  () => props.note.text,
+  () => getNoteContent(props.note), // UNIFIED: watch content
   (newText) => {
     if (!collaborationEnabled.value) {
       localText.value = newText;
@@ -63,7 +64,7 @@ function debounce<T extends (...args: any[]) => void>(fn: T, delay = 400) {
 
 const emitUpdate = debounce((text: string) => {
   if (props.readonly) return;
-  emit('update', { text });
+  emit('update', { content: text }); // UNIFIED: update content field
 }, 450);
 
 function setupCollaboration() {
@@ -78,8 +79,9 @@ function setupCollaboration() {
   const text = doc.getText('content');
   yText = text;
 
-  if (text.length === 0 && props.note.text) {
-    text.insert(0, props.note.text);
+  const noteContent = getNoteContent(props.note); // UNIFIED
+  if (text.length === 0 && noteContent) {
+    text.insert(0, noteContent);
   }
 
   applyingRemote = true;
@@ -135,7 +137,7 @@ watch(collaborationEnabled, (enabled) => {
   } else {
     tearDownCollaboration();
     collaboration.disconnect();
-    localText.value = props.note.text;
+    localText.value = getNoteContent(props.note); // UNIFIED
   }
 }, { immediate: true });
 
@@ -166,8 +168,9 @@ function handleUpdate() {
   if (props.readonly) return;
   if (collaborationEnabled.value) return;
 
-  if (localText.value !== props.note.text) {
-    emit('update', { text: localText.value });
+  const currentContent = getNoteContent(props.note); // UNIFIED
+  if (localText.value !== currentContent) {
+    emit('update', { content: localText.value }); // UNIFIED
   }
 }
 

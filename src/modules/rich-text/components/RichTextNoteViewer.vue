@@ -1,16 +1,21 @@
-<template>
-  <div class="rich-text-viewer">
-    <div class="viewer-content" v-html="note.html"></div>
-  </div>
-</template>
-
 <script setup lang="ts">
-import type { RichTextNote } from "@/types/note";
+import { computed } from "vue";
+import type { Note } from "@/types/note";
+import { getNoteContent } from "@/types/note";
 
 const props = defineProps<{
-  note: RichTextNote;
+  note: Note;
 }>();
+
+// Unified: content is HTML
+const htmlContent = computed(() => getNoteContent(props.note));
 </script>
+
+<template>
+  <div class="rich-text-viewer">
+    <div class="viewer-content" v-html="htmlContent"></div>
+  </div>
+</template>
 
 <style scoped>
 .rich-text-viewer {
@@ -49,5 +54,16 @@ const props = defineProps<{
 
 .viewer-content :deep(u) {
   text-decoration: underline;
+}
+
+.view-mode-notice {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff3cd;
+  border: 2px solid #000;
+  border-left: 4px solid #ffc107;
+  font-size: 12px;
+  font-weight: 600;
+  color: #856404;
 }
 </style>

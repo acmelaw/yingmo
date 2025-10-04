@@ -55,11 +55,11 @@ const emit = defineEmits<{
 }>();
 
 const mode = ref<"edit" | "preview" | "split">("split");
-const localMarkdown = ref(props.note.markdown);
+const localMarkdown = ref(props.note.markdown || '');
 
 // Simple markdown to HTML converter (you can replace with a library like marked.js)
 const renderedHtml = computed(() => {
-  return simpleMarkdownToHtml(localMarkdown.value);
+  return simpleMarkdownToHtml(localMarkdown.value || '');
 });
 
 function handleInput() {
@@ -81,6 +81,8 @@ watch(
 
 // Simple markdown parser (basic implementation)
 function simpleMarkdownToHtml(markdown: string): string {
+  if (!markdown) return '';
+  
   let html = markdown;
 
   // Headers

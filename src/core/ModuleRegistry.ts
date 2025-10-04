@@ -94,10 +94,24 @@ class ModuleRegistry {
   /**
    * Get modules that support a specific note type
    */
-  getModulesForType(type: NoteType): NoteModule[] {
+  getModulesForType(type: NoteType | string): NoteModule[] {
+    // First check if it's a module ID (for view-only modules like caesar-cipher)
+    const moduleById = this.modules.get(type);
+    if (moduleById) {
+      return [moduleById];
+    }
+    
+    // Otherwise, find by supported types
     return Array.from(this.modules.values()).filter((module) =>
-      module.supportedTypes.includes(type)
+      module.supportedTypes.includes(type as NoteType)
     );
+  }
+
+  /**
+   * Get a module by its ID
+   */
+  getModuleById(moduleId: string): NoteModule | undefined {
+    return this.modules.get(moduleId);
   }
 
   /**
@@ -220,3 +234,20 @@ class ModuleRegistry {
 
 // Singleton instance
 export const moduleRegistry = new ModuleRegistry();
+
+// Convenience exports
+export function registerModule(module: NoteModule) {
+  return moduleRegistry.register(module);
+}
+
+export function getModulesForType(type: NoteType | string) {
+  return moduleRegistry.getModulesForType(type);
+}
+
+export function getModuleById(moduleId: string) {
+  return moduleRegistry.getModuleById(moduleId);
+}
+
+export function getTypeHandler(type: NoteType) {
+  return moduleRegistry.getTypeHandler(type);
+}

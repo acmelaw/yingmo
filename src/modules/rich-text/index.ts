@@ -23,14 +23,17 @@ const richTextNoteHandler: NoteTypeHandler = {
     return {
       id: createId(),
       type: "rich-text",
-      content: data.content || { type: "doc", content: [] },
-      html: data.html,
+      content: data.content || data.html || "",
+      metadata: {
+        format: data.format || data.metadata?.format || 'html',
+        tiptapContent: data.tiptapContent || data.metadata?.tiptapContent || data.content,
+        ...data.metadata
+      },
       created: Date.now(),
       updated: Date.now(),
       category: data.category,
       tags: data.tags,
       archived: data.archived || false,
-      metadata: data.metadata,
     };
   },
 
@@ -50,12 +53,7 @@ const richTextNoteHandler: NoteTypeHandler = {
 
   validate(note) {
     const richNote = note as RichTextNote;
-    return (
-      !!richNote.id &&
-      richNote.type === "rich-text" &&
-      !!richNote.content &&
-      !!richNote.created
-    );
+    return richNote.type === "rich-text" && typeof richNote.content === "string";
   },
 
   serialize(note) {

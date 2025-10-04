@@ -1,5 +1,6 @@
 import "@unocss/reset/tailwind.css";
 import "uno.css";
+import "./design-tokens.css";
 import "./style.css";
 
 import { createApp, watch } from "vue";
@@ -9,6 +10,9 @@ import { createHead } from "@unhead/vue";
 
 import App from "./App.vue";
 import { useSettingsStore } from "./stores/settings";
+
+// Initialize modules
+import "./core/initModules";
 
 const messages = {
   en: {
@@ -85,7 +89,17 @@ app.use(i18n);
 
 app.mount("#app");
 
+// Setup theme system
 const settingsStore = useSettingsStore(pinia);
+
+// Apply initial theme
+if (settingsStore.isDarkMode) {
+  document.documentElement.classList.add("dark");
+} else {
+  document.documentElement.classList.remove("dark");
+}
+
+// Watch for theme changes
 watch(
   () => settingsStore.isDarkMode,
   (isDark) => {
@@ -94,6 +108,5 @@ watch(
     } else {
       document.documentElement.classList.remove("dark");
     }
-  },
-  { immediate: true }
+  }
 );

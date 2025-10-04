@@ -1,0 +1,183 @@
+/**
+ * Design Tokens - CSS Variables for Theme
+ * Works alongside UnoCSS utilities
+ * Use for dynamic values that can't be statically analyzed
+ */
+
+:root {
+  /* === BASE COLORS === */
+  --color-base-black: #000000;
+  --color-base-white: #FFFFFF;
+  
+  /* === BACKGROUNDS === */
+  --color-bg-primary: #FAFAFA;
+  --color-bg-secondary: #F0F0F0;
+  --color-bg-tertiary: #E8E8E8;
+  
+  /* === TEXT === */
+  --color-text-primary: #000000;
+  --color-text-secondary: #333333;
+  --color-text-tertiary: #666666;
+  
+  /* === ACCENTS === */
+  --color-accent-pink: #FF006E;
+  --color-accent-cyan: #00F5FF;
+  --color-accent-yellow: #FFFF00;
+  --color-accent-green: #00FF41;
+  --color-accent-purple: #B026FF;
+  --color-accent-orange: #FF6B00;
+  
+  /* === SEMANTIC === */
+  --color-success: #00FF41;
+  --color-error: #FF006E;
+  --color-warning: #FFFF00;
+  --color-info: #00F5FF;
+  
+  /* === BORDERS === */
+  --border-width-thin: 2px;
+  --border-width-normal: 3px;
+  --border-width-thick: 4px;
+  --border-color: var(--color-base-black);
+  
+  /* === SHADOWS (hard, no blur) === */
+  --shadow-sm: 3px 3px 0 var(--border-color);
+  --shadow: 5px 5px 0 var(--border-color);
+  --shadow-lg: 8px 8px 0 var(--border-color);
+  --shadow-xl: 12px 12px 0 var(--border-color);
+  --shadow-hover: 7px 7px 0 var(--border-color);
+  --shadow-active: 2px 2px 0 var(--border-color);
+  
+  /* === SPACING === */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* === TYPOGRAPHY === */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Arial', 'Helvetica', sans-serif;
+  --font-mono: 'Courier New', 'Courier', monospace;
+  
+  --text-xs: 0.7rem;
+  --text-sm: 0.85rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  
+  --font-normal: 400;
+  --font-bold: 700;
+  --font-black: 900;
+  
+  --line-tight: 1.2;
+  --line-normal: 1.4;
+  
+  /* === BORDER RADIUS === */
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  
+  /* === TRANSITIONS === */
+  --transition-fast: 0.1s ease-out;
+  --transition-base: 0.2s ease-out;
+  
+  /* === Z-INDEX === */
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-fixed: 200;
+  --z-modal: 300;
+}
+
+/* === DARK MODE === */
+.dark {
+  /* Base colors inverted */
+  --color-base-black: #FFFFFF;
+  --color-base-white: #0A0A0A;
+  
+  /* Backgrounds */
+  --color-bg-primary: #0A0A0A;
+  --color-bg-secondary: #1A1A1A;
+  --color-bg-tertiary: #2A2A2A;
+  
+  /* Text */
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #CCCCCC;
+  --color-text-tertiary: #999999;
+  
+  /* Accents stay vibrant */
+  --color-accent-pink: #FF1A8C;
+  --color-accent-cyan: #00FFFF;
+  --color-accent-yellow: #FFFF33;
+  --color-accent-green: #39FF14;
+  --color-accent-purple: #C855FF;
+  --color-accent-orange: #FF8533;
+  
+  /* Border color inverted */
+  --border-color: var(--color-base-black);
+  
+  /* Shadows inverted */
+  --shadow-sm: 3px 3px 0 var(--border-color);
+  --shadow: 5px 5px 0 var(--border-color);
+  --shadow-lg: 8px 8px 0 var(--border-color);
+  --shadow-xl: 12px 12px 0 var(--border-color);
+  --shadow-hover: 7px 7px 0 var(--border-color);
+  --shadow-active: 2px 2px 0 var(--border-color);
+}
+
+/* === GLOBAL STYLES === */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--line-normal);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  font-weight: var(--font-bold);
+  letter-spacing: -0.01em;
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+  border-left: var(--border-width-normal) solid var(--border-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-primary);
+  border: var(--border-width-thin) solid var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-pink);
+}
+
+/* === SELECTION === */
+::selection {
+  background: var(--color-accent-yellow);
+  color: var(--color-base-black);
+}
+
+/* === FOCUS === */
+:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-accent-cyan);
+  outline-offset: 3px;
+}

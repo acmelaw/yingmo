@@ -1,9 +1,36 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import type { Note } from "@/types/note";
+import { getNoteContent, getNoteMeta } from "@/types/note";
+
+const props = defineProps<{
+  note: Note;
+}>();
+
+defineEmits<{
+  (e: "setActiveLayer", layerId: string): void;
+}>();
+
+// Unified: metadata contains the smart layer data
+const source = computed(() => getNoteMeta(props.note, 'source', { type: 'unknown', data: '' }));
+const layers = computed(() => getNoteMeta<any[]>(props.note, 'layers', []));
+const activeLayerId = computed(() => getNoteMeta<string>(props.note, 'activeLayerId'));
+
+const sourceType = computed(() => source.value?.type || 'unknown');
+const sourceData = computed(() => source.value?.data || getNoteContent(props.note));
+
+const activeLayer = computed(() => {
+  const layerList = layers.value || [];
+  return layerList.find((l: any) => l.id === activeLayerId.value) || layerList[0];
+});
+</script>
+
 <template>
   <div class="smart-layer-viewer">
     <div class="source-display">
-      <h3 class="section-title">Source ({{ note.source.type }})</h3>
+      <h3 class="section-title">Source ({{ sourceType }})</h3>
       <div class="source-content">
-        {{ note.source.data }}
+        {{ sourceData }}
       </div>
     </div>
 
@@ -19,12 +46,12 @@
       </div>
     </div>
 
-    <div v-if="note.layers.length > 1" class="layers-nav">
+    <div v-if="layers && layers.length > 1" class="layers-nav">
       <button
-        v-for="layer in note.layers"
+        v-for="layer in layers"
         :key="layer.id"
         @click="$emit('setActiveLayer', layer.id)"
-        :class="{ active: layer.id === note.activeLayerId }"
+        :class="{ active: layer.id === activeLayerId }"
         class="layer-nav-btn"
       >
         {{ layer.name }}
@@ -32,23 +59,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { computed } from "vue";
-import type { SmartLayerNote } from "@/types/note";
-
-const props = defineProps<{
-  note: SmartLayerNote;
-}>();
-
-defineEmits<{
-  (e: "setActiveLayer", layerId: string): void;
-}>();
-
-const activeLayer = computed(() => {
-  return props.note.layers.find((l) => l.id === props.note.activeLayerId) || props.note.layers[0];
-});
-</script>
 
 <style scoped>
 .smart-layer-viewer {
@@ -113,5 +123,15 @@ const activeLayer = computed(() => {
 .layer-nav-btn.active {
   background: #000;
   color: #fff;
+}
+
+.view-mode-notice {
+  padding: 12px;
+  background: #fff3cd;
+  border: 2px solid #000;
+  border-left: 4px solid #ffc107;
+  font-size: 12px;
+  font-weight: 600;
+  color: #856404;
 }
 </style>

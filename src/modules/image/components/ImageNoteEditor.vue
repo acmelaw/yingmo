@@ -42,104 +42,103 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from "vue";
+import { ref, watch, computed } from "vue";
 import type { ImageNote } from "@/types/note";
+import { getNoteContent, getNoteMeta } from "@/types/note";
 
 const props = defineProps<{
   note: ImageNote;
 }>();
 
 const emit = defineEmits<{
-  (e: "update", updates: Partial<ImageNote>): void;
+  update: [data: Partial<ImageNote>];
 }>();
 
+const localUrl = ref(getNoteContent(props.note));
+const localAlt = ref(getNoteMeta<string>(props.note, 'alt', ''));
+const localWidth = ref(getNoteMeta<number>(props.note, 'width'));
+const localHeight = ref(getNoteMeta<number>(props.note, 'height'));
+
+watch(
+  () => getNoteContent(props.note),
+  (newUrl) => {
+    localUrl.value = newUrl;
+  }
+);
+
+watch(
+  () => getNoteMeta<string>(props.note, 'alt'),
+  (newAlt) => {
+    localAlt.value = newAlt || "";
+  }
+);
+
+function updateAlt() {
+  emit("update", { 
+    metadata: {
+      ...props.note.metadata,
+      alt: localAlt.value
+    }
+  });
+}
+
+async function handleFileUpload(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    emit("update", {
+      content: url,
+      metadata: {
+        ...props.note.metadata,
+        blob: file,
+        width: img.width,
+        height: img.height,
+      }
+    });
+  };
+  img.src = url;
+}
+
+const imageUrl = computed(() => localUrl.value);
 const fileInputRef = ref<HTMLInputElement | null>(null);
-const imageUrl = ref(props.note.url || "");
-const localAlt = ref(props.note.alt || "");
 
 function triggerFileInput() {
   fileInputRef.value?.click();
 }
 
-async function handleFileSelect(event: Event) {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    await processFile(file);
-  }
+function handleFileSelect(event: Event) {
+  handleFileUpload(event);
 }
 
-async function handleDrop(event: DragEvent) {
+function handleDrop(event: DragEvent) {
   const file = event.dataTransfer?.files[0];
-  if (file && file.type.startsWith("image/")) {
-    await processFile(file);
+  if (file) {
+    const fakeEvent = {
+      target: { files: [file] }
+    } as any;
+    handleFileUpload(fakeEvent);
   }
-}
-
-async function processFile(file: File) {
-  // Create object URL for preview
-  const url = URL.createObjectURL(file);
-  imageUrl.value = url;
-
-  // Get image dimensions
-  const img = new Image();
-  img.src = url;
-  await new Promise((resolve) => {
-    img.onload = resolve;
-  });
-
-  // Convert to base64 for storage
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const base64 = e.target?.result as string;
-
-    emit("update", {
-      blob: base64,
-      url,
-      width: img.width,
-      height: img.height,
-    });
-  };
-  reader.readAsDataURL(file);
 }
 
 function handleAltChange() {
-  emit("update", { alt: localAlt.value });
+  updateAlt();
 }
 
 function removeImage() {
-  if (imageUrl.value.startsWith("blob:")) {
-    URL.revokeObjectURL(imageUrl.value);
-  }
-  imageUrl.value = "";
-  emit("update", { blob: "", url: "", alt: "" });
+  emit("update", {
+    content: "",
+    metadata: {
+      ...props.note.metadata,
+      blob: undefined,
+      width: undefined,
+      height: undefined,
+    }
+  });
 }
-
-// Watch for external updates
-watch(
-  () => props.note.url,
-  (newValue) => {
-    if (newValue !== imageUrl.value) {
-      imageUrl.value = newValue || "";
-    }
-  }
-);
-
-watch(
-  () => props.note.alt,
-  (newValue) => {
-    if (newValue !== localAlt.value) {
-      localAlt.value = newValue || "";
-    }
-  }
-);
-
-// Cleanup on unmount
-onUnmounted(() => {
-  if (imageUrl.value.startsWith("blob:")) {
-    URL.revokeObjectURL(imageUrl.value);
-  }
-});
 </script>
 
 <style scoped>

@@ -1,5 +1,10 @@
 /**
  * Core note type definitions for the modular note system
+ * 
+ * UNIFIED DATA MODEL:
+ * All notes share a common `content` field for their primary data.
+ * Type-specific parameters go in `metadata`.
+ * This makes transformations lossless and generic operations (like Caesar cipher) possible.
  */
 
 export type NoteType =
@@ -13,36 +18,70 @@ export type NoteType =
 export interface BaseNote {
   id: string;
   type: NoteType;
+  title?: string; // Optional title for all notes
+  content: string; // UNIFIED: All notes store their primary data here
   created: number;
   updated: number;
+  pinned?: boolean; // Pin notes to top
   category?: string;
   tags?: string[];
   archived?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, any>; // Type-specific parameters (language, dimensions, etc.)
+  // View-only display type (doesn't affect underlying data)
+  // Can be a NoteType or a view-only module ID like 'caesar-cipher'
+  viewAs?: NoteType | string;
 }
 
-// Text-based note (legacy compatibility)
+// Text-based note
 export interface TextNote extends BaseNote {
   type: "text";
-  text: string;
+  content: string; // Plain text content
+}
+
+// Markdown note
+export interface MarkdownNote extends BaseNote {
+  type: "markdown";
+  content: string; // Markdown source
+  metadata?: {
+    renderedHtml?: string; // Cached rendered HTML
+    [key: string]: any;
+  };
+}
+
+// Code snippet note
+export interface CodeNote extends BaseNote {
+  type: "code";
+  content: string; // Code content
+  metadata: {
+    language: string; // Required for code notes
+    filename?: string;
+    [key: string]: any;
+  };
 }
 
 // Rich text note (TipTap/HTML)
 export interface RichTextNote extends BaseNote {
   type: "rich-text";
-  content: any; // TipTap JSON content
-  html?: string; // Cached HTML representation
+  content: string; // HTML content or JSON stringified
+  metadata?: {
+    format?: 'html' | 'tiptap-json';
+    tiptapContent?: any; // TipTap JSON content
+    [key: string]: any;
+  };
 }
 
-// Image note with transformation capabilities
+// Image note
 export interface ImageNote extends BaseNote {
   type: "image";
-  blob: Blob | string; // Blob or base64
-  url?: string; // Object URL or external URL
-  width?: number;
-  height?: number;
-  alt?: string;
-  transforms?: ImageTransform[];
+  content: string; // URL or base64 data
+  metadata?: {
+    blob?: Blob | string;
+    width?: number;
+    height?: number;
+    alt?: string;
+    transforms?: ImageTransform[];
+    [key: string]: any;
+  };
 }
 
 export interface ImageTransform {
@@ -57,12 +96,16 @@ export interface ImageTransform {
 // Smart layer note with API-driven transformations
 export interface SmartLayerNote extends BaseNote {
   type: "smart-layer";
-  source: {
-    type: "image" | "text" | "url" | "file";
-    data: any;
+  content: string; // Stringified source data
+  metadata: {
+    source: {
+      type: "image" | "text" | "url" | "file";
+      data: any;
+    };
+    layers: SmartLayer[];
+    activeLayerId?: string;
+    [key: string]: any;
   };
-  layers: SmartLayer[];
-  activeLayerId?: string;
 }
 
 export interface SmartLayer {
@@ -84,21 +127,6 @@ export interface SmartLayerConfig {
   parameters?: Record<string, any>;
 }
 
-// Markdown note
-export interface MarkdownNote extends BaseNote {
-  type: "markdown";
-  markdown: string;
-  html?: string; // Cached rendered HTML
-}
-
-// Code snippet note
-export interface CodeNote extends BaseNote {
-  type: "code";
-  code: string;
-  language: string;
-  filename?: string;
-}
-
 // Union type for all note types
 export type Note =
   | TextNote
@@ -107,6 +135,52 @@ export type Note =
   | SmartLayerNote
   | MarkdownNote
   | CodeNote;
+
+// ============================================================================
+// HELPER FUNCTIONS for accessing note content
+// These provide a unified interface regardless of note type
+// ============================================================================
+
+/**
+ * Get the primary content from any note type
+ */
+export function getNoteContent(note: Note): string {
+  return note.content || '';
+}
+
+/**
+ * Set the primary content for any note type
+ */
+export function setNoteContent(note: Note, content: string): Note {
+  return { ...note, content };
+}
+
+/**
+ * Get metadata value with type safety
+ */
+export function getNoteMeta<T = any>(note: Note, key: string, defaultValue?: T): T | undefined {
+  return note.metadata?.[key] ?? defaultValue;
+}
+
+/**
+ * Set metadata value
+ */
+export function setNoteMeta(note: Note, key: string, value: any): any {
+  return {
+    ...note,
+    metadata: {
+      ...note.metadata,
+      [key]: value
+    }
+  };
+}
+
+/**
+ * Apply a transformation to note content (for generic operations like Caesar cipher)
+ */
+export function transformNoteContent(note: Note, transformer: (content: string) => string): Note {
+  return setNoteContent(note, transformer(getNoteContent(note)));
+}
 
 // Type guards
 export function isTextNote(note: Note): note is TextNote {

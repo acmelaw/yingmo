@@ -3,9 +3,10 @@
  */
 
 import type { NoteModule, NoteTypeHandler } from "@/types/module";
-import type { MarkdownNote } from "@/types/note";
+import type { MarkdownNote, Note } from "@/types/note";
 import MarkdownNoteEditor from "./components/MarkdownNoteEditor.vue";
 import MarkdownNoteViewer from "./components/MarkdownNoteViewer.vue";
+import { marked } from "marked";
 
 function createId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -20,49 +21,42 @@ function nextTimestamp(previous: number): number {
 
 const markdownNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<MarkdownNote> {
+    const html = data.html || data.metadata?.renderedHtml || await marked(data.content || data.markdown || "");
+    
     return {
       id: createId(),
       type: "markdown",
-      markdown: data.markdown || "",
-      html: data.html,
+      title: data.title || "",
+      content: data.content || data.markdown || "",
+      metadata: {
+        renderedHtml: html,
+        ...data.metadata
+      },
       created: Date.now(),
       updated: Date.now(),
-      category: data.category,
-      tags: data.tags,
-      archived: data.archived || false,
-      metadata: data.metadata,
+      pinned: false,
+      tags: data.tags || [],
     };
   },
 
-  async update(note, updates) {
-    const mdNote = note as MarkdownNote;
+  async update(note: MarkdownNote, data: Partial<MarkdownNote>): Promise<MarkdownNote> {
     return {
-      ...mdNote,
-      ...updates,
-      type: "markdown",
-      updated: nextTimestamp(mdNote.updated),
-    } as MarkdownNote;
+      ...note,
+      ...data,
+      updated: Date.now(),
+    };
   },
 
-  async delete(note) {
-    console.log(`Deleting markdown note ${note.id}`);
-  },
-
-  validate(note) {
+  validate(note: Note): boolean {
     const mdNote = note as MarkdownNote;
-    return (
-      !!mdNote.id &&
-      mdNote.type === "markdown" &&
-      typeof mdNote.markdown === "string" &&
-      !!mdNote.created
-    );
+    return mdNote.type === "markdown" && typeof mdNote.content === "string";
   },
 
-  serialize(note) {
+  serialize(note: Note): string {
     return JSON.stringify(note);
   },
 
-  deserialize(data: string) {
+  deserialize(data: string): MarkdownNote {
     return JSON.parse(data) as MarkdownNote;
   },
 };

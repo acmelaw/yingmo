@@ -23,13 +23,13 @@ const textNoteHandler: NoteTypeHandler = {
     return {
       id: createId(),
       type: "text",
-      text: data.text || "",
+      content: data.content || data.text || "", // UNIFIED: use content field
       created: Date.now(),
       updated: Date.now(),
       category: data.category,
       tags: data.tags,
       archived: data.archived || false,
-      metadata: data.metadata,
+      metadata: data.metadata || {},
     };
   },
 
@@ -53,7 +53,7 @@ const textNoteHandler: NoteTypeHandler = {
     return (
       !!textNote.id &&
       textNote.type === "text" &&
-      typeof textNote.text === "string" &&
+      typeof textNote.content === "string" &&
       !!textNote.created
     );
   },

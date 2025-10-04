@@ -68,81 +68,111 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import type { SmartLayerNote, SmartLayer } from "@/types/note";
+import { ref, computed, watch } from "vue";
+import type { SmartLayerNote, Layer } from "@/types/note";
+import { getNoteContent, getNoteMeta } from "@/types/note";
 
 const props = defineProps<{
   note: SmartLayerNote;
 }>();
 
 const emit = defineEmits<{
-  (e: "update", updates: Partial<SmartLayerNote>): void;
+  update: [data: Partial<SmartLayerNote>];
 }>();
 
-const sourceType = ref(props.note.source.type);
-const sourceData = ref(props.note.source.data);
-const localLayers = ref<SmartLayer[]>([...props.note.layers]);
-const activeLayerId = ref(props.note.activeLayerId);
+const localSource = ref(getNoteMeta<any>(props.note, 'source', {}));
+const localLayers = ref<Layer[]>(getNoteMeta<Layer[]>(props.note, 'layers', []));
+const activeLayerId = ref(getNoteMeta<string>(props.note, 'activeLayerId') || localLayers.value[0]?.id);
 
-function handleSourceTypeChange() {
-  sourceData.value = "";
-  emit("update", {
-    source: {
-      type: sourceType.value as any,
-      data: sourceData.value,
-    },
+watch(
+  () => getNoteMeta<any>(props.note, 'source'),
+  (newSource) => {
+    localSource.value = newSource;
+  }
+);
+
+watch(
+  () => getNoteMeta<Layer[]>(props.note, 'layers'),
+  (newLayers) => {
+    localLayers.value = newLayers || [];
+  }
+);
+
+watch(
+  () => getNoteMeta<string>(props.note, 'activeLayerId'),
+  (newId) => {
+    if (newId) activeLayerId.value = newId;
+  }
+);
+
+function addLayer() {
+  const newLayer: Layer = {
+    id: `layer-${Date.now()}`,
+    name: `Layer ${localLayers.value.length + 1}`,
+    type: "text",
+    data: "",
+    visible: true,
+  };
+  localLayers.value.push(newLayer);
+  emit("update", { 
+    metadata: {
+      ...props.note.metadata,
+      layers: localLayers.value
+    }
   });
 }
+
+function setActiveLayer(id: string) {
+  activeLayerId.value = id;
+  emit("update", { 
+    metadata: {
+      ...props.note.metadata,
+      activeLayerId: id
+    }
+  });
+}
+
+function updateLayerData(id: string, data: any) {
+  const layer = localLayers.value.find((l) => l.id === id);
+  if (layer) {
+    layer.data = data;
+    emit("update", { 
+      metadata: {
+        ...props.note.metadata,
+        layers: localLayers.value
+      }
+    });
+  }
+}
+
+const sourceType = computed(() => localSource.value?.type || 'text');
+const sourceData = computed({
+  get: () => localSource.value?.data || '',
+  set: (value) => {
+    localSource.value = { ...localSource.value, data: value };
+  }
+});
 
 function handleSourceChange() {
   emit("update", {
-    source: {
-      type: sourceType.value as any,
-      data: sourceData.value,
-    },
+    metadata: {
+      ...props.note.metadata,
+      source: localSource.value
+    }
   });
 }
 
-function addLayer() {
-  const newLayer: SmartLayer = {
-    id: crypto.randomUUID(),
-    name: `Layer ${localLayers.value.length + 1}`,
-    type: "summarize",
-    config: {},
-    cached: false,
-    timestamp: Date.now(),
+function handleSourceTypeChange() {
+  localSource.value = {
+    type: sourceType.value,
+    data: ''
   };
-
-  localLayers.value.push(newLayer);
-  emit("update", { layers: localLayers.value });
+  handleSourceChange();
 }
 
-function setActiveLayer(layerId: string) {
-  activeLayerId.value = layerId;
-  emit("update", { activeLayerId: layerId });
+function truncate(text: string, length: number): string {
+  return text.length > length ? text.substring(0, length) + '...' : text;
 }
-
-function truncate(str: string, length: number): string {
-  return str.length > length ? str.substring(0, length) + "..." : str;
-}
-
-// Watch for external updates
-watch(
-  () => props.note.source,
-  (newValue) => {
-    sourceType.value = newValue.type;
-    sourceData.value = newValue.data;
-  },
-  { deep: true }
-);
-
-watch(
-  () => props.note.layers,
-  (newValue) => {
-    localLayers.value = [...newValue];
-  },
-  { deep: true }
-);
 </script>
 
 <style scoped>

@@ -23,15 +23,17 @@ const codeNoteHandler: NoteTypeHandler = {
     return {
       id: createId(),
       type: "code",
-      code: data.code || "",
-      language: data.language || "javascript",
-      filename: data.filename,
+      content: data.content || data.code || "",
+      metadata: {
+        language: data.language || data.metadata?.language || 'javascript',
+        filename: data.filename || data.metadata?.filename,
+        ...data.metadata
+      },
       created: Date.now(),
       updated: Date.now(),
       category: data.category,
       tags: data.tags,
       archived: data.archived || false,
-      metadata: data.metadata,
     };
   },
 
@@ -54,8 +56,7 @@ const codeNoteHandler: NoteTypeHandler = {
     return (
       !!codeNote.id &&
       codeNote.type === "code" &&
-      typeof codeNote.code === "string" &&
-      typeof codeNote.language === "string" &&
+      typeof codeNote.content === "string" &&
       !!codeNote.created
     );
   },

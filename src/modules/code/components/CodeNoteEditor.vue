@@ -44,64 +44,83 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import type { CodeNote } from "@/types/note";
+import { getNoteContent, getNoteMeta, setNoteMeta } from "@/types/note";
+import { getLanguageDisplayName } from "../utils";
 
 const props = defineProps<{
   note: CodeNote;
 }>();
 
 const emit = defineEmits<{
-  (e: "update", updates: Partial<CodeNote>): void;
+  update: [data: Partial<CodeNote>];
 }>();
 
-const localCode = ref(props.note.code);
-const localLanguage = ref(props.note.language);
-const localFilename = ref(props.note.filename || "");
+const localCode = ref(getNoteContent(props.note));
+const localLanguage = ref(getNoteMeta<string>(props.note, 'language', 'javascript'));
+const localFilename = ref(getNoteMeta<string>(props.note, 'filename', ''));
+
+watch(
+  () => getNoteContent(props.note),
+  (newCode) => {
+    localCode.value = newCode;
+  }
+);
+
+watch(
+  () => getNoteMeta<string>(props.note, 'language'),
+  (newLanguage) => {
+    if (newLanguage) {
+      localLanguage.value = newLanguage;
+    }
+  }
+);
+
+watch(
+  () => getNoteMeta<string>(props.note, 'filename'),
+  (newFilename) => {
+    localFilename.value = newFilename || "";
+  }
+);
+
+function updateCode() {
+  emit("update", { content: localCode.value });
+}
+
+function updateLanguage() {
+  emit("update", { 
+    metadata: { 
+      ...props.note.metadata, 
+      language: localLanguage.value 
+    } 
+  });
+}
+
+function updateFilename() {
+  emit("update", { 
+    metadata: { 
+      ...props.note.metadata, 
+      filename: localFilename.value 
+    } 
+  });
+}
 
 const lineCount = computed(() => {
-  return localCode.value.split("\n").length;
+  return localCode.value.split('\n').length;
 });
 
-function handleInput() {
-  emit("update", { code: localCode.value });
-}
+const handleInput = () => {
+  updateCode();
+};
 
-function handleLanguageChange() {
-  emit("update", { language: localLanguage.value });
-}
+const handleLanguageChange = () => {
+  updateLanguage();
+};
 
-function handleFilenameChange() {
-  emit("update", { filename: localFilename.value || undefined });
-}
-
-// Watch for external updates
-watch(
-  () => props.note.code,
-  (newValue) => {
-    if (newValue !== localCode.value) {
-      localCode.value = newValue;
-    }
-  }
-);
-
-watch(
-  () => props.note.language,
-  (newValue) => {
-    if (newValue !== localLanguage.value) {
-      localLanguage.value = newValue;
-    }
-  }
-);
-
-watch(
-  () => props.note.filename,
-  (newValue) => {
-    if (newValue !== localFilename.value) {
-      localFilename.value = newValue || "";
-    }
-  }
-);
+const handleFilenameChange = () => {
+  updateFilename();
+};
 </script>
 
 <style scoped>

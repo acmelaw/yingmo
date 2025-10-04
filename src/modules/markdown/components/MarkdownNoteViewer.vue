@@ -6,14 +6,22 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import type { MarkdownNote } from "@/types/note";
+import type { Note } from "@/types/note";
+import { getNoteContent, getNoteMeta } from "@/types/note";
 
 const props = defineProps<{
-  note: MarkdownNote;
+  note: Note;
 }>();
 
+// Get markdown content (unified)
+const markdownContent = computed(() => getNoteContent(props.note));
+
+// Try to get cached HTML first, otherwise render
 const renderedHtml = computed(() => {
-  return props.note.html || simpleMarkdownToHtml(props.note.markdown);
+  const cached = getNoteMeta<string>(props.note, 'renderedHtml');
+  if (cached) return cached;
+  
+  return simpleMarkdownToHtml(markdownContent.value);
 });
 
 // Simple markdown parser (same as editor)
@@ -111,5 +119,16 @@ function simpleMarkdownToHtml(markdown: string): string {
 
 .markdown-content :deep(p) {
   margin: 0.5em 0;
+}
+
+.view-mode-notice {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff3cd;
+  border: 2px solid #000;
+  border-left: 4px solid #ffc107;
+  font-size: 12px;
+  font-weight: 600;
+  color: #856404;
 }
 </style>

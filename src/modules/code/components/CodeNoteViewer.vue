@@ -1,14 +1,14 @@
 <template>
   <div class="code-viewer">
     <div class="viewer-header">
-      <span class="language-badge">{{ note.language }}</span>
-      <span v-if="note.filename" class="filename">{{ note.filename }}</span>
+      <span class="language-badge">{{ language }}</span>
+      <span v-if="filename" class="filename">{{ filename }}</span>
     </div>
 
-    <pre class="code-content"><code>{{ note.code }}</code></pre>
+    <pre class="code-content"><code>{{ codeContent }}</code></pre>
 
     <div class="viewer-footer">
-      <span class="char-count">{{ note.code.length }} characters</span>
+      <span class="char-count">{{ codeContent.length }} characters</span>
       <span class="line-count">{{ lineCount }} lines</span>
     </div>
   </div>
@@ -16,14 +16,20 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import type { CodeNote } from "@/types/note";
+import type { Note } from "@/types/note";
+import { getNoteContent, getNoteMeta } from "@/types/note";
 
 const props = defineProps<{
-  note: CodeNote;
+  note: Note;
 }>();
 
+// Unified: get content and metadata
+const codeContent = computed(() => getNoteContent(props.note));
+const language = computed(() => getNoteMeta<string>(props.note, 'language', 'text'));
+const filename = computed(() => getNoteMeta<string>(props.note, 'filename'));
+
 const lineCount = computed(() => {
-  return props.note.code.split("\n").length;
+  return codeContent.value.split("\n").length;
 });
 </script>
 
@@ -90,5 +96,16 @@ const lineCount = computed(() => {
 .char-count,
 .line-count {
   font-family: "SF Mono", Monaco, monospace;
+}
+
+.view-mode-notice {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff3cd;
+  border: 2px solid #000;
+  border-left: 4px solid #ffc107;
+  font-size: 12px;
+  font-weight: 600;
+  color: #856404;
 }
 </style>

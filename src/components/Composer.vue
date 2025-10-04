@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { NoteType } from '@/types/note';
+import type { NoteType, Note } from '@/types/note';
+import { moduleRegistry } from '@/core/ModuleRegistry';
+import { getNoteContent } from '@/types/note';
 
 export interface ComposerActionItem {
   id: string;
@@ -44,22 +46,64 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const draft = ref('');
 const selectedType = ref<NoteType>('text');
 const menuOpen = ref<string | null>(null);
-const textareaRef = ref<HTMLTextAreaElement | null>(null);
 const showHashtagHelper = ref(false);
 
-const isTyping = computed(() => draft.value.trim().length > 0);
+// Create a draft note that the editor will work with
+const draftNote = ref<Note>({
+  id: 'draft',
+  type: selectedType.value,
+  content: '',
+  metadata: {},
+  created: Date.now(),
+  updated: Date.now(),
+} as Note);
+
+// Get the editor component for the selected type
+const editorComponent = computed(() => {
+  const modules = moduleRegistry.getModulesForType(selectedType.value);
+  return modules.length > 0 && modules[0].components?.editor 
+    ? modules[0].components.editor 
+    : null;
+});
+
+// Extract text content for hashtag detection
+const draftText = computed(() => getNoteContent(draftNote.value));
+
+const isTyping = computed(() => draftText.value.trim().length > 0);
 
 // Extract hashtags from the current draft (Unicode-aware)
 const detectedHashtags = computed(() => {
-  const matches = draft.value.match(/#[\p{L}\p{N}_]+/gu);
+  const matches = draftText.value.match(/#[\p{L}\p{N}_]+/gu);
   return matches ? [...new Set(matches)] : [];
 });
 
 // Show hashtag count and visual feedback
 const hashtagCount = computed(() => detectedHashtags.value.length);
+
+// Update draft note when type changes
+watch(selectedType, (newType) => {
+  // Keep content, just change type and reset metadata for new type
+  const currentContent = getNoteContent(draftNote.value);
+  draftNote.value = {
+    id: 'draft',
+    type: newType,
+    content: currentContent,
+    metadata: {},
+    created: Date.now(),
+    updated: Date.now(),
+  } as Note;
+});
+
+function handleEditorUpdate(updates: Partial<Note>) {
+  // Update the draft note with changes from the editor
+  draftNote.value = {
+    ...draftNote.value,
+    ...updates,
+    updated: Date.now(),
+  } as Note;
+}
 
 const defaultEmojiAction = computed<ComposerAction>(() => ({
   id: 'emoji',
@@ -69,7 +113,7 @@ const defaultEmojiAction = computed<ComposerAction>(() => ({
   items: [
     '😀', '😅', '😍', '🤔', '🔥', '🎉',
     '✅', '🙌', '📌', '🧠', '🚀', '✨',
-    '💡', '⭐', '💯', '👍', '❤️', '�',
+    '💡', '⭐', '💯', '👍', '❤️', '🎊',
     '🎯', '📝', '💬', '🎨', '🌟', '🏆'
   ].map((emoji) => ({
     id: emoji,
@@ -95,14 +139,21 @@ const quickHashtagAction = computed<ComposerAction>(() => ({
 const allActions = computed(() => [quickHashtagAction.value, ...props.actions, defaultEmojiAction.value]);
 
 function focusInput() {
+  // Focus handled by editor component
   nextTick(() => {
-    textareaRef.value?.focus();
+    // Could implement editor-specific focus if needed
   });
 }
 
 function append(value: string) {
-  draft.value += value;
-  adjustTextareaHeight();
+  // Append to the current content
+  const currentContent = getNoteContent(draftNote.value);
+  handleEditorUpdate({ content: currentContent + value });
+}
+
+function changeType(type: NoteType) {
+  selectedType.value = type;
+  closeMenus();
 }
 
 function closeMenus() {
@@ -111,12 +162,23 @@ function closeMenus() {
 }
 
 function send() {
-  if (!draft.value.trim()) return;
-  emit('submit', draft.value.trim(), selectedType.value);
-  draft.value = '';
+  const content = getNoteContent(draftNote.value);
+  if (!content.trim()) return;
+  
+  emit('submit', content.trim(), selectedType.value);
+  
+  // Reset draft
+  draftNote.value = {
+    id: 'draft',
+    type: selectedType.value,
+    content: '',
+    metadata: {},
+    created: Date.now(),
+    updated: Date.now(),
+  } as Note;
+  
   closeMenus();
   focusInput();
-  adjustTextareaHeight();
 }
 
 function createAdvanced(type: NoteType) {
@@ -141,7 +203,9 @@ function getNoteTypeIcon(type: NoteType): string {
 }
 
 function onKey(e: KeyboardEvent) {
-  if (e.key === 'Enter' && !e.shiftKey) {
+  // Only auto-send on Enter for simple text types
+  // Rich editors like TipTap handle Enter themselves
+  if (e.key === 'Enter' && !e.shiftKey && selectedType.value === 'text') {
     e.preventDefault();
     send();
     return;
@@ -154,14 +218,6 @@ function onKey(e: KeyboardEvent) {
   // Show hashtag helper when # is typed
   if (e.key === '#') {
     showHashtagHelper.value = true;
-  }
-}
-
-function adjustTextareaHeight() {
-  if (textareaRef.value) {
-    textareaRef.value.style.height = 'auto';
-    const newHeight = Math.min(textareaRef.value.scrollHeight, 150);
-    textareaRef.value.style.height = newHeight + 'px';
   }
 }
 
@@ -195,31 +251,30 @@ function selectActionItem(action: ComposerAction, item: ComposerActionItem) {
   focusInput();
 }
 
-watch(draft, () => {
-  adjustTextareaHeight();
+watch(draftText, () => {
   // Hide hashtag helper when space is typed
-  if (draft.value.endsWith(' ') || draft.value.endsWith('\n')) {
+  if (draftText.value.endsWith(' ') || draftText.value.endsWith('\n')) {
     showHashtagHelper.value = false;
   }
 });
 </script>
 
 <template>
-  <div class="relative">
-    <!-- Hashtag helper tooltip -->
-    <Transition name="slide-up">
+  <div class="relative w-full">
+    <!-- Hashtag helper -->
+    <Transition name="brutal-slide">
       <div
         v-if="hashtagCount > 0"
-        class="mb-2 flex items-center gap-2 text-xs font-bold"
+        class="flex items-center gap-4 mb-4 flex-wrap"
       >
-        <span class="brutal-badge">
+        <span class="inline-flex items-center px-3 py-1 bg-accent-cyan text-base-black border-2 border-base-black rounded-sm shadow-hard-sm font-black text-xs uppercase">
           #️⃣ {{ hashtagCount }} {{ hashtagCount === 1 ? 'tag' : 'tags' }}
         </span>
-        <div class="flex flex-wrap gap-1">
+        <div class="flex flex-wrap gap-2">
           <span
             v-for="tag in detectedHashtags"
             :key="tag"
-            class="brutal-tag text-xs"
+            class="inline-flex items-center px-3 py-1 bg-accent-pink text-base-white border-2 border-base-black rounded-sm shadow-hard-sm font-black text-xs uppercase"
           >
             {{ tag }}
           </span>
@@ -227,153 +282,148 @@ watch(draft, () => {
       </div>
     </Transition>
 
-    <div class="flex items-end gap-3">
-      <!-- Action Buttons -->
-      <div class="flex items-center gap-2">
+    <!-- Main Composer Row -->
+    <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-end">
+      <!-- Left: Action Buttons (6 buttons in 2 rows) -->
+      <div class="grid grid-cols-2 gap-2 items-center">
         <div v-for="action in allActions" :key="action.id" class="relative">
           <button
             type="button"
-            class="brutal-btn-icon"
+            class="btn-icon"
             :aria-label="action.label"
             @click="triggerAction(action)"
-            :aria-expanded="action.type === 'menu' ? menuOpen === action.id : undefined"
+            :title="action.label"
           >
-            <span v-if="action.icon" aria-hidden="true">{{ action.icon }}</span>
-            <span v-else class="text-xs font-bold">{{ action.label }}</span>
+            <span v-if="action.icon">{{ action.icon }}</span>
+            <span v-else class="text-xs">{{ action.label.slice(0, 1) }}</span>
           </button>
 
-          <!-- Emoji Picker -->
-          <Transition name="slide-up">
+          <!-- Action Menu (Emoji Picker, etc.) -->
+          <Transition name="brutal-pop">
             <div
               v-if="action.type === 'menu' && menuOpen === action.id && action.items?.length"
-              class="brutal-emoji-picker"
+              class="absolute bottom-full left-0 mb-2 p-2 bg-base-white dark:bg-dark-bg-primary border-3 border-base-black dark:border-white shadow-hard dark:shadow-dark-hard z-50 grid grid-cols-6 gap-1 min-w-48"
             >
               <button
                 v-for="item in action.items"
                 :key="item.id"
                 type="button"
-                class="brutal-emoji-btn"
-                :aria-label="item.label"
+                class="w-10 h-10 flex items-center justify-center bg-base-white dark:bg-dark-bg-secondary border-2 border-base-black dark:border-white hover:bg-accent-yellow dark:hover:bg-accent-yellow hover:text-base-black transition-all duration-100 cursor-pointer font-black"
                 @click="selectActionItem(action, item)"
               >
-                <span aria-hidden="true">{{ item.icon ?? item.label }}</span>
+                {{ item.icon ?? item.label }}
+              </button>
+            </div>
+          </Transition>
+        </div>
+        
+        <!-- Type Selector Button -->
+        <div v-if="availableTypes.length > 1" class="relative">
+          <button
+            type="button"
+            class="w-11 h-11 flex items-center justify-center font-black border-3 border-base-black dark:border-white rounded-sm shadow-hard-sm dark:shadow-dark-hard-sm bg-accent-cyan text-base-black cursor-pointer transition-all duration-100 hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard dark:shadow-dark-hard) active:(translate-x-0.5 translate-y-0.5 shadow-none)"
+            @click="menuOpen = menuOpen === 'note-type' ? null : 'note-type'"
+            :title="'Type: ' + selectedType"
+          >
+            {{ selectedType.slice(0, 1).toUpperCase() }}
+          </button>
+          
+          <!-- Type Menu -->
+          <Transition name="brutal-pop">
+            <div v-if="menuOpen === 'note-type'" class="absolute bottom-full left-0 mb-2 p-2 bg-base-white dark:bg-dark-bg-primary border-3 border-base-black dark:border-white shadow-hard dark:shadow-dark-hard z-50 min-w-32">
+              <button
+                v-for="type in availableTypes"
+                :key="type"
+                type="button"
+                class="w-full px-3 py-2 text-left bg-base-white dark:bg-dark-bg-secondary text-base-black dark:text-dark-text-primary border-2 border-base-black dark:border-white mb-1 last:mb-0 hover:bg-accent-yellow dark:hover:bg-accent-yellow hover:text-base-black transition-all duration-100 cursor-pointer font-black uppercase text-sm"
+                :class="{ 'bg-accent-pink text-base-white': type === selectedType }"
+                @click="changeType(type)"
+              >
+                {{ type }}
               </button>
             </div>
           </Transition>
         </div>
       </div>
 
-      <!-- Text Input -->
-      <div class="relative flex-1">
-        <textarea
-          ref="textareaRef"
-          v-model="draft"
-          class="brutal-input w-full resize-none"
-          :placeholder="t('placeholder')"
-          rows="1"
-          @keydown="onKey"
-          @input="adjustTextareaHeight"
+      <!-- Center: Dynamic Editor -->
+      <div class="flex-1 relative">
+        <component
+          v-if="editorComponent"
+          :is="editorComponent"
+          :note="draftNote"
+          :readonly="false"
+          @update="handleEditorUpdate"
+          class="w-full"
         />
+        <div v-else class="p-4 text-text-secondary dark:text-dark-text-secondary">
+          <p>No editor for {{ selectedType }}</p>
+        </div>
 
         <!-- Typing indicator -->
         <Transition name="fade">
-          <div
-            v-if="isTyping && !hashtagCount"
-            class="absolute -top-6 left-0 text-xs font-bold uppercase tracking-wide opacity-60"
-          >
+          <div v-if="isTyping && !hashtagCount" class="absolute -bottom-6 left-0 text-xs text-text-tertiary dark:text-dark-text-tertiary font-bold flex items-center gap-1">
             ✍️ {{ t('writing') }}
           </div>
         </Transition>
       </div>
 
-      <!-- Note Type Selector -->
-      <div v-if="availableTypes.length > 1" class="relative">
+      <!-- Right: Send Button -->
+      <div class="flex">
         <button
           type="button"
-          class="brutal-btn-icon h-[52px] px-3"
-          :aria-label="'Note type: ' + selectedType"
-          @click="menuOpen = menuOpen === 'note-type' ? null : 'note-type'"
-          :title="'Current: ' + selectedType"
+          class="btn-primary btn-lg"
+          :disabled="!isTyping"
+          @click="send"
+          :title="t('send')"
         >
-          <span class="text-sm font-bold">{{ getNoteTypeIcon(selectedType) }}</span>
+          ⚡ {{ t('send') }}
         </button>
-
-        <!-- Type Picker Dropdown -->
-        <Transition name="slide-up">
-          <div
-            v-if="menuOpen === 'note-type'"
-            class="brutal-type-picker"
-          >
-            <button
-              v-for="type in availableTypes"
-              :key="type"
-              type="button"
-              :class="['brutal-type-btn', { active: selectedType === type }]"
-              @click="selectType(type)"
-            >
-              <span class="text-lg">{{ getNoteTypeIcon(type) }}</span>
-              <span class="text-xs font-bold">{{ type }}</span>
-            </button>
-          </div>
-        </Transition>
       </div>
-
-      <!-- Send Button -->
-      <button
-        type="button"
-        class="brutal-btn-send"
-        :aria-label="t('send')"
-        :disabled="!isTyping"
-        @click="send"
-      >
-        <span class="text-xl">➤</span>
-      </button>
     </div>
   </div>
 </template>
 
+
 <style scoped>
-textarea {
-  min-height: 52px;
-  max-height: 150px;
-  line-height: 1.5;
+/* === ANIMATIONS === */
+@keyframes brutal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.brutal-type-picker {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  margin-bottom: 8px;
-  background: white;
-  border: 3px solid black;
-  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 140px;
-  z-index: 100;
+.brutal-slide-enter-active,
+.brutal-slide-leave-active {
+  transition: all 0.15s ease-out;
 }
 
-.brutal-type-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: white;
-  border: 2px solid black;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
+.brutal-slide-enter-from,
+.brutal-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
-.brutal-type-btn:hover {
-  background: #f0f0f0;
-  transform: translateX(-2px);
+.brutal-pop-enter-active {
+  animation: brutal-pop 0.15s ease-out;
 }
 
-.brutal-type-btn.active {
-  background: black;
-  color: white;
+.brutal-pop-leave-active {
+  animation: brutal-pop 0.1s ease-in reverse;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

@@ -23,18 +23,20 @@ const imageNoteHandler: NoteTypeHandler = {
     return {
       id: createId(),
       type: "image",
-      blob: data.blob,
-      url: data.url,
-      width: data.width,
-      height: data.height,
-      alt: data.alt,
-      transforms: data.transforms || [],
+      content: data.content || data.url || "",
+      metadata: {
+        blob: data.blob || data.metadata?.blob,
+        width: data.width || data.metadata?.width,
+        height: data.height || data.metadata?.height,
+        alt: data.alt || data.metadata?.alt || "",
+        transforms: data.transforms || data.metadata?.transforms || [],
+        ...data.metadata
+      },
       created: Date.now(),
       updated: Date.now(),
       category: data.category,
       tags: data.tags,
       archived: data.archived || false,
-      metadata: data.metadata,
     };
   },
 
@@ -51,8 +53,8 @@ const imageNoteHandler: NoteTypeHandler = {
   async delete(note) {
     // Revoke object URL if it exists
     const imgNote = note as ImageNote;
-    if (imgNote.url && imgNote.url.startsWith("blob:")) {
-      URL.revokeObjectURL(imgNote.url);
+    if (imgNote.content && imgNote.content.startsWith("blob:")) {
+      URL.revokeObjectURL(imgNote.content);
     }
     console.log(`Deleting image note ${note.id}`);
   },
@@ -62,7 +64,7 @@ const imageNoteHandler: NoteTypeHandler = {
     return (
       !!imgNote.id &&
       imgNote.type === "image" &&
-      (!!imgNote.blob || !!imgNote.url) &&
+      typeof imgNote.content === "string" &&
       !!imgNote.created
     );
   },

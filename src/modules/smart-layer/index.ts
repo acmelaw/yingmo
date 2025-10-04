@@ -20,18 +20,24 @@ function nextTimestamp(previous: number): number {
 
 const smartLayerNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<SmartLayerNote> {
+    const source = data.source || data.metadata?.source || { type: "text", data: "" };
+    const layers = data.layers || data.metadata?.layers || [];
+    
     return {
       id: createId(),
       type: "smart-layer",
-      source: data.source || { type: "text", data: "" },
-      layers: data.layers || [],
-      activeLayerId: data.activeLayerId,
+      content: data.content || JSON.stringify(source.data) || "",
+      metadata: {
+        source,
+        layers,
+        activeLayerId: data.activeLayerId || data.metadata?.activeLayerId,
+        ...data.metadata
+      },
       created: Date.now(),
       updated: Date.now(),
       category: data.category,
       tags: data.tags,
       archived: data.archived || false,
-      metadata: data.metadata,
     };
   },
 
@@ -54,8 +60,9 @@ const smartLayerNoteHandler: NoteTypeHandler = {
     return (
       !!smartNote.id &&
       smartNote.type === "smart-layer" &&
-      !!smartNote.source &&
-      Array.isArray(smartNote.layers) &&
+      typeof smartNote.content === "string" &&
+      !!smartNote.metadata?.source &&
+      Array.isArray(smartNote.metadata?.layers) &&
       !!smartNote.created
     );
   },

@@ -10,6 +10,7 @@ import { codeNoteModule } from "@/modules/code";
 import { richTextNoteModule } from "@/modules/rich-text";
 import { imageNoteModule } from "@/modules/image";
 import { smartLayerNoteModule } from "@/modules/smart-layer";
+import caesarCipherModule from "@/modules/caesar-cipher";
 
 export async function initializeModules() {
   console.log("Initializing note modules...");
@@ -21,6 +22,9 @@ export async function initializeModules() {
   await moduleRegistry.register(richTextNoteModule);
   await moduleRegistry.register(imageNoteModule);
   await moduleRegistry.register(smartLayerNoteModule);
+  
+  // Register view-only modules
+  await moduleRegistry.register(caesarCipherModule);
 
   console.log("All modules initialized");
 }
