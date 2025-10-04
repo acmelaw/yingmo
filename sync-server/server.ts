@@ -226,11 +226,27 @@ fastify.get<{
 
 /**
  * WebSocket endpoint for Yjs sync
- * WS /api/sync?room=roomName
+ * Supports both query and path-based room naming:
+ * WS /api/sync?room=roomName (query-based)
+ * WS /api/sync/roomName (path-based, y-websocket default)
  */
-fastify.get("/api/sync", { websocket: true }, (connection, request) => {
-  const url = new URL(request.url, `http://${request.headers.host}`);
-  const roomName = url.searchParams.get("room") || "default";
+fastify.register(async (fastify) => {
+  // Path-based WebSocket endpoint (y-websocket default)
+  fastify.get("/api/sync/:roomName", { websocket: true }, (connection, request) => {
+    const params = request.params as { roomName: string };
+    const roomName = params.roomName || "default";
+    handleWebSocketConnection(connection, request, roomName);
+  });
+
+  // Query-based WebSocket endpoint (alternative)
+  fastify.get("/api/sync", { websocket: true }, (connection, request) => {
+    const url = new URL(request.url, `http://${request.headers.host}`);
+    const roomName = url.searchParams.get("room") || "default";
+    handleWebSocketConnection(connection, request, roomName);
+  });
+});
+
+function handleWebSocketConnection(connection: unknown, request: unknown, roomName: string) {
   const room = getRoom(roomName);
   const socket = connection as unknown as WebSocketLike;
 
@@ -321,7 +337,7 @@ fastify.get("/api/sync", { websocket: true }, (connection, request) => {
       });
     }
   );
-});
+}
 
 /**
  * Start server

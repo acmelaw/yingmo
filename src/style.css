@@ -1,3 +1,6 @@
+/* Import component styles */
+@import './design/components.css';
+
 :root {
   color-scheme: light;
   /* Neo-brutalism color palette */

@@ -1,4 +1,4 @@
-import { useNotesStore } from "@/stores/notesModular";
+import { useNotesStore } from "@/stores/notes";
 import type { Note } from "@/types/note";
 import {
   isTextNote,

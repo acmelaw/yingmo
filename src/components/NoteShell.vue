@@ -10,7 +10,7 @@ import { storeToRefs } from 'pinia';
 
 import Composer, { type ComposerAction, type ComposerActionContext } from './Composer.vue';
 import NoteCard from './NoteCard.vue';
-import { useNotesStore } from '../stores/notesModular';
+import { useNotesStore } from '../stores/notes';
 import { useSettingsStore } from '../stores/settings';
 import { useDataExport } from '../composables/useDataExport';
 import { usePlatform } from '../composables/usePlatform';

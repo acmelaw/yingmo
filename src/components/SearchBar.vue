@@ -14,6 +14,15 @@ const searchQuery = computed({
   },
 });
 
+// Get all unique tags from notes
+const allTags = computed(() => {
+  const tagSet = new Set<string>();
+  store.notes.forEach(note => {
+    note.tags?.forEach(tag => tagSet.add(tag));
+  });
+  return Array.from(tagSet).sort();
+});
+
 // Get suggested tags based on search query
 const suggestedTags = computed(() => {
   if (!searchQuery.value) return [];
@@ -21,8 +30,8 @@ const suggestedTags = computed(() => {
   const query = searchQuery.value.toLowerCase();
   const startsWith = query.startsWith('#') ? query.substring(1) : query;
 
-  return store.allTags
-    .filter(tag => tag.toLowerCase().includes(startsWith))
+  return allTags.value
+    .filter((tag: string) => tag.toLowerCase().includes(startsWith))
     .slice(0, 5);
 });
 
@@ -30,8 +39,8 @@ const suggestedTags = computed(() => {
 const isHashtagQuery = computed(() => searchQuery.value.startsWith('#'));
 
 function selectTag(tag: string) {
-  store.toggleTag(tag);
-  searchQuery.value = '';
+  // Just set the search query to filter by tag
+  searchQuery.value = `#${tag}`;
   showSuggestions.value = false;
   searchInput.value?.blur();
 }

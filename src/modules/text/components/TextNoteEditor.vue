@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import * as Y from 'yjs';
 import type { TextNote } from '@/types/note';
-import { useNotesStore } from '@/stores/notesModular';
+import { useNotesStore } from '@/stores/notes';
 import { useAuthStore } from '@/stores/auth';
 import { useCollaborationDoc } from '@/composables/useCollaborationDoc';
 
@@ -38,12 +38,15 @@ watch(
     if (!collaborationEnabled.value) {
       localText.value = newText;
     } else if (yText && newText !== yText.toString()) {
-      collaboration.doc?.transact(() => {
-        yText!.delete(0, yText!.length);
-        if (newText.length > 0) {
-          yText!.insert(0, newText);
-        }
-      });
+      const doc = collaboration.doc.value;
+      if (doc) {
+        doc.transact(() => {
+          yText!.delete(0, yText!.length);
+          if (newText.length > 0) {
+            yText!.insert(0, newText);
+          }
+        });
+      }
     }
   }
 );

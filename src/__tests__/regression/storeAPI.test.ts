@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
-import { useNotesStore } from "@/stores/notesModular";
+import { useNotesStore } from "@/stores/notes";
 import { moduleRegistry } from "@/core/ModuleRegistry";
 import { textNoteModule } from "@/modules/text";
 import type { Note } from "@/types/note";

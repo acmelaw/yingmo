@@ -1,6 +1,4 @@
 import "@unocss/reset/tailwind.css";
-import "@quasar/extras/material-icons/material-icons.css";
-import "quasar/src/css/index.sass";
 import "uno.css";
 import "./style.css";
 
@@ -8,7 +6,6 @@ import { createApp, watch } from "vue";
 import { createPinia } from "pinia";
 import { createI18n } from "vue-i18n";
 import { createHead } from "@unhead/vue";
-import { Quasar } from "quasar";
 
 import App from "./App.vue";
 import { useSettingsStore } from "./stores/settings";
@@ -54,6 +51,21 @@ const messages = {
     allNotes: "All Notes",
     clearAll: "Clear All",
     confirmClearAll: "Are you sure you want to delete all notes?",
+    justNow: "Just now",
+    syncDisabled: "Sync disabled",
+    syncAwaitingAuth: "Awaiting authentication",
+    syncInProgress: "Syncing…",
+    syncError: "Error",
+    lastSynced: "Last synced",
+    syncReady: "Ready to sync",
+    syncDescription: "Connect to your sync server for collaboration and backup",
+    changeServer: "Change Server",
+    connectServer: "Connect to Server",
+    noServerConnected: "No server connected",
+    syncing: "Syncing…",
+    syncNow: "Sync Now",
+    retry: "Retry",
+    done: "Done",
   },
 };
 
@@ -70,11 +82,6 @@ const app = createApp(App);
 app.use(pinia);
 app.use(createHead());
 app.use(i18n);
-app.use(Quasar, {
-  config: {
-    dark: false,
-  },
-});
 
 app.mount("#app");
 
