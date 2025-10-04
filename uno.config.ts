@@ -40,6 +40,7 @@ export default defineConfig({
     "fab-brutal",
     "floating-surface",
     "textarea-brutal",
+    "dark",
   ],
   presets: [presetUno()],
 });

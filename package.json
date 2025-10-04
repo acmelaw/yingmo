@@ -1,31 +1,90 @@
 {
-  "name": "chatapp-notes",
+  "name": "vue-notes-app",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "A production-ready notes application supporting PWA, Electron, and mobile platforms",
   "type": "module",
+  "author": "",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "vite build && electron-builder",
+    "electron:build:win": "vite build && electron-builder --win",
+    "electron:build:mac": "vite build && electron-builder --mac",
+    "electron:build:linux": "vite build && electron-builder --linux",
+    "capacitor:init": "cap init",
+    "capacitor:add:ios": "cap add ios",
+    "capacitor:add:android": "cap add android",
+    "capacitor:sync": "vite build && cap sync",
+    "capacitor:open:ios": "cap open ios",
+    "capacitor:open:android": "cap open android"
   },
   "dependencies": {
     "@unhead/vue": "^1.9.3",
     "@unocss/reset": "^0.58.9",
     "@vueuse/core": "^11.0.3",
+    "idb": "^8.0.0",
+    "localforage": "^1.10.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.21",
     "vue-i18n": "^9.10.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
+    "@capacitor/android": "^6.0.0",
     "@types/node": "^20.11.30",
     "@unocss/vite": "^0.58.9",
     "@vitejs/plugin-vue": "^5.0.4",
+    "concurrently": "^8.2.2",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
     "typescript": "^5.4.5",
     "unocss": "^0.58.9",
     "vite": "^5.2.8",
+    "vite-plugin-pwa": "^0.20.0",
     "vitest": "^1.5.0",
-    "vue-tsc": "^2.0.28"
+    "vue-tsc": "^2.0.28",
+    "wait-on": "^7.2.0",
+    "workbox-window": "^7.1.0"
+  },
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.vuenotes.app",
+    "productName": "Vue Notes",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
+      "category": "Office"
+    }
   }
 }

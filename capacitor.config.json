@@ -1,0 +1,14 @@
+{
+  "appId": "com.vuenotes.app",
+  "appName": "Vue Notes",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}
