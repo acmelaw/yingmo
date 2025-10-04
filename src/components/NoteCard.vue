@@ -65,7 +65,7 @@ const hasTransforms = computed(() => noteTransforms.value.length > 0);
   <article class="note-card flex items-start gap-3">
     <div class="bubble-surface flex-1 px-3 py-3">
       <!-- Note metadata -->
-      <div v-if="note.category || note.tags?.length" class="mb-2 flex flex-wrap gap-2">
+      <div class="mb-2 flex flex-wrap gap-2">
         <span
           v-if="note.category"
           class="inline-block rounded bg-ink/10 px-2 py-0.5 text-[0.65rem] font-medium dark:bg-white/10"
@@ -73,7 +73,7 @@ const hasTransforms = computed(() => noteTransforms.value.length > 0);
           {{ note.category }}
         </span>
         <span
-          v-for="tag in note.tags"
+          v-for="tag in note.tags ?? []"
           :key="tag"
           class="inline-block rounded bg-accent/20 px-2 py-0.5 text-[0.65rem] font-medium"
         >

@@ -13,6 +13,11 @@ function createId(): string {
     : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function nextTimestamp(previous: number): number {
+  const now = Date.now();
+  return now > previous ? now : previous + 1;
+}
+
 const textNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<TextNote> {
     return {
@@ -34,7 +39,7 @@ const textNoteHandler: NoteTypeHandler = {
       ...textNote,
       ...updates,
       type: "text", // Ensure type doesn't change
-      updated: Date.now(),
+      updated: nextTimestamp(textNote.updated),
     } as TextNote;
   },
 

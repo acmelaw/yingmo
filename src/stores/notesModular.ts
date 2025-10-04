@@ -2,7 +2,7 @@
  * Refactored notes store with modular architecture support
  */
 
-import { computed, watch } from "vue";
+import { computed, ref } from "vue";
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useStorage } from "@vueuse/core";
 import type { Note, NoteType, TextNote } from "@/types/note";
@@ -22,6 +22,29 @@ const STORAGE_KEY = "vue-notes.data";
 const VERSION_KEY = "vue-notes.version";
 const CURRENT_VERSION = "2.0.0";
 
+type CategoryKey = string;
+
+function clone<T>(value: T): T {
+  const structuredCloneFn = (globalThis as any).structuredClone;
+  if (typeof structuredCloneFn === "function") {
+    try {
+      return structuredCloneFn(value);
+    } catch (error) {
+      // Fall through to JSON clone for values that cannot be structured cloned (reactive proxies, etc.)
+    }
+  }
+
+  return JSON.parse(JSON.stringify(value));
+}
+
+function createStorageRef<T>(key: string, initialValue: T) {
+  if (import.meta.env.MODE === "test") {
+    return ref<T>(clone(initialValue));
+  }
+
+  return useStorage<T>(key, initialValue);
+}
+
 function createId() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
@@ -29,8 +52,8 @@ function createId() {
 }
 
 export const useNotesStore = defineStore("notes", () => {
-  const version = useStorage(VERSION_KEY, CURRENT_VERSION);
-  const state = useStorage<NotesState>(STORAGE_KEY, {
+  const version = createStorageRef(VERSION_KEY, CURRENT_VERSION);
+  const state = createStorageRef<NotesState>(STORAGE_KEY, {
     notes: [],
     categories: [],
     searchQuery: "",
@@ -38,6 +61,10 @@ export const useNotesStore = defineStore("notes", () => {
     sortBy: "created",
     sortOrder: "desc",
   });
+
+  const categoryCounts = new Map<CategoryKey, number>();
+
+  rebuildCategoryIndex(state.value.notes);
 
   // Initialize service
   const noteService = new DefaultNoteService({
@@ -52,7 +79,8 @@ export const useNotesStore = defineStore("notes", () => {
       return state.value.notes;
     },
     add: (note: Note) => {
-      state.value.notes = [...state.value.notes, note];
+      state.value.notes.push(note);
+      trackCategory(note.category ?? null);
     },
     update: (id: string, updates: Partial<Note>) => {
       const index = state.value.notes.findIndex((n) => n.id === id);
@@ -60,17 +88,21 @@ export const useNotesStore = defineStore("notes", () => {
         const updated = {
           ...state.value.notes[index],
           ...updates,
-          updated: Date.now(),
+          updated: ensureFutureTimestamp(state.value.notes[index].updated),
         } as Note;
-        state.value.notes = [
-          ...state.value.notes.slice(0, index),
-          updated,
-          ...state.value.notes.slice(index + 1),
-        ];
+        const previousCategory = state.value.notes[index].category ?? null;
+        state.value.notes[index] = updated;
+        reconcileCategories(previousCategory, updated.category ?? null);
       }
     },
     remove: (id: string) => {
-      state.value.notes = state.value.notes.filter((n) => n.id !== id);
+      const index = state.value.notes.findIndex((n) => n.id === id);
+      if (index !== -1) {
+        const [removed] = state.value.notes.splice(index, 1);
+        if (removed) {
+          trackRemoval(removed.category ?? null);
+        }
+      }
     },
   });
 
@@ -174,18 +206,23 @@ export const useNotesStore = defineStore("notes", () => {
     category?: string,
     tags?: string[]
   ): Promise<string> {
-    const note = await noteService.create(type, {
+    const payload: Record<string, any> = {
       ...data,
-      category,
-      tags,
       archived: false,
-    });
+    };
 
-    state.value.notes = [...state.value.notes, note];
-
-    if (category && !state.value.categories.includes(category)) {
-      state.value.categories = [...state.value.categories, category];
+    if (category !== undefined) {
+      payload.category = category;
     }
+
+    if (tags !== undefined) {
+      payload.tags = tags;
+    }
+
+    const note = await noteService.create(type, payload);
+
+    state.value.notes.push(note);
+    trackCategory(note.category ?? null);
 
     return note.id;
   }
@@ -213,11 +250,8 @@ export const useNotesStore = defineStore("notes", () => {
       archived: false,
     };
 
-    state.value.notes = [...state.value.notes, note];
-
-    if (category && !state.value.categories.includes(category)) {
-      state.value.categories = [...state.value.categories, category];
-    }
+    state.value.notes.push(note);
+    trackCategory(note.category ?? null);
 
     return note.id;
   }
@@ -232,21 +266,9 @@ export const useNotesStore = defineStore("notes", () => {
     const updatedNote = await noteService.update(note, updates);
 
     const index = state.value.notes.findIndex((n) => n.id === id);
-    state.value.notes = [
-      ...state.value.notes.slice(0, index),
-      updatedNote,
-      ...state.value.notes.slice(index + 1),
-    ];
-
-    if (
-      updatedNote.category &&
-      !state.value.categories.includes(updatedNote.category)
-    ) {
-      state.value.categories = [
-        ...state.value.categories,
-        updatedNote.category,
-      ];
-    }
+    const previousCategory = note.category ?? null;
+    state.value.notes[index] = updatedNote;
+    reconcileCategories(previousCategory, updatedNote.category ?? null);
   }
 
   /**
@@ -254,7 +276,13 @@ export const useNotesStore = defineStore("notes", () => {
    */
   async function remove(id: string): Promise<void> {
     await noteService.delete(id);
-    state.value.notes = state.value.notes.filter((note) => note.id !== id);
+    const index = state.value.notes.findIndex((note) => note.id === id);
+    if (index !== -1) {
+      const [removed] = state.value.notes.splice(index, 1);
+      if (removed) {
+        trackRemoval(removed.category ?? null);
+      }
+    }
   }
 
   /**
@@ -276,6 +304,7 @@ export const useNotesStore = defineStore("notes", () => {
    */
   function clearAll(): void {
     state.value.notes = [];
+    categoryCounts.clear();
     state.value.categories = [];
     state.value.searchQuery = "";
     state.value.selectedCategory = null;
@@ -288,7 +317,7 @@ export const useNotesStore = defineStore("notes", () => {
     return {
       version: CURRENT_VERSION,
       exportDate: new Date().toISOString(),
-      data: state.value,
+      data: clone(state.value),
     };
   }
 
@@ -305,7 +334,9 @@ export const useNotesStore = defineStore("notes", () => {
           ...state.value,
           ...data.data,
           notes: migratedNotes,
+          categories: [],
         };
+        rebuildCategoryIndex(migratedNotes);
         return true;
       }
       return false;
@@ -339,19 +370,6 @@ export const useNotesStore = defineStore("notes", () => {
     });
   }
 
-  // Watch for category changes
-  watch(
-    () => state.value.notes,
-    (notes) => {
-      const cats = new Set<string>();
-      notes.forEach((note) => {
-        if (note.category) cats.add(note.category);
-      });
-      state.value.categories = Array.from(cats).sort();
-    },
-    { deep: true }
-  );
-
   return {
     notes,
     categories,
@@ -375,6 +393,64 @@ export const useNotesStore = defineStore("notes", () => {
     importData,
     noteService,
   };
+
+  function trackCategory(category: string | null | undefined) {
+    const key = normalizeCategory(category);
+    if (!key) return;
+
+    const nextCount = (categoryCounts.get(key) ?? 0) + 1;
+    categoryCounts.set(key, nextCount);
+
+    if (nextCount === 1) {
+      state.value.categories = [...state.value.categories, key].sort();
+    }
+  }
+
+  function trackRemoval(category: string | null | undefined) {
+    const key = normalizeCategory(category);
+    if (!key) return;
+
+    const current = categoryCounts.get(key);
+    if (!current) return;
+
+    if (current === 1) {
+      categoryCounts.delete(key);
+      state.value.categories = state.value.categories.filter((c) => c !== key);
+    } else {
+      categoryCounts.set(key, current - 1);
+    }
+  }
+
+  function reconcileCategories(
+    previous: string | null,
+    next: string | null
+  ) {
+    if (normalizeCategory(previous) === normalizeCategory(next)) {
+      return;
+    }
+
+    trackRemoval(previous);
+    trackCategory(next);
+  }
+
+  function rebuildCategoryIndex(notes: Note[]) {
+    categoryCounts.clear();
+    state.value.categories = [];
+    notes.forEach((note) => {
+      trackCategory(note.category ?? null);
+    });
+  }
+
+  function normalizeCategory(category: string | null | undefined): string | null {
+    if (!category) return null;
+    const trimmed = category.trim();
+    return trimmed.length ? trimmed : null;
+  }
+
+  function ensureFutureTimestamp(previous: number): number {
+    const now = Date.now();
+    return now > previous ? now : previous + 1;
+  }
 });
 
 if (import.meta.hot) {

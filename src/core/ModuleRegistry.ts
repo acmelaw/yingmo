@@ -115,6 +115,20 @@ class ModuleRegistry {
   }
 
   /**
+   * Check if a note type handler is registered
+   */
+  hasTypeHandler(type: NoteType | string): boolean {
+    return this.typeHandlers.has(type as NoteType);
+  }
+
+  /**
+   * Get all registered note types
+   */
+  getRegisteredNoteTypes(): NoteType[] {
+    return Array.from(this.typeHandlers.keys());
+  }
+
+  /**
    * Register a component
    */
   registerComponent(name: string, component: Component): void {
@@ -199,6 +213,8 @@ class ModuleRegistry {
     this.components.clear();
     this.actions.clear();
     this.transforms.clear();
+    this.stores.clear();
+    this.services.clear();
   }
 }
 

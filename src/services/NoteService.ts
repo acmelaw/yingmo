@@ -53,7 +53,7 @@ export class DefaultNoteService implements NoteService {
     return {
       ...note,
       ...updates,
-      updated: Date.now(),
+      updated: this.ensureFutureTimestamp(note.updated),
     } as Note;
   }
 
@@ -80,30 +80,74 @@ export class DefaultNoteService implements NoteService {
   }
 
   async search(query: string): Promise<Note[]> {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) {
+      return [];
+    }
+
     const notes = await this.getAll();
-    const lowerQuery = query.toLowerCase();
+    const textMatches: Note[] = [];
+    const secondaryMatches: Note[] = [];
+    const seenSecondary = new Set<string>();
 
-    return notes.filter((note: Note) => {
-      // Search in common fields
-      if (note.category?.toLowerCase().includes(lowerQuery)) return true;
-      if (note.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery)))
-        return true;
+    for (const note of notes) {
+      const id = note.id ?? this.generateId();
 
-      // Type-specific search
+      // Prefer text content matches when available
       if ("text" in note && typeof note.text === "string") {
-        return note.text.toLowerCase().includes(lowerQuery);
+        if (note.text.toLowerCase().includes(normalized)) {
+          textMatches.push(note);
+          continue;
+        }
       }
 
-      if ("markdown" in note && typeof note.markdown === "string") {
-        return note.markdown.toLowerCase().includes(lowerQuery);
+      // Collect other field matches so they can be returned if we have no text hits
+      if (
+        note.category &&
+        note.category.toLowerCase().includes(normalized) &&
+        !seenSecondary.has(id)
+      ) {
+        secondaryMatches.push(note);
+        seenSecondary.add(id);
+        continue;
       }
 
-      if ("code" in note && typeof note.code === "string") {
-        return note.code.toLowerCase().includes(lowerQuery);
+      if (
+        note.tags?.some((tag) => tag.toLowerCase().includes(normalized)) &&
+        !seenSecondary.has(id)
+      ) {
+        secondaryMatches.push(note);
+        seenSecondary.add(id);
+        continue;
       }
 
-      return false;
-    });
+      if (
+        "markdown" in note &&
+        typeof (note as any).markdown === "string" &&
+        (note as any).markdown.toLowerCase().includes(normalized) &&
+        !seenSecondary.has(id)
+      ) {
+        secondaryMatches.push(note);
+        seenSecondary.add(id);
+        continue;
+      }
+
+      if (
+        "code" in note &&
+        typeof (note as any).code === "string" &&
+        (note as any).code.toLowerCase().includes(normalized) &&
+        !seenSecondary.has(id)
+      ) {
+        secondaryMatches.push(note);
+        seenSecondary.add(id);
+      }
+    }
+
+    if (textMatches.length > 0) {
+      return textMatches;
+    }
+
+    return secondaryMatches;
   }
 
   validate(note: Note): boolean {
@@ -114,12 +158,27 @@ export class DefaultNoteService implements NoteService {
     }
 
     // Basic validation
-    return !!note.id && !!note.type && !!note.created;
+    if (!note.id || !note.type || !note.created) {
+      return false;
+    }
+
+    const type = typeof (note as any).type === "string" ? (note as any).type : "";
+    const isRegisteredType = moduleRegistry.hasTypeHandler(type);
+    if (!isRegisteredType && type !== "unknown") {
+      return false;
+    }
+
+    return true;
   }
 
   private generateId(): string {
     return typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  private ensureFutureTimestamp(previous: number): number {
+    const now = Date.now();
+    return now > previous ? now : previous + 1;
   }
 }
