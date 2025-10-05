@@ -20,9 +20,10 @@ function nextTimestamp(previous: number): number {
 
 const smartLayerNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<SmartLayerNote> {
-    const source = data.source || data.metadata?.source || { type: "text", data: "" };
+    const source = data.source ||
+      data.metadata?.source || { type: "text", data: "" };
     const layers = data.layers || data.metadata?.layers || [];
-    
+
     return {
       id: createId(),
       type: "smart-layer",
@@ -31,7 +32,7 @@ const smartLayerNoteHandler: NoteTypeHandler = {
         source,
         layers,
         activeLayerId: data.activeLayerId || data.metadata?.activeLayerId,
-        ...data.metadata
+        ...data.metadata,
       },
       created: Date.now(),
       updated: Date.now(),

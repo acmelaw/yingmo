@@ -21,8 +21,11 @@ function nextTimestamp(previous: number): number {
 
 const markdownNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<MarkdownNote> {
-    const html = data.html || data.metadata?.renderedHtml || await marked(data.content || data.markdown || "");
-    
+    const html =
+      data.html ||
+      data.metadata?.renderedHtml ||
+      (await marked(data.content || data.markdown || ""));
+
     return {
       id: createId(),
       type: "markdown",
@@ -30,7 +33,7 @@ const markdownNoteHandler: NoteTypeHandler = {
       content: data.content || data.markdown || "",
       metadata: {
         renderedHtml: html,
-        ...data.metadata
+        ...data.metadata,
       },
       created: Date.now(),
       updated: Date.now(),
@@ -39,7 +42,10 @@ const markdownNoteHandler: NoteTypeHandler = {
     };
   },
 
-  async update(note: MarkdownNote, data: Partial<MarkdownNote>): Promise<MarkdownNote> {
+  async update(
+    note: MarkdownNote,
+    data: Partial<MarkdownNote>
+  ): Promise<MarkdownNote> {
     return {
       ...note,
       ...data,

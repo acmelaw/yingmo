@@ -98,7 +98,7 @@ export class CaesarCipherViewAdapter implements ViewAdapter<CaesarCipherData> {
   adapt(note: Note): CaesarCipherData {
     // Extract text content from different note types
     let text = '';
-    
+
     switch (note.type) {
       case 'text':
         text = note.data.content || '';
@@ -171,7 +171,7 @@ const props = defineProps<{
   note: Note;
 }>();
 
-const adapted = computed(() => 
+const adapted = computed(() =>
   viewAdapterRegistry.adaptNote(props.note, 'caesar-cipher')
 );
 const noteData = computed(() => adapted.value.data);
@@ -303,12 +303,12 @@ export function initModules() {
 Update `src/types/note.ts` to include the new type:
 
 ```typescript
-export type NoteType = 
-  | 'text' 
-  | 'markdown' 
-  | 'code' 
-  | 'rich-text' 
-  | 'image' 
+export type NoteType =
+  | 'text'
+  | 'markdown'
+  | 'code'
+  | 'rich-text'
+  | 'image'
   | 'smart-layer'
   | 'caesar-cipher';  // Add this line
 ```
@@ -422,7 +422,7 @@ class CodeHighlightAdapter implements ViewAdapter<HighlightData> {
   adapt(note: Note): HighlightData {
     const code = this.extractCode(note);
     const language = this.detectLanguage(note);
-    
+
     return {
       code,
       language,
@@ -430,7 +430,7 @@ class CodeHighlightAdapter implements ViewAdapter<HighlightData> {
       lineNumbers: code.split('\n').length,
     };
   }
-  
+
   private highlightSyntax(code: string, lang: string): string {
     // Use a syntax highlighting library
     // Return HTML with syntax highlighting
@@ -446,7 +446,7 @@ import { YourAdapter } from './YourAdapter';
 
 describe('YourAdapter', () => {
   const adapter = new YourAdapter();
-  
+
   it('should adapt text notes', () => {
     const note = {
       id: '1',
@@ -455,13 +455,13 @@ describe('YourAdapter', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    
+
     const result = adapter.adapt(note);
     expect(result).toMatchObject({
       // Expected output
     });
   });
-  
+
   it('should provide warning for cross-type viewing', () => {
     const note = { type: 'markdown', /* ... */ };
     const warning = adapter.getWarning(note);

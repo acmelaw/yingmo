@@ -142,7 +142,7 @@ const updatedNote = setNoteContent(note, "new content");
 // Get metadata value
 const language = getNoteMeta<string>(note, 'language', 'text');
 
-// Set metadata value  
+// Set metadata value
 const withMeta = setNoteMeta(note, 'language', 'typescript');
 
 // Transform content generically (e.g., Caesar cipher)
@@ -211,14 +211,14 @@ function migrateNote(oldNote: any): Note {
   switch (oldNote.type) {
     case 'text':
       return { ...base, content: oldNote.text || '', metadata: {} };
-    
+
     case 'markdown':
-      return { 
-        ...base, 
+      return {
+        ...base,
         content: oldNote.markdown || '',
         metadata: { renderedHtml: oldNote.html }
       };
-    
+
     case 'code':
       return {
         ...base,
@@ -228,7 +228,7 @@ function migrateNote(oldNote: any): Note {
           filename: oldNote.filename
         }
       };
-    
+
     case 'rich-text':
       return {
         ...base,
@@ -238,7 +238,7 @@ function migrateNote(oldNote: any): Note {
           tiptapContent: oldNote.content
         }
       };
-    
+
     case 'image':
       return {
         ...base,
@@ -251,7 +251,7 @@ function migrateNote(oldNote: any): Note {
           transforms: oldNote.transforms
         }
       };
-    
+
     case 'smart-layer':
       return {
         ...base,
@@ -262,7 +262,7 @@ function migrateNote(oldNote: any): Note {
           activeLayerId: oldNote.activeLayerId
         }
       };
-    
+
     default:
       return { ...base, content: JSON.stringify(oldNote), metadata: {} };
   }
@@ -305,7 +305,7 @@ function migrateNote(oldNote: any): Note {
 ```typescript
 // Works on ANY note type
 function searchNotes(query: string) {
-  return notes.filter(note => 
+  return notes.filter(note =>
     getNoteContent(note).includes(query)
   );
 }

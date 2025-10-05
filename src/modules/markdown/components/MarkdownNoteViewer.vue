@@ -20,7 +20,7 @@ const markdownContent = computed(() => getNoteContent(props.note));
 const renderedHtml = computed(() => {
   const cached = getNoteMeta<string>(props.note, 'renderedHtml');
   if (cached) return cached;
-  
+
   return simpleMarkdownToHtml(markdownContent.value);
 });
 

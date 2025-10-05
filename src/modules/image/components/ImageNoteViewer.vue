@@ -24,7 +24,7 @@ const imageHeight = computed(() => getNoteMeta<number>(props.note, 'height'));
       :height="imageHeight"
       class="viewer-image"
     />
-    
+
     <div v-else class="no-image">
       <div class="no-image-icon">🖼️</div>
       <p>No image URL provided</p>

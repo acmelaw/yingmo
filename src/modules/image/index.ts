@@ -30,7 +30,7 @@ const imageNoteHandler: NoteTypeHandler = {
         height: data.height || data.metadata?.height,
         alt: data.alt || data.metadata?.alt || "",
         transforms: data.transforms || data.metadata?.transforms || [],
-        ...data.metadata
+        ...data.metadata,
       },
       created: Date.now(),
       updated: Date.now(),

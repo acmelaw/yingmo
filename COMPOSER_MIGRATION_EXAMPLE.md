@@ -35,10 +35,10 @@
       <div class="grid grid-cols-2 gap-2">
         <button class="btn-icon">...</button>
       </div>
-      
+
       <!-- Editor: flex-1 -->
       <div class="flex-1">...</div>
-      
+
       <!-- Send button -->
       <div>
         <button class="btn-primary btn-lg">⚡ Send</button>

@@ -22,7 +22,7 @@
             :key="type"
             @click="selectType(type)"
             :disabled="type === currentType"
-            :class="['type-option', { 
+            :class="['type-option', {
               disabled: type === currentType,
               active: type === currentType
             }]"

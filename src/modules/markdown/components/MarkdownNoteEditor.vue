@@ -82,7 +82,7 @@ watch(
 // Simple markdown parser (basic implementation)
 function simpleMarkdownToHtml(markdown: string): string {
   if (!markdown) return '';
-  
+
   let html = markdown;
 
   // Headers

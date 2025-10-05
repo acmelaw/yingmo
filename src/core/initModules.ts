@@ -22,7 +22,7 @@ export async function initializeModules() {
   await moduleRegistry.register(richTextNoteModule);
   await moduleRegistry.register(imageNoteModule);
   await moduleRegistry.register(smartLayerNoteModule);
-  
+
   // Register view-only modules
   await moduleRegistry.register(caesarCipherModule);
 

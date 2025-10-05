@@ -13,7 +13,7 @@
   --brutal-bg-secondary: #E8E8E8;
   --brutal-text: #000000;
   --brutal-text-secondary: #333333;
-  
+
   /* === ACCENT COLORS - VIBRANT & LOUD === */
   --brutal-pink: #FF006E;
   --brutal-cyan: #00F5FF;
@@ -21,29 +21,29 @@
   --brutal-green: #00FF41;
   --brutal-purple: #B026FF;
   --brutal-orange: #FF6B00;
-  
+
   /* === SEMANTIC (still brutal) === */
   --brutal-success: #00FF41;
   --brutal-error: #FF006E;
   --brutal-warning: #FFFF00;
   --brutal-info: #00F5FF;
-  
+
   /* === BORDERS === */
   --brutal-border-thin: 2px;
   --brutal-border: 3px;
   --brutal-border-thick: 4px;
   --brutal-border-color: var(--brutal-black);
-  
+
   /* === HARD SHADOWS (no blur!) === */
   --brutal-shadow-sm: 3px 3px 0 var(--brutal-black);
   --brutal-shadow: 5px 5px 0 var(--brutal-black);
   --brutal-shadow-lg: 8px 8px 0 var(--brutal-black);
   --brutal-shadow-xl: 12px 12px 0 var(--brutal-black);
-  
+
   /* === HOVER SHADOWS === */
   --brutal-shadow-hover: 7px 7px 0 var(--brutal-black);
   --brutal-shadow-active: 2px 2px 0 var(--brutal-black);
-  
+
   /* === SPACING - Intentionally irregular === */
   --space-xs: 0.25rem;   /* 4px */
   --space-sm: 0.5rem;    /* 8px */
@@ -51,34 +51,34 @@
   --space-lg: 1.5rem;    /* 24px */
   --space-xl: 2rem;      /* 32px */
   --space-2xl: 3rem;     /* 48px */
-  
+
   /* === TYPOGRAPHY - BOLD & LOUD === */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Arial', 'Helvetica', sans-serif;
   --font-mono: 'Courier New', 'Courier', monospace;
-  
+
   --text-xs: 0.7rem;       /* 11px */
   --text-sm: 0.85rem;      /* 14px */
   --text-base: 1rem;       /* 16px */
   --text-lg: 1.25rem;      /* 20px */
   --text-xl: 1.5rem;       /* 24px */
   --text-2xl: 2rem;        /* 32px */
-  
+
   --font-normal: 400;
   --font-bold: 700;
   --font-black: 900;
-  
+
   --line-tight: 1.2;
   --line-normal: 1.4;
-  
+
   /* === NO BORDER RADIUS (or minimal) === */
   --radius-none: 0;
   --radius-sm: 2px;
   --radius-brutal: 0;      /* Most elements */
-  
+
   /* === TRANSITIONS - SNAPPY === */
   --transition-brutal: 0.1s ease-out;
   --transition-snap: 0.05s linear;
-  
+
   /* === Z-INDEX === */
   --z-base: 0;
   --z-sticky: 100;
@@ -96,7 +96,7 @@
   --brutal-text: #FFFFFF;
   --brutal-text-secondary: #CCCCCC;
   --brutal-border-color: var(--brutal-black);
-  
+
   /* Accents stay loud */
   --brutal-pink: #FF1A8C;
   --brutal-cyan: #00FFFF;
@@ -104,7 +104,7 @@
   --brutal-green: #39FF14;
   --brutal-purple: #C855FF;
   --brutal-orange: #FF8533;
-  
+
   /* Shadows inverted */
   --brutal-shadow-sm: 3px 3px 0 var(--brutal-black);
   --brutal-shadow: 5px 5px 0 var(--brutal-black);
@@ -449,7 +449,7 @@ body {
     --brutal-shadow: 4px 4px 0 var(--brutal-black);
     --brutal-shadow-lg: 6px 6px 0 var(--brutal-black);
   }
-  
+
   .btn {
     padding: var(--space-sm) var(--space-md);
     font-size: var(--text-sm);

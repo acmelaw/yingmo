@@ -74,7 +74,7 @@ watch(
 );
 
 function updateAlt() {
-  emit("update", { 
+  emit("update", {
     metadata: {
       ...props.note.metadata,
       alt: localAlt.value

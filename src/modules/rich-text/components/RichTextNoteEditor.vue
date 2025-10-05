@@ -44,7 +44,7 @@ const editor = useEditor({
   onUpdate: ({ editor }) => {
     const html = editor.getHTML();
     const json = editor.getJSON();
-    emit("update", { 
+    emit("update", {
       content: html,
       metadata: {
         ...props.note.metadata,

@@ -25,9 +25,10 @@ const richTextNoteHandler: NoteTypeHandler = {
       type: "rich-text",
       content: data.content || data.html || "",
       metadata: {
-        format: data.format || data.metadata?.format || 'html',
-        tiptapContent: data.tiptapContent || data.metadata?.tiptapContent || data.content,
-        ...data.metadata
+        format: data.format || data.metadata?.format || "html",
+        tiptapContent:
+          data.tiptapContent || data.metadata?.tiptapContent || data.content,
+        ...data.metadata,
       },
       created: Date.now(),
       updated: Date.now(),
@@ -53,7 +54,9 @@ const richTextNoteHandler: NoteTypeHandler = {
 
   validate(note) {
     const richNote = note as RichTextNote;
-    return richNote.type === "rich-text" && typeof richNote.content === "string";
+    return (
+      richNote.type === "rich-text" && typeof richNote.content === "string"
+    );
   },
 
   serialize(note) {

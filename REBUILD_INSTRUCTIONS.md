@@ -179,7 +179,7 @@ const markdownNoteHandler: NoteTypeHandler = {
       // ...
     };
   },
-  
+
   validate(note) {
     const mdNote = note as MarkdownNote;
     return typeof mdNote.markdown === "string";
@@ -202,7 +202,7 @@ const markdownNoteHandler: NoteTypeHandler = {
       // ...
     };
   },
-  
+
   validate(note) {
     const mdNote = note as MarkdownNote;
     return typeof mdNote.content === "string";

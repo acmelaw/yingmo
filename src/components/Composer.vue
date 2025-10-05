@@ -63,8 +63,8 @@ const draftNote = ref<Note>({
 // Get the editor component for the selected type
 const editorComponent = computed(() => {
   const modules = moduleRegistry.getModulesForType(selectedType.value);
-  return modules.length > 0 && modules[0].components?.editor 
-    ? modules[0].components.editor 
+  return modules.length > 0 && modules[0].components?.editor
+    ? modules[0].components.editor
     : null;
 });
 
@@ -164,9 +164,9 @@ function closeMenus() {
 function send() {
   const content = getNoteContent(draftNote.value);
   if (!content.trim()) return;
-  
+
   emit('submit', content.trim(), selectedType.value);
-  
+
   // Reset draft
   draftNote.value = {
     id: 'draft',
@@ -176,7 +176,7 @@ function send() {
     created: Date.now(),
     updated: Date.now(),
   } as Note;
-  
+
   closeMenus();
   focusInput();
 }
@@ -316,7 +316,7 @@ watch(draftText, () => {
             </div>
           </Transition>
         </div>
-        
+
         <!-- Type Selector Button -->
         <div v-if="availableTypes.length > 1" class="relative">
           <button
@@ -327,7 +327,7 @@ watch(draftText, () => {
           >
             {{ selectedType.slice(0, 1).toUpperCase() }}
           </button>
-          
+
           <!-- Type Menu -->
           <Transition name="brutal-pop">
             <div v-if="menuOpen === 'note-type'" class="absolute bottom-full left-0 mb-2 p-2 bg-base-white dark:bg-dark-bg-primary border-3 border-base-black dark:border-white shadow-hard dark:shadow-dark-hard z-50 min-w-32">

@@ -88,17 +88,17 @@ function formatRelativeTime(timestamp: number): string {
 const availableNoteTypes = computed<NoteType[]>(() => {
   const modules = moduleRegistry.getAllModules();
   const types: NoteType[] = [];
-  
+
   // Add note types that can be created
   modules
     .filter(m => m.capabilities?.canCreate)
     .forEach(m => types.push(...(m.supportedTypes as NoteType[])));
-    
+
   // Add view-only modules (like caesar-cipher)
   modules
     .filter(m => m.capabilities?.canTransform && m.supportedTypes.length === 0)
     .forEach(m => types.push(m.id as NoteType));
-    
+
   return types;
 });
 
@@ -156,7 +156,7 @@ async function handleAdd(text: string, type: NoteType = 'text') {
 
   // UNIFIED: All notes use `content` + `metadata`
   let noteData: Record<string, any>;
-  
+
   switch (type) {
     case 'text':
       noteData = { content: text.trim() };
@@ -165,33 +165,33 @@ async function handleAdd(text: string, type: NoteType = 'text') {
       noteData = { content: text.trim() };
       break;
     case 'code':
-      noteData = { 
-        content: text.trim(), 
+      noteData = {
+        content: text.trim(),
         metadata: { language: 'javascript' }
       };
       break;
     case 'rich-text':
-      noteData = { 
+      noteData = {
         content: `<p>${text.trim()}</p>`,
         metadata: {
           format: 'html',
-          tiptapContent: { 
-            type: 'doc', 
-            content: [{ type: 'paragraph', content: [{ type: 'text', text: text.trim() }] }] 
+          tiptapContent: {
+            type: 'doc',
+            content: [{ type: 'paragraph', content: [{ type: 'text', text: text.trim() }] }]
           }
         }
       };
       break;
     case 'image':
       // For image type from composer, treat text as URL
-      noteData = { 
+      noteData = {
         content: text.trim(), // URL
         metadata: { alt: text.trim() }
       };
       break;
     case 'smart-layer':
       // For smart layer, wrap text as source data
-      noteData = { 
+      noteData = {
         content: text.trim(),
         metadata: {
           source: { type: 'text', data: text.trim() },
@@ -218,9 +218,9 @@ function getDefaultDataForType(type: NoteType): Record<string, any> {
     case 'code':
       return { content: '', metadata: { language: 'javascript' } };
     case 'rich-text':
-      return { 
-        content: '', 
-        metadata: { 
+      return {
+        content: '',
+        metadata: {
           format: 'html',
           tiptapContent: { type: 'doc', content: [] }
         }
@@ -228,11 +228,11 @@ function getDefaultDataForType(type: NoteType): Record<string, any> {
     case 'image':
       return { content: '', metadata: {} };
     case 'smart-layer':
-      return { 
-        content: '', 
-        metadata: { 
-          source: { type: 'text', data: '' }, 
-          layers: [] 
+      return {
+        content: '',
+        metadata: {
+          source: { type: 'text', data: '' },
+          layers: []
         }
       };
     default:
@@ -1148,15 +1148,15 @@ function handleClearAll() {
   .messenger-container {
     max-width: 100%;
   }
-  
+
   .composer-container {
     max-width: 100%;
   }
-  
+
   .settings-panel {
     max-height: 60vh;
   }
-  
+
   .fab-button {
     bottom: 1rem;
     right: 1rem;

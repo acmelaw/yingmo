@@ -100,7 +100,7 @@ class ModuleRegistry {
     if (moduleById) {
       return [moduleById];
     }
-    
+
     // Otherwise, find by supported types
     return Array.from(this.modules.values()).filter((module) =>
       module.supportedTypes.includes(type as NoteType)

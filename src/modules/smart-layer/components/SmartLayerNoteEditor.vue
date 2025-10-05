@@ -114,7 +114,7 @@ function addLayer() {
     visible: true,
   };
   localLayers.value.push(newLayer);
-  emit("update", { 
+  emit("update", {
     metadata: {
       ...props.note.metadata,
       layers: localLayers.value
@@ -124,7 +124,7 @@ function addLayer() {
 
 function setActiveLayer(id: string) {
   activeLayerId.value = id;
-  emit("update", { 
+  emit("update", {
     metadata: {
       ...props.note.metadata,
       activeLayerId: id
@@ -136,7 +136,7 @@ function updateLayerData(id: string, data: any) {
   const layer = localLayers.value.find((l) => l.id === id);
   if (layer) {
     layer.data = data;
-    emit("update", { 
+    emit("update", {
       metadata: {
         ...props.note.metadata,
         layers: localLayers.value

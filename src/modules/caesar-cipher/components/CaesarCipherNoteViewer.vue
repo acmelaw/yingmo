@@ -69,7 +69,7 @@ function rot13(text: string): string {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .cipher-arrow {
     text-align: center;
     transform: rotate(90deg);

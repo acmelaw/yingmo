@@ -25,9 +25,9 @@ const codeNoteHandler: NoteTypeHandler = {
       type: "code",
       content: data.content || data.code || "",
       metadata: {
-        language: data.language || data.metadata?.language || 'javascript',
+        language: data.language || data.metadata?.language || "javascript",
         filename: data.filename || data.metadata?.filename,
-        ...data.metadata
+        ...data.metadata,
       },
       created: Date.now(),
       updated: Date.now(),

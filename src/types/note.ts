@@ -1,6 +1,6 @@
 /**
  * Core note type definitions for the modular note system
- * 
+ *
  * UNIFIED DATA MODEL:
  * All notes share a common `content` field for their primary data.
  * Type-specific parameters go in `metadata`.
@@ -64,7 +64,7 @@ export interface RichTextNote extends BaseNote {
   type: "rich-text";
   content: string; // HTML content or JSON stringified
   metadata?: {
-    format?: 'html' | 'tiptap-json';
+    format?: "html" | "tiptap-json";
     tiptapContent?: any; // TipTap JSON content
     [key: string]: any;
   };
@@ -145,7 +145,7 @@ export type Note =
  * Get the primary content from any note type
  */
 export function getNoteContent(note: Note): string {
-  return note.content || '';
+  return note.content || "";
 }
 
 /**
@@ -158,7 +158,11 @@ export function setNoteContent(note: Note, content: string): Note {
 /**
  * Get metadata value with type safety
  */
-export function getNoteMeta<T = any>(note: Note, key: string, defaultValue?: T): T | undefined {
+export function getNoteMeta<T = any>(
+  note: Note,
+  key: string,
+  defaultValue?: T
+): T | undefined {
   return note.metadata?.[key] ?? defaultValue;
 }
 
@@ -170,15 +174,18 @@ export function setNoteMeta(note: Note, key: string, value: any): any {
     ...note,
     metadata: {
       ...note.metadata,
-      [key]: value
-    }
+      [key]: value,
+    },
   };
 }
 
 /**
  * Apply a transformation to note content (for generic operations like Caesar cipher)
  */
-export function transformNoteContent(note: Note, transformer: (content: string) => string): Note {
+export function transformNoteContent(
+  note: Note,
+  transformer: (content: string) => string
+): Note {
   return setNoteContent(note, transformer(getNoteContent(note)));
 }
 

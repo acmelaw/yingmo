@@ -89,20 +89,20 @@ function updateCode() {
 }
 
 function updateLanguage() {
-  emit("update", { 
-    metadata: { 
-      ...props.note.metadata, 
-      language: localLanguage.value 
-    } 
+  emit("update", {
+    metadata: {
+      ...props.note.metadata,
+      language: localLanguage.value
+    }
   });
 }
 
 function updateFilename() {
-  emit("update", { 
-    metadata: { 
-      ...props.note.metadata, 
-      filename: localFilename.value 
-    } 
+  emit("update", {
+    metadata: {
+      ...props.note.metadata,
+      filename: localFilename.value
+    }
   });
 }
 

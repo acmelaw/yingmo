@@ -76,10 +76,10 @@ export default defineConfig({
     'btn-brutal': 'px-6 py-3 font-black uppercase tracking-wide border-brutal border-black bg-white shadow-brutal transition-all duration-100',
     'btn-brutal-hover': 'hover:(-translate-x-0.5 -translate-y-0.5 shadow-brutal-lg)',
     'btn-brutal-active': 'active:(translate-x-0.5 translate-y-0.5 shadow-brutal-sm)',
-    
+
     // Brutal card
     'card-brutal': 'p-6 border-brutal border-black bg-white shadow-brutal',
-    
+
     // Dark mode support
     'dark:btn-brutal': 'dark:(border-white bg-brutal-black text-white shadow-dark-brutal)',
     'dark:card-brutal': 'dark:(border-white bg-brutal-black shadow-dark-brutal)',
@@ -160,7 +160,7 @@ const buttonClass = computed(() => {
     md: 'px-6 py-3 text-base',
     lg: 'px-8 py-4 text-lg',
   }
-  
+
   return `${base} ${variants[props.variant || 'primary']} ${sizes[props.size || 'md']}`
 })
 </script>
