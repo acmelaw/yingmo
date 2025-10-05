@@ -601,6 +601,7 @@ export const useNotesStore = defineStore("notes", () => {
     const note: TextNote = {
       id: createId(),
       type: "text",
+      content: finalText,
       text: finalText,
       created: now,
       updated: now,
@@ -815,6 +816,7 @@ export const useNotesStore = defineStore("notes", () => {
       const migratedNote: TextNote = {
         id: oldNote.id || createId(),
         type: "text",
+        content: oldNote.text || "",
         text: oldNote.text || "",
         created: oldNote.created || Date.now(),
         updated: oldNote.updated || Date.now(),

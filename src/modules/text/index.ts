@@ -20,10 +20,12 @@ function nextTimestamp(previous: number): number {
 
 const textNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<TextNote> {
+    const content = (data?.content ?? data?.text ?? "") as string;
     return {
       id: createId(),
       type: "text",
-      content: data.content || data.text || "", // UNIFIED: use content field
+      content,
+      text: content,
       created: Date.now(),
       updated: Date.now(),
       category: data.category,
@@ -35,10 +37,18 @@ const textNoteHandler: NoteTypeHandler = {
 
   async update(note, updates) {
     const textNote = note as TextNote;
+    const nextContent =
+      (updates.content as string | undefined) ??
+      (updates as any).text ??
+      textNote.content ??
+      textNote.text ??
+      "";
     return {
       ...textNote,
       ...updates,
       type: "text", // Ensure type doesn't change
+      content: nextContent,
+      text: nextContent,
       updated: nextTimestamp(textNote.updated),
     } as TextNote;
   },

@@ -5,6 +5,7 @@ import {
   isMarkdownNote,
   isCodeNote,
   isRichTextNote,
+  getNoteContent,
 } from "@/types/note";
 
 export function useDataExport() {
@@ -85,15 +86,27 @@ export function useDataExport() {
 
   function renderNoteContent(note: Note): string {
     if (isTextNote(note)) {
-      return note.text;
+      return getNoteContent(note);
     }
 
     if (isMarkdownNote(note)) {
-      return note.markdown;
+      if (typeof note.content === "string" && note.content.length > 0) {
+        return note.content;
+      }
+      if (typeof note.markdown === "string") {
+        return note.markdown;
+      }
+      return note.metadata?.renderedHtml ?? "";
     }
 
     if (isCodeNote(note)) {
-      return note.code;
+      if (typeof note.content === "string" && note.content.length > 0) {
+        return note.content;
+      }
+      if (typeof note.code === "string") {
+        return note.code;
+      }
+      return "";
     }
 
     if (isRichTextNote(note)) {

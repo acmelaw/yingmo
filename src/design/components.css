@@ -88,6 +88,23 @@
   color: var(--brutal-black);
 }
 
+.btn-brutal-ghost {
+  background: transparent;
+  color: var(--brutal-black);
+  box-shadow: none;
+}
+
+.btn-brutal-ghost:hover {
+  background: var(--brutal-bg-alt);
+  box-shadow: var(--brutal-shadow-sm);
+  transform: translate(-1px, -1px);
+}
+
+.btn-brutal-ghost:active {
+  box-shadow: none;
+  transform: translate(1px, 1px);
+}
+
 .btn-brutal-sm {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;

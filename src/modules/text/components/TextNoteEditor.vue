@@ -52,6 +52,15 @@ watch(
   }
 );
 
+watch(
+  () => (props.note as any)?.text,
+  (newText) => {
+    if (!collaborationEnabled.value && typeof newText === 'string') {
+      localText.value = newText;
+    }
+  }
+);
+
 function debounce<T extends (...args: any[]) => void>(fn: T, delay = 400) {
   let timeout: ReturnType<typeof setTimeout> | undefined;
   return (...args: Parameters<T>) => {
@@ -64,7 +73,7 @@ function debounce<T extends (...args: any[]) => void>(fn: T, delay = 400) {
 
 const emitUpdate = debounce((text: string) => {
   if (props.readonly) return;
-  emit('update', { content: text }); // UNIFIED: update content field
+  emit('update', { content: text, text });
 }, 450);
 
 function setupCollaboration() {
@@ -170,7 +179,7 @@ function handleUpdate() {
 
   const currentContent = getNoteContent(props.note); // UNIFIED
   if (localText.value !== currentContent) {
-    emit('update', { content: localText.value }); // UNIFIED
+    emit('update', { content: localText.value, text: localText.value });
   }
 }
 

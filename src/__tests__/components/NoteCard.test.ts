@@ -18,15 +18,20 @@ describe("NoteCard", () => {
     await moduleRegistry.register(textNoteModule);
   });
 
-  const createTextNote = (overrides = {}): TextNote => ({
-    id: "test-id",
-    type: "text",
-    text: "Test note",
-    created: Date.now(),
-    updated: Date.now(),
-    archived: false,
-    ...overrides,
-  });
+  const createTextNote = (overrides = {}): TextNote => {
+    const baseText =
+      (overrides as any).text ?? (overrides as any).content ?? "Test note";
+    return {
+      id: "test-id",
+      type: "text",
+      content: baseText,
+      text: baseText,
+      created: Date.now(),
+      updated: Date.now(),
+      archived: false,
+      ...overrides,
+    } as TextNote;
+  };
 
   describe("rendering", () => {
     it("should render a text note", () => {

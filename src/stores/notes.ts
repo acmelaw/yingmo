@@ -5,6 +5,7 @@
 import { computed, ref, watch } from "vue";
 import { acceptHMRUpdate, defineStore } from "pinia";
 import type { Note, NoteType, TextNote } from "@/types/note";
+import { getNoteContent } from "@/types/note";
 import { DefaultNoteService } from "@/services/NoteService";
 import { moduleRegistry } from "@/core/ModuleRegistry";
 import { useAuthStore } from "@/stores/auth";
@@ -183,9 +184,8 @@ export const useNotesStore = defineStore("notes", () => {
     if (!remoteSearchResults.value && state.value.searchQuery) {
       const query = state.value.searchQuery.toLowerCase();
       result = result.filter((note) => {
-        if ("text" in note && typeof note.text === "string") {
-          if (note.text.toLowerCase().includes(query)) return true;
-        }
+        const content = getNoteContent(note).toLowerCase();
+        if (content.includes(query)) return true;
         if (note.category?.toLowerCase().includes(query)) return true;
         if (note.tags?.some((tag) => tag.toLowerCase().includes(query)))
           return true;
@@ -218,12 +218,8 @@ export const useNotesStore = defineStore("notes", () => {
           bVal = b.updated;
           break;
         case "text":
-          aVal = (
-            "text" in a && typeof a.text === "string" ? a.text : ""
-          ).toLowerCase();
-          bVal = (
-            "text" in b && typeof b.text === "string" ? b.text : ""
-          ).toLowerCase();
+          aVal = getNoteContent(a).toLowerCase();
+          bVal = getNoteContent(b).toLowerCase();
           break;
         default:
           return 0;
@@ -341,24 +337,36 @@ export const useNotesStore = defineStore("notes", () => {
     category?: string,
     tags?: string[]
   ): Promise<string> {
+    // Work on a shallow copy so we don't mutate caller data
+    const payloadData: Record<string, unknown> = { ...data };
+
     // Extract hashtags if enabled
     let finalTags = tags;
-    let finalData = data;
 
-    if (
-      type === "text" &&
-      state.value.autoExtractTags &&
-      typeof data.text === "string"
-    ) {
-      finalTags = mergeTags(data.text, tags, true);
+    if (type === "text") {
+      const initialText =
+        typeof payloadData.text === "string"
+          ? payloadData.text
+          : typeof payloadData.content === "string"
+          ? (payloadData.content as string)
+          : "";
 
-      if (state.value.cleanContentOnExtract) {
-        finalData = { ...data, text: stripHashtags(data.text) };
+      if (state.value.autoExtractTags && initialText) {
+        finalTags = mergeTags(initialText, tags, true);
       }
+
+      let workingText = initialText;
+
+      if (state.value.autoExtractTags && state.value.cleanContentOnExtract) {
+        workingText = stripHashtags(initialText);
+      }
+
+      payloadData.text = workingText;
+      payloadData.content = workingText;
     }
 
     const payload: Record<string, unknown> = {
-      ...finalData,
+      ...payloadData,
       archived: false,
     };
 
@@ -422,6 +430,7 @@ export const useNotesStore = defineStore("notes", () => {
     const note: TextNote = {
       id: createId(),
       type: "text",
+      content: finalText,
       text: finalText,
       created: now,
       updated: now,
@@ -594,11 +603,26 @@ export const useNotesStore = defineStore("notes", () => {
       }
 
       // Migrate old data: ensure all notes have required fields
-      const migratedNotes = notes.map((note: any) => ({
-        ...note,
-        type: note.type || "text", // Default to text if missing
-        archived: note.archived ?? false, // Default to false if missing
-      }));
+      const migratedNotes = notes.map((note: any) => {
+        const next: any = {
+          ...note,
+          type: note.type || "text", // Default to text if missing
+          archived: note.archived ?? false, // Default to false if missing
+        };
+
+        if (next.type === "text") {
+          const textValue =
+            typeof next.text === "string"
+              ? next.text
+              : typeof next.content === "string"
+              ? next.content
+              : "";
+          next.text = textValue;
+          next.content = textValue;
+        }
+
+        return next as Note;
+      });
 
       state.value.notes = migratedNotes;
 

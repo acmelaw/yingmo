@@ -26,11 +26,15 @@ const markdownNoteHandler: NoteTypeHandler = {
       data.metadata?.renderedHtml ||
       (await marked(data.content || data.markdown || ""));
 
+    const markdown = (data.content ?? data.markdown ?? "") as string;
+
     return {
       id: createId(),
       type: "markdown",
       title: data.title || "",
-      content: data.content || data.markdown || "",
+      content: markdown,
+      markdown,
+      html,
       metadata: {
         renderedHtml: html,
         ...data.metadata,
@@ -42,15 +46,25 @@ const markdownNoteHandler: NoteTypeHandler = {
     };
   },
 
-  async update(
-    note: MarkdownNote,
-    data: Partial<MarkdownNote>
-  ): Promise<MarkdownNote> {
+  async update(note, data) {
+    const nextMarkdown =
+      (data.content as string | undefined) ??
+      (data as Partial<MarkdownNote>).markdown ??
+      (note as MarkdownNote).content ??
+      (note as MarkdownNote).markdown ??
+      "";
     return {
-      ...note,
+      ...(note as MarkdownNote),
       ...data,
+      content: nextMarkdown,
+      markdown: nextMarkdown,
+      html: (data as any).html ?? (note as MarkdownNote).html,
       updated: Date.now(),
-    };
+    } as MarkdownNote;
+  },
+
+  async delete() {
+    // Markdown notes do not require additional cleanup currently
   },
 
   validate(note: Note): boolean {

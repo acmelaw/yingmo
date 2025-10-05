@@ -2,11 +2,14 @@ import "@unocss/reset/tailwind.css";
 import "uno.css";
 import "./design-tokens.css";
 import "./style.css";
+import "quasar/src/css/index.sass";
+import "@quasar/extras/material-icons/material-icons.css";
 
 import { createApp, watch } from "vue";
 import { createPinia } from "pinia";
 import { createI18n } from "vue-i18n";
 import { createHead } from "@unhead/vue";
+import { Quasar, Dialog, Notify, Loading, LoadingBar } from "quasar";
 
 import App from "./App.vue";
 import { useSettingsStore } from "./stores/settings";
@@ -86,6 +89,14 @@ const app = createApp(App);
 app.use(pinia);
 app.use(createHead());
 app.use(i18n);
+app.use(Quasar, {
+  plugins: {
+    Dialog,
+    Notify,
+    Loading,
+    LoadingBar,
+  },
+});
 
 app.mount("#app");
 

@@ -4,6 +4,7 @@
  */
 
 import type { Note, NoteType, BaseNote } from "@/types/note";
+import { getNoteContent } from "@/types/note";
 import { moduleRegistry } from "@/core/ModuleRegistry";
 
 export interface NoteService {
@@ -27,7 +28,8 @@ export class DefaultNoteService implements NoteService {
     const handler = moduleRegistry.getTypeHandler(type);
 
     if (handler) {
-      return handler.create(data);
+      const created = await handler.create(data);
+      return this.normalizeNote(created);
     }
 
     // Fallback to basic text note creation
@@ -39,22 +41,25 @@ export class DefaultNoteService implements NoteService {
       ...data,
     };
 
-    return note as Note;
+    return this.normalizeNote(note as Note);
   }
 
   async update(note: Note, updates: Partial<Note>): Promise<Note> {
     const handler = moduleRegistry.getTypeHandler(note.type);
 
     if (handler) {
-      return handler.update(note, updates);
+      const updated = await handler.update(note, updates);
+      return this.normalizeNote(updated);
     }
 
     // Fallback to basic update
-    return {
+    const merged = {
       ...note,
       ...updates,
       updated: this.ensureFutureTimestamp(note.updated),
     } as Note;
+
+    return this.normalizeNote(merged);
   }
 
   async delete(id: string): Promise<void> {
@@ -93,12 +98,11 @@ export class DefaultNoteService implements NoteService {
     for (const note of notes) {
       const id = note.id ?? this.generateId();
 
-      // Prefer text content matches when available
-      if ("text" in note && typeof note.text === "string") {
-        if (note.text.toLowerCase().includes(normalized)) {
-          textMatches.push(note);
-          continue;
-        }
+      // Prefer primary content matches when available
+      const content = getNoteContent(note).toLowerCase();
+      if (content.includes(normalized)) {
+        textMatches.push(note);
+        continue;
       }
 
       // Collect other field matches so they can be returned if we have no text hits
@@ -181,5 +185,27 @@ export class DefaultNoteService implements NoteService {
   private ensureFutureTimestamp(previous: number): number {
     const now = Date.now();
     return now > previous ? now : previous + 1;
+  }
+
+  private normalizeNote(note: Note): Note {
+    if (note.type === "text") {
+      const content = (note as any).content ?? (note as any).text ?? "";
+      (note as any).content = content;
+      (note as any).text = content;
+    } else if (note.type === "markdown") {
+      const content = (note as any).content ?? (note as any).markdown ?? "";
+      (note as any).content = content;
+      if ((note as any).markdown === undefined) {
+        (note as any).markdown = content;
+      }
+    } else if (note.type === "code") {
+      const content = (note as any).content ?? (note as any).code ?? "";
+      (note as any).content = content;
+      if ((note as any).code === undefined) {
+        (note as any).code = content;
+      }
+    }
+
+    return note;
   }
 }

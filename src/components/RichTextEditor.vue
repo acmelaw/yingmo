@@ -117,10 +117,10 @@ defineExpose({
 </script>
 
 <template>
-  <div class="rich-text-editor">
+  <div class="w-full">
     <EditorContent
       :editor="editor"
-      class="editor-content"
+      class="w-full overflow-y-auto"
       :style="{
         minHeight: minHeight,
         maxHeight: maxHeight,
@@ -129,17 +129,9 @@ defineExpose({
   </div>
 </template>
 
-<style scoped>
-.rich-text-editor {
-  width: 100%;
-}
-
-.editor-content {
-  width: 100%;
-  overflow-y: auto;
-}
-
-.editor-content :deep(.ProseMirror) {
+<style>
+/* ProseMirror editor styles - unscoped for proper cascading */
+.ProseMirror {
   outline: none;
   padding: 12px;
   font-size: 15px;
@@ -147,60 +139,60 @@ defineExpose({
   font-weight: 500;
 }
 
-.editor-content :deep(.ProseMirror p.is-editor-empty:first-child::before) {
+.ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: var(--brutal-text-muted, #999);
+  color: #999;
   pointer-events: none;
   height: 0;
 }
 
-.editor-content :deep(.ProseMirror) strong {
+.ProseMirror strong {
   font-weight: 700;
 }
 
-.editor-content :deep(.ProseMirror) em {
+.ProseMirror em {
   font-style: italic;
 }
 
-.editor-content :deep(.ProseMirror) code {
-  background: var(--brutal-surface-secondary, #f5f5f5);
+.ProseMirror code {
+  background: #f5f5f5;
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'Monaco', 'Courier New', monospace;
   font-size: 0.9em;
 }
 
-.editor-content :deep(.ProseMirror) ul,
-.editor-content :deep(.ProseMirror) ol {
+.ProseMirror ul,
+.ProseMirror ol {
   padding-left: 24px;
   margin: 8px 0;
 }
 
-.editor-content :deep(.ProseMirror) li {
+.ProseMirror li {
   margin: 4px 0;
 }
 
-.editor-content :deep(.ProseMirror) h1 {
+.ProseMirror h1 {
   font-size: 1.8em;
   font-weight: 700;
   margin: 16px 0 8px;
 }
 
-.editor-content :deep(.ProseMirror) h2 {
+.ProseMirror h2 {
   font-size: 1.5em;
   font-weight: 700;
   margin: 14px 0 6px;
 }
 
-.editor-content :deep(.ProseMirror) h3 {
+.ProseMirror h3 {
   font-size: 1.3em;
   font-weight: 700;
   margin: 12px 0 4px;
 }
 
 /* Collaboration cursor styles */
-.editor-content :deep(.collaboration-cursor__caret) {
+.collaboration-cursor__caret {
   position: relative;
   margin-left: -1px;
   margin-right: -1px;
@@ -210,7 +202,7 @@ defineExpose({
   pointer-events: none;
 }
 
-.editor-content :deep(.collaboration-cursor__label) {
+.collaboration-cursor__label {
   position: absolute;
   top: -1.4em;
   left: -1px;

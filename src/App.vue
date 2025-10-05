@@ -29,7 +29,7 @@ function openServerSelector() {
 </script>
 
 <template>
-  <div>
+  <div class="chat-container">
     <NoteShell @open-server-selector="openServerSelector" />
     <ServerSelector
       v-model="showServerSelector"

@@ -27,6 +27,7 @@ describe("TextNoteEditor", () => {
   const createTextNote = (text = "Test note"): TextNote => ({
     id: "test-id",
     type: "text",
+    content: text,
     text,
     created: Date.now(),
     updated: Date.now(),
@@ -96,7 +97,7 @@ describe("TextNoteEditor", () => {
 
       expect(wrapper.emitted("update")).toBeTruthy();
       expect(wrapper.emitted("update")?.[0]).toEqual([
-        { text: "Updated text" },
+        { text: "Updated text", content: "Updated text" },
       ]);
     });
 

@@ -36,12 +36,15 @@ export interface BaseNote {
 export interface TextNote extends BaseNote {
   type: "text";
   content: string; // Plain text content
+  text: string; // Legacy alias maintained for compatibility
 }
 
 // Markdown note
 export interface MarkdownNote extends BaseNote {
   type: "markdown";
   content: string; // Markdown source
+  markdown?: string; // Legacy alias for editor compatibility
+  html?: string; // Optional cached HTML (legacy support)
   metadata?: {
     renderedHtml?: string; // Cached rendered HTML
     [key: string]: any;
@@ -52,6 +55,7 @@ export interface MarkdownNote extends BaseNote {
 export interface CodeNote extends BaseNote {
   type: "code";
   content: string; // Code content
+  code?: string; // Legacy alias
   metadata: {
     language: string; // Required for code notes
     filename?: string;
@@ -63,6 +67,7 @@ export interface CodeNote extends BaseNote {
 export interface RichTextNote extends BaseNote {
   type: "rich-text";
   content: string; // HTML content or JSON stringified
+  html?: string; // Legacy alias for rendered HTML
   metadata?: {
     format?: "html" | "tiptap-json";
     tiptapContent?: any; // TipTap JSON content
@@ -145,14 +150,48 @@ export type Note =
  * Get the primary content from any note type
  */
 export function getNoteContent(note: Note): string {
-  return note.content || "";
+  if (typeof note.content === "string" && note.content.length > 0) {
+    return note.content;
+  }
+
+  const legacyText = (note as any).text;
+  if (typeof legacyText === "string" && legacyText.length > 0) {
+    return legacyText;
+  }
+
+  const legacyMarkdown = (note as any).markdown;
+  if (typeof legacyMarkdown === "string" && legacyMarkdown.length > 0) {
+    return legacyMarkdown;
+  }
+
+  const legacyCode = (note as any).code;
+  if (typeof legacyCode === "string" && legacyCode.length > 0) {
+    return legacyCode;
+  }
+
+  const legacyHtml = (note as any).html;
+  if (typeof legacyHtml === "string" && legacyHtml.length > 0) {
+    return legacyHtml;
+  }
+
+  return "";
 }
 
 /**
  * Set the primary content for any note type
  */
 export function setNoteContent(note: Note, content: string): Note {
-  return { ...note, content };
+  const updated: any = { ...note, content };
+
+  if (isTextNote(updated)) {
+    updated.text = content;
+  } else if (isMarkdownNote(updated)) {
+    updated.markdown = content;
+  } else if (isCodeNote(updated)) {
+    updated.code = content;
+  }
+
+  return updated;
 }
 
 /**

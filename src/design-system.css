@@ -1,31 +1,33 @@
 /**
- * NEO-BRUTALIST Design System for Vue Notes
- * Raw, bold, unapologetic design
- * Inspired by Swiss design, punk aesthetics, and brutalist architecture
+ * NEO-BRUTALIST MESSENGER Design System
+ * WhatsApp/Chat-inspired bold, brutal interface
+ * Mobile-first, cross-platform (iOS, Android, Web, Desktop, Tablet)
  */
 
 :root {
   /* === BASE COLORS === */
   --brutal-black: #000000;
   --brutal-white: #FFFFFF;
-  --brutal-bg: #FAFAFA;
-  --brutal-bg-alt: #F0F0F0;
-  --brutal-bg-secondary: #E8E8E8;
+  
+  /* === CHAT BACKGROUNDS (WhatsApp inspired) === */
+  --brutal-bg: #ECE5DD;              /* Main chat background - WhatsApp beige */
+  --brutal-bg-alt: #F0F2F5;          /* Alternative background */
+  --brutal-bg-secondary: #E8E8E8;    /* Secondary panels */
   --brutal-text: #000000;
   --brutal-text-secondary: #333333;
 
   /* === ACCENT COLORS - VIBRANT & LOUD === */
   --brutal-pink: #FF006E;
   --brutal-cyan: #00F5FF;
-  --brutal-yellow: #FFFF00;
-  --brutal-green: #00FF41;
+  --brutal-yellow: #FFD700;          /* Slightly warmer yellow */
+  --brutal-green: #25D366;           /* WhatsApp green */
   --brutal-purple: #B026FF;
   --brutal-orange: #FF6B00;
 
   /* === SEMANTIC (still brutal) === */
-  --brutal-success: #00FF41;
+  --brutal-success: #25D366;         /* WhatsApp green */
   --brutal-error: #FF006E;
-  --brutal-warning: #FFFF00;
+  --brutal-warning: #FFD700;
   --brutal-info: #00F5FF;
 
   /* === BORDERS === */
@@ -86,22 +88,22 @@
   --z-modal: 300;
 }
 
-/* === DARK MODE - INVERTED BUT STILL BRUTAL === */
+/* === DARK MODE - WhatsApp Dark Theme === */
 .dark {
   --brutal-black: #FFFFFF;
-  --brutal-white: #0A0A0A;
-  --brutal-bg: #0A0A0A;
-  --brutal-bg-alt: #1A1A1A;
-  --brutal-bg-secondary: #2A2A2A;
-  --brutal-text: #FFFFFF;
-  --brutal-text-secondary: #CCCCCC;
+  --brutal-white: #0B141A;           /* WhatsApp dark background */
+  --brutal-bg: #0B141A;              /* WhatsApp dark chat bg */
+  --brutal-bg-alt: #1F2C34;          /* WhatsApp dark secondary */
+  --brutal-bg-secondary: #202C33;    /* WhatsApp dark panels */
+  --brutal-text: #E9EDEF;            /* WhatsApp dark text */
+  --brutal-text-secondary: #8696A0;  /* WhatsApp dark secondary text */
   --brutal-border-color: var(--brutal-black);
 
-  /* Accents stay loud */
+  /* Accents stay loud but adjusted for dark mode */
   --brutal-pink: #FF1A8C;
-  --brutal-cyan: #00FFFF;
-  --brutal-yellow: #FFFF33;
-  --brutal-green: #39FF14;
+  --brutal-cyan: #00D9FF;
+  --brutal-yellow: #FFE066;
+  --brutal-green: #25D366;           /* WhatsApp green stays consistent */
   --brutal-purple: #C855FF;
   --brutal-orange: #FF8533;
 

@@ -53,22 +53,36 @@ export function useServerConnection() {
   async function testServer(url: string): Promise<ServerHealth> {
     const healthUrl = url.replace(/\/$/, "") + "/health";
 
-    const response = await fetch(healthUrl, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal: AbortSignal.timeout(5000), // 5 second timeout
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 5000);
 
-    if (!response.ok) {
-      throw new Error(
-        `Server returned ${response.status}: ${response.statusText}`
-      );
+    try {
+      const response = await fetch(healthUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Server returned ${response.status}: ${response.statusText}`
+        );
+      }
+
+      const health = await response.json();
+      return health as ServerHealth;
+    } catch (error) {
+      if ((error as Error).name === "AbortError") {
+        throw new Error("Server health check timed out");
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const health = await response.json();
-    return health as ServerHealth;
   }
 
   /**

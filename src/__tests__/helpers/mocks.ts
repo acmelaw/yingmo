@@ -225,7 +225,8 @@ export function createTestNotes(
   return Array.from({ length: count }, (_, i) => ({
     id: `test-note-${i}`,
     type: "text" as const,
-    text: `Test note ${i}`,
+    content: overrides.content ?? overrides.text ?? `Test note ${i}`,
+    text: overrides.text ?? overrides.content ?? `Test note ${i}`,
     created: Date.now() - (count - i) * 1000,
     updated: Date.now() - (count - i) * 1000,
     archived: false,

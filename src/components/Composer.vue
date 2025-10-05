@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import type { NoteType, Note } from '@/types/note';
 import { moduleRegistry } from '@/core/ModuleRegistry';
 import { getNoteContent } from '@/types/note';
+import { Badge, Button } from '@/components/ui';
 
 export interface ComposerActionItem {
   id: string;
@@ -260,170 +261,150 @@ watch(draftText, () => {
 </script>
 
 <template>
-  <div class="relative w-full">
-    <!-- Hashtag helper -->
-    <Transition name="brutal-slide">
+  <div class="w-full">
+    <!-- Hashtag helper - above input -->
+    <Transition
+      enter-active-class="transition-all duration-150 ease-out"
+      enter-from-class="op-0 translate-y-[-10px]"
+      enter-to-class="op-100 translate-y-0"
+      leave-active-class="transition-all duration-150 ease-out"
+      leave-from-class="op-100 translate-y-0"
+      leave-to-class="op-0 translate-y-[-10px]"
+    >
       <div
         v-if="hashtagCount > 0"
-        class="flex items-center gap-4 mb-4 flex-wrap"
+        class="flex items-center gap-2 mb-2 flex-wrap px-1"
       >
-        <span class="inline-flex items-center px-3 py-1 bg-accent-cyan text-base-black border-2 border-base-black rounded-sm shadow-hard-sm font-black text-xs uppercase">
+        <Badge variant="category">
           #️⃣ {{ hashtagCount }} {{ hashtagCount === 1 ? 'tag' : 'tags' }}
-        </span>
-        <div class="flex flex-wrap gap-2">
-          <span
+        </Badge>
+        <div class="flex flex-wrap gap-1.5">
+          <Badge
             v-for="tag in detectedHashtags"
             :key="tag"
-            class="inline-flex items-center px-3 py-1 bg-accent-pink text-base-white border-2 border-base-black rounded-sm shadow-hard-sm font-black text-xs uppercase"
+            variant="tag"
           >
             {{ tag }}
-          </span>
+          </Badge>
         </div>
       </div>
     </Transition>
 
-    <!-- Main Composer Row -->
-    <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-end">
-      <!-- Left: Action Buttons (6 buttons in 2 rows) -->
-      <div class="grid grid-cols-2 gap-2 items-center">
-        <div v-for="action in allActions" :key="action.id" class="relative">
-          <button
-            type="button"
-            class="btn-icon"
-            :aria-label="action.label"
-            @click="triggerAction(action)"
-            :title="action.label"
+    <!-- Main Input Bar (WhatsApp Style) -->
+    <div class="flex items-end gap-2">
+      <!-- Left: Quick Actions -->
+      <div class="flex gap-1.5 shrink-0">
+        <!-- Emoji Picker -->
+        <div class="relative">
+          <Button
+            variant="secondary"
+            size="icon"
+            aria-label="Emoji"
+            @click="triggerAction(defaultEmojiAction)"
+            title="Add emoji"
           >
-            <span v-if="action.icon">{{ action.icon }}</span>
-            <span v-else class="text-xs">{{ action.label.slice(0, 1) }}</span>
-          </button>
+            😊
+          </Button>
 
-          <!-- Action Menu (Emoji Picker, etc.) -->
-          <Transition name="brutal-pop">
+          <!-- Emoji Menu -->
+          <Transition
+            enter-active-class="animate-[brutal-pop_0.15s_ease-out]"
+            leave-active-class="animate-[brutal-pop_0.1s_ease-in_reverse]"
+          >
             <div
-              v-if="action.type === 'menu' && menuOpen === action.id && action.items?.length"
-              class="absolute bottom-full left-0 mb-2 p-2 bg-base-white dark:bg-dark-bg-primary border-3 border-base-black dark:border-white shadow-hard dark:shadow-dark-hard z-50 grid grid-cols-6 gap-1 min-w-48"
+              v-if="menuOpen === 'emoji' && defaultEmojiAction.items?.length"
+              class="absolute bottom-full left-0 mb-2 p-2 bg-brutal-white border-3 border-brutal-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 grid grid-cols-6 gap-1 max-w-[280px]"
             >
               <button
-                v-for="item in action.items"
+                v-for="item in defaultEmojiAction.items"
                 :key="item.id"
                 type="button"
-                class="w-10 h-10 flex items-center justify-center bg-base-white dark:bg-dark-bg-secondary border-2 border-base-black dark:border-white hover:bg-accent-yellow dark:hover:bg-accent-yellow hover:text-base-black transition-all duration-100 cursor-pointer font-black"
-                @click="selectActionItem(action, item)"
+                class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-brutal-white border-2 border-brutal-black hover:bg-brutal-yellow transition-all duration-75 cursor-pointer text-base sm:text-lg"
+                @click="selectActionItem(defaultEmojiAction, item)"
               >
-                {{ item.icon ?? item.label }}
+                {{ item.label }}
               </button>
             </div>
           </Transition>
         </div>
 
-        <!-- Type Selector Button -->
+        <!-- Type Selector (if multiple types) -->
         <div v-if="availableTypes.length > 1" class="relative">
-          <button
-            type="button"
-            class="w-11 h-11 flex items-center justify-center font-black border-3 border-base-black dark:border-white rounded-sm shadow-hard-sm dark:shadow-dark-hard-sm bg-accent-cyan text-base-black cursor-pointer transition-all duration-100 hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard dark:shadow-dark-hard) active:(translate-x-0.5 translate-y-0.5 shadow-none)"
+          <Button
+            variant="secondary"
+            size="icon"
+            class="bg-brutal-cyan text-brutal-black"
             @click="menuOpen = menuOpen === 'note-type' ? null : 'note-type'"
             :title="'Type: ' + selectedType"
           >
-            {{ selectedType.slice(0, 1).toUpperCase() }}
-          </button>
+            {{ getNoteTypeIcon(selectedType) }}
+          </Button>
 
           <!-- Type Menu -->
-          <Transition name="brutal-pop">
-            <div v-if="menuOpen === 'note-type'" class="absolute bottom-full left-0 mb-2 p-2 bg-base-white dark:bg-dark-bg-primary border-3 border-base-black dark:border-white shadow-hard dark:shadow-dark-hard z-50 min-w-32">
+          <Transition
+            enter-active-class="animate-[brutal-pop_0.15s_ease-out]"
+            leave-active-class="animate-[brutal-pop_0.1s_ease-in_reverse]"
+          >
+            <div v-if="menuOpen === 'note-type'" class="absolute bottom-full left-0 mb-2 p-2 bg-brutal-white border-3 border-brutal-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 min-w-[140px]">
               <button
                 v-for="type in availableTypes"
                 :key="type"
                 type="button"
-                class="w-full px-3 py-2 text-left bg-base-white dark:bg-dark-bg-secondary text-base-black dark:text-dark-text-primary border-2 border-base-black dark:border-white mb-1 last:mb-0 hover:bg-accent-yellow dark:hover:bg-accent-yellow hover:text-base-black transition-all duration-100 cursor-pointer font-black uppercase text-sm"
-                :class="{ 'bg-accent-pink text-base-white': type === selectedType }"
+                class="w-full px-3 py-2 text-left bg-brutal-white text-brutal-black border-2 border-brutal-black mb-1.5 last:mb-0 hover:bg-brutal-yellow transition-all duration-75 cursor-pointer font-black uppercase text-xs sm:text-sm"
+                :class="{ 'bg-brutal-green': type === selectedType }"
                 @click="changeType(type)"
               >
-                {{ type }}
+                {{ getNoteTypeIcon(type) }} {{ type }}
               </button>
             </div>
           </Transition>
         </div>
       </div>
 
-      <!-- Center: Dynamic Editor -->
-      <div class="flex-1 relative">
+      <!-- Center: Editor (flexible) -->
+      <div class="flex-1 min-w-0">
         <component
           v-if="editorComponent"
           :is="editorComponent"
           :note="draftNote"
           :readonly="false"
           @update="handleEditorUpdate"
-          class="w-full"
+          @keydown="onKey"
+          class="w-full text-sm sm:text-base"
         />
-        <div v-else class="p-4 text-text-secondary dark:text-dark-text-secondary">
-          <p>No editor for {{ selectedType }}</p>
+        <div v-else class="p-3 text-xs sm:text-sm text-brutal-text-secondary font-black border-2 border-brutal-black bg-brutal-white">
+          No editor for {{ selectedType }}
         </div>
-
-        <!-- Typing indicator -->
-        <Transition name="fade">
-          <div v-if="isTyping && !hashtagCount" class="absolute -bottom-6 left-0 text-xs text-text-tertiary dark:text-dark-text-tertiary font-bold flex items-center gap-1">
-            ✍️ {{ t('writing') }}
-          </div>
-        </Transition>
       </div>
 
       <!-- Right: Send Button -->
-      <div class="flex">
-        <button
-          type="button"
-          class="btn-primary btn-lg"
+      <div class="shrink-0">
+        <Button
+          variant="primary"
+          size="lg"
+          class="flex items-center gap-1.5"
           :disabled="!isTyping"
           @click="send"
-          :title="t('send')"
+          title="Send message"
         >
-          ⚡ {{ t('send') }}
-        </button>
+          <span class="hidden sm:inline">{{ t('send') }}</span>
+          <span class="text-lg sm:text-xl">⚡</span>
+        </Button>
       </div>
     </div>
+
+    <!-- Typing indicator (optional) -->
+    <Transition
+      enter-active-class="transition-opacity duration-200"
+      enter-from-class="op-0"
+      enter-to-class="op-100"
+      leave-active-class="transition-opacity duration-200"
+      leave-from-class="op-100"
+      leave-to-class="op-0"
+    >
+      <div v-if="isTyping && !hashtagCount" class="mt-1.5 text-2xs sm:text-xs text-brutal-text-secondary font-black flex items-center gap-1 px-1">
+        ✍️ typing...
+      </div>
+    </Transition>
   </div>
 </template>
-
-
-<style scoped>
-/* === ANIMATIONS === */
-@keyframes brutal-pop {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.brutal-slide-enter-active,
-.brutal-slide-leave-active {
-  transition: all 0.15s ease-out;
-}
-
-.brutal-slide-enter-from,
-.brutal-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.brutal-pop-enter-active {
-  animation: brutal-pop 0.15s ease-out;
-}
-
-.brutal-pop-leave-active {
-  animation: brutal-pop 0.1s ease-in reverse;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

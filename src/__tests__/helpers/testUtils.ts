@@ -11,10 +11,12 @@ export function createId(): string {
 }
 
 export function createTextNote(overrides: Partial<TextNote> = {}): TextNote {
+  const baseText = overrides.text ?? overrides.content ?? "Test note";
   return {
     id: createId(),
     type: "text",
-    text: "Test note",
+    content: baseText,
+    text: baseText,
     created: Date.now(),
     updated: Date.now(),
     archived: false,

@@ -20,10 +20,12 @@ function nextTimestamp(previous: number): number {
 
 const richTextNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<RichTextNote> {
+    const htmlContent = (data.content ?? data.html ?? "") as string;
     return {
       id: createId(),
       type: "rich-text",
-      content: data.content || data.html || "",
+      content: htmlContent,
+      html: htmlContent,
       metadata: {
         format: data.format || data.metadata?.format || "html",
         tiptapContent:
@@ -40,10 +42,18 @@ const richTextNoteHandler: NoteTypeHandler = {
 
   async update(note, updates) {
     const richNote = note as RichTextNote;
+    const nextContent =
+      (updates.content as string | undefined) ??
+      (updates as any).html ??
+      richNote.content ??
+      richNote.html ??
+      "";
     return {
       ...richNote,
       ...updates,
       type: "rich-text",
+      content: nextContent,
+      html: nextContent,
       updated: nextTimestamp(richNote.updated),
     } as RichTextNote;
   },

@@ -20,10 +20,12 @@ function nextTimestamp(previous: number): number {
 
 const codeNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<CodeNote> {
+    const codeContent = (data.content ?? data.code ?? "") as string;
     return {
       id: createId(),
       type: "code",
-      content: data.content || data.code || "",
+      content: codeContent,
+      code: codeContent,
       metadata: {
         language: data.language || data.metadata?.language || "javascript",
         filename: data.filename || data.metadata?.filename,
@@ -39,10 +41,18 @@ const codeNoteHandler: NoteTypeHandler = {
 
   async update(note, updates) {
     const codeNote = note as CodeNote;
+    const nextCode =
+      (updates.content as string | undefined) ??
+      (updates as any).code ??
+      codeNote.content ??
+      codeNote.code ??
+      "";
     return {
       ...codeNote,
       ...updates,
       type: "code",
+      content: nextCode,
+      code: nextCode,
       updated: nextTimestamp(codeNote.updated),
     } as CodeNote;
   },

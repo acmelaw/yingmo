@@ -129,176 +129,128 @@ defineExpose({
 </script>
 
 <template>
-  <div class="collaborative-editor">
-    <div v-if="editable" class="toolbar surface mb-2 flex flex-wrap items-center gap-1 p-2">
-      <div class="btn-group flex gap-1">
+  <div class="w-full">
+    <div v-if="editable" class="mb-2 flex flex-wrap items-center gap-1 p-2 border-2 border-brutal-black bg-brutal-white">
+      <div class="flex gap-1">
         <button
           @click="toggleBold"
-          :class="{ 'is-active': isActive('bold') }"
-          class="toolbar-btn"
+          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('bold') }"
+          class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Bold (Cmd+B)"
         >
           <strong>B</strong>
         </button>
         <button
           @click="toggleItalic"
-          :class="{ 'is-active': isActive('italic') }"
-          class="toolbar-btn"
+          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('italic') }"
+          class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Italic (Cmd+I)"
         >
           <em>I</em>
         </button>
         <button
           @click="toggleStrike"
-          :class="{ 'is-active': isActive('strike') }"
-          class="toolbar-btn"
+          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('strike') }"
+          class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Strikethrough"
         >
           <s>S</s>
         </button>
         <button
           @click="toggleCode"
-          :class="{ 'is-active': isActive('code') }"
-          class="toolbar-btn"
+          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('code') }"
+          class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Code"
         >
           &lt;/&gt;
         </button>
       </div>
 
-      <div class="divider"></div>
+      <div class="w-1px h-6 bg-brutal-black op-20 mx-1"></div>
 
-      <div class="btn-group flex gap-1">
+      <div class="flex gap-1">
         <button
           @click="setHeading(1)"
-          :class="{ 'is-active': isActive('heading', { level: 1 }) }"
-          class="toolbar-btn"
+          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('heading', { level: 1 }) }"
+          class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Heading 1"
         >
           H1
         </button>
         <button
           @click="setHeading(2)"
-          :class="{ 'is-active': isActive('heading', { level: 2 }) }"
-          class="toolbar-btn"
+          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('heading', { level: 2 }) }"
+          class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Heading 2"
         >
           H2
         </button>
         <button
           @click="setHeading(3)"
-          :class="{ 'is-active': isActive('heading', { level: 3 }) }"
-          class="toolbar-btn"
+          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('heading', { level: 3 }) }"
+          class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Heading 3"
         >
           H3
         </button>
       </div>
 
-      <div class="divider"></div>
+      <div class="w-1px h-6 bg-brutal-black op-20 mx-1"></div>
 
-      <div class="btn-group flex gap-1">
+      <div class="flex gap-1">
         <button
           @click="toggleBulletList"
-          :class="{ 'is-active': isActive('bulletList') }"
-          class="toolbar-btn"
+          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('bulletList') }"
+          class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Bullet List"
         >
           •
         </button>
         <button
           @click="toggleOrderedList"
-          :class="{ 'is-active': isActive('orderedList') }"
-          class="toolbar-btn"
+          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('orderedList') }"
+          class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Numbered List"
         >
           1.
         </button>
         <button
           @click="toggleTaskList"
-          :class="{ 'is-active': isActive('taskList') }"
-          class="toolbar-btn"
+          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('taskList') }"
+          class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Task List"
         >
           ☑
         </button>
       </div>
 
-      <div class="divider"></div>
+      <div class="w-1px h-6 bg-brutal-black op-20 mx-1"></div>
 
       <button
         @click="toggleHighlight"
-        :class="{ 'is-active': isActive('highlight') }"
-        class="toolbar-btn"
+        :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('highlight') }"
+        class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
         title="Highlight"
       >
         🖍️
       </button>
     </div>
 
-    <div class="editor-container surface">
+    <div class="min-h-50 bg-brutal-white border-2 border-brutal-black">
       <EditorContent :editor="editor" />
     </div>
   </div>
 </template>
 
-<style scoped>
-.collaborative-editor {
-  width: 100%;
-}
-
-.toolbar {
-  border-radius: 6px;
-  border: 2px solid var(--ink, #101112);
-}
-
-.toolbar-btn {
-  min-width: 32px;
-  height: 32px;
-  padding: 0 8px;
-  border: 1px solid var(--ink, #101112);
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.15s;
-}
-
-.toolbar-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.toolbar-btn.is-active {
-  background: var(--accent, #ff4555);
-  color: white;
-  border-color: var(--accent, #ff4555);
-}
-
-.dark .toolbar-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.divider {
-  width: 1px;
-  height: 24px;
-  background: var(--ink, #101112);
-  opacity: 0.2;
-  margin: 0 4px;
-}
-
-.editor-container {
-  border-radius: 6px;
-  min-height: 200px;
-}
-
-:deep(.ProseMirror) {
+<style>
+/* ProseMirror editor styles - unscoped for proper cascading */
+.ProseMirror {
   outline: none;
   min-height: 200px;
   padding: 12px 16px;
 }
 
-:deep(.ProseMirror p.is-editor-empty:first-child::before) {
+.ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
   color: #adb5bd;
@@ -306,51 +258,51 @@ defineExpose({
   height: 0;
 }
 
-:deep(.ProseMirror h1) {
+.ProseMirror h1 {
   font-size: 2em;
   font-weight: bold;
   margin: 0.67em 0;
 }
 
-:deep(.ProseMirror h2) {
+.ProseMirror h2 {
   font-size: 1.5em;
   font-weight: bold;
   margin: 0.75em 0;
 }
 
-:deep(.ProseMirror h3) {
+.ProseMirror h3 {
   font-size: 1.17em;
   font-weight: bold;
   margin: 0.83em 0;
 }
 
-:deep(.ProseMirror ul),
-:deep(.ProseMirror ol) {
+.ProseMirror ul,
+.ProseMirror ol {
   padding-left: 1.5em;
   margin: 0.5em 0;
 }
 
-:deep(.ProseMirror ul[data-type='taskList']) {
+.ProseMirror ul[data-type='taskList'] {
   list-style: none;
   padding-left: 0;
 }
 
-:deep(.ProseMirror ul[data-type='taskList'] li) {
+.ProseMirror ul[data-type='taskList'] li {
   display: flex;
   align-items: flex-start;
   margin: 0.25em 0;
 }
 
-:deep(.ProseMirror ul[data-type='taskList'] li > label) {
+.ProseMirror ul[data-type='taskList'] li > label {
   margin-right: 0.5em;
   user-select: none;
 }
 
-:deep(.ProseMirror ul[data-type='taskList'] li > div) {
+.ProseMirror ul[data-type='taskList'] li > div {
   flex: 1;
 }
 
-:deep(.ProseMirror code) {
+.ProseMirror code {
   background-color: rgba(97, 97, 97, 0.1);
   border-radius: 0.25em;
   padding: 0.15em 0.3em;
@@ -358,17 +310,17 @@ defineExpose({
   font-size: 0.9em;
 }
 
-:deep(.ProseMirror mark) {
+.ProseMirror mark {
   background-color: #fef08a;
   border-radius: 0.25em;
   padding: 0.1em 0.2em;
 }
 
-:deep(.dark .ProseMirror mark) {
+.dark .ProseMirror mark {
   background-color: #854d0e;
 }
 
-:deep(.collaboration-cursor__caret) {
+.collaboration-cursor__caret {
   border-left: 2px solid;
   border-right: 2px solid;
   margin-left: -1px;
@@ -378,7 +330,7 @@ defineExpose({
   word-break: normal;
 }
 
-:deep(.collaboration-cursor__label) {
+.collaboration-cursor__label {
   border-radius: 3px;
   color: #fff;
   font-size: 12px;
