@@ -38,7 +38,7 @@ test.describe("Data Persistence", () => {
 
   test("should persist single note across reload", async ({ page }) => {
     // Create a note
-    const input = page.getByRole("textbox", { name: "Write your note..." });
+  const input = page.getByPlaceholder("Write your note...");
     await input.fill("persisted note");
     await page.getByRole("button", { name: "⚡" }).click();
 
@@ -54,8 +54,8 @@ test.describe("Data Persistence", () => {
   });
 
   test("should persist multiple notes with metadata", async ({ page }) => {
-    const input = page.getByRole("textbox", { name: "Write your note..." });
-    const sendButton = page.getByRole("button", { name: "⚡" });
+  const input = page.getByPlaceholder("Write your note...");
+  const sendButton = page.getByTitle("Send message");
 
     // Create notes with tags
     await input.fill("work task #work #urgent");
@@ -82,8 +82,12 @@ test.describe("Data Persistence", () => {
     const workTaskCard = page
       .locator("article")
       .filter({ hasText: "work task" });
-    await expect(workTaskCard.getByText("#work")).toBeVisible();
-    await expect(workTaskCard.getByText("#urgent")).toBeVisible();
+    await expect(
+      workTaskCard.getByText("#work", { exact: true })
+    ).toBeVisible();
+    await expect(
+      workTaskCard.getByText("#urgent", { exact: true })
+    ).toBeVisible();
   });
 
   test("should handle 20 notes efficiently", async ({ page }) => {
@@ -99,15 +103,19 @@ test.describe("Data Persistence", () => {
       }
     }
 
-    // Verify last note is visible
-    await expect(page.getByText("Note number 20")).toBeVisible();
+    // Select exact text to avoid matching timestamps like "2003"
+    const latestNoteText = page.getByText("Note number 20", { exact: true });
+    await expect(latestNoteText).toBeVisible();
 
     // Reload page
     await page.reload();
     await closeServerSelectorIfVisible(page);
 
     // Verify notes are still there
-    await expect(page.getByText("Note number 1")).toBeVisible();
-    await expect(page.getByText("Note number 20")).toBeVisible();
+    const firstNoteText = page.getByText("Note number 1", { exact: true });
+    await expect(firstNoteText).toBeVisible();
+
+    const lastNoteText = page.getByText("Note number 20", { exact: true });
+    await expect(lastNoteText).toBeVisible();
   });
 });

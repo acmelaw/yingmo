@@ -46,8 +46,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
 import type { CodeNote } from "@/types/note";
-import { getNoteContent, getNoteMeta, setNoteMeta } from "@/types/note";
-import { getLanguageDisplayName } from "../utils";
+import { getNoteContent, getNoteMeta } from "@/types/note";
 
 const props = defineProps<{
   note: CodeNote;
@@ -58,8 +57,8 @@ const emit = defineEmits<{
 }>();
 
 const localCode = ref(getNoteContent(props.note));
-const localLanguage = ref(getNoteMeta<string>(props.note, 'language', 'javascript'));
-const localFilename = ref(getNoteMeta<string>(props.note, 'filename', ''));
+const localLanguage = ref<string>(getNoteMeta<string>(props.note, 'language', 'javascript') || 'javascript');
+const localFilename = ref<string>(getNoteMeta<string>(props.note, 'filename', '') || '');
 
 watch(
   () => getNoteContent(props.note),
@@ -71,7 +70,7 @@ watch(
 watch(
   () => getNoteMeta<string>(props.note, 'language'),
   (newLanguage) => {
-    if (newLanguage) {
+    if (typeof newLanguage === 'string' && newLanguage.length > 0) {
       localLanguage.value = newLanguage;
     }
   }
@@ -92,8 +91,8 @@ function updateLanguage() {
   emit("update", {
     metadata: {
       ...props.note.metadata,
-      language: localLanguage.value
-    }
+      language: localLanguage.value || 'javascript',
+    },
   });
 }
 

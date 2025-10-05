@@ -55,7 +55,7 @@ const emit = defineEmits<{
 }>();
 
 const mode = ref<"edit" | "preview" | "split">("split");
-const localMarkdown = ref(props.note.markdown || '');
+const localMarkdown = ref<string>(props.note.markdown ?? props.note.content ?? '');
 
 // Simple markdown to HTML converter (you can replace with a library like marked.js)
 const renderedHtml = computed(() => {
@@ -64,6 +64,7 @@ const renderedHtml = computed(() => {
 
 function handleInput() {
   emit("update", {
+    content: localMarkdown.value,
     markdown: localMarkdown.value,
     html: renderedHtml.value,
   });
@@ -71,10 +72,11 @@ function handleInput() {
 
 // Watch for external updates
 watch(
-  () => props.note.markdown,
+  () => props.note.markdown ?? props.note.content,
   (newValue) => {
-    if (newValue !== localMarkdown.value) {
-      localMarkdown.value = newValue;
+    const next = newValue ?? '';
+    if (next !== localMarkdown.value) {
+      localMarkdown.value = next;
     }
   }
 );

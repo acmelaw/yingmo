@@ -170,6 +170,7 @@ watch(
 
 onBeforeUnmount(() => {
   tearDownCollaboration();
+  collaboration.disconnect();
   collaboration.dispose();
 });
 

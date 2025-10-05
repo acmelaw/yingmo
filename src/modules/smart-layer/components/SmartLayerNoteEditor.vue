@@ -69,7 +69,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import type { SmartLayerNote, Layer } from "@/types/note";
+import type { SmartLayerNote, SmartLayer } from "@/types/note";
 import { getNoteContent, getNoteMeta } from "@/types/note";
 
 const props = defineProps<{
@@ -80,9 +80,9 @@ const emit = defineEmits<{
   update: [data: Partial<SmartLayerNote>];
 }>();
 
-const localSource = ref(getNoteMeta<any>(props.note, 'source', {}));
-const localLayers = ref<Layer[]>(getNoteMeta<Layer[]>(props.note, 'layers', []));
-const activeLayerId = ref(getNoteMeta<string>(props.note, 'activeLayerId') || localLayers.value[0]?.id);
+const localSource = ref(getNoteMeta<any>(props.note, 'source', { type: 'text', data: '' }));
+const localLayers = ref<SmartLayer[]>(getNoteMeta<SmartLayer[]>(props.note, 'layers', []) || []);
+const activeLayerId = ref<string | undefined>(getNoteMeta<string>(props.note, 'activeLayerId') || localLayers.value[0]?.id);
 
 watch(
   () => getNoteMeta<any>(props.note, 'source'),
@@ -92,7 +92,7 @@ watch(
 );
 
 watch(
-  () => getNoteMeta<Layer[]>(props.note, 'layers'),
+  () => getNoteMeta<SmartLayer[]>(props.note, 'layers'),
   (newLayers) => {
     localLayers.value = newLayers || [];
   }
@@ -106,13 +106,12 @@ watch(
 );
 
 function addLayer() {
-  const newLayer: Layer = {
+  const newLayer: SmartLayer = {
     id: `layer-${Date.now()}`,
     name: `Layer ${localLayers.value.length + 1}`,
     type: "text",
-    data: "",
-    visible: true,
-  };
+    config: {},
+  } as any;
   localLayers.value.push(newLayer);
   emit("update", {
     metadata: {
@@ -133,9 +132,9 @@ function setActiveLayer(id: string) {
 }
 
 function updateLayerData(id: string, data: any) {
-  const layer = localLayers.value.find((l) => l.id === id);
+  const layer = localLayers.value.find((l: SmartLayer) => l.id === id);
   if (layer) {
-    layer.data = data;
+    layer.config = { ...(layer.config || {}), data } as any;
     emit("update", {
       metadata: {
         ...props.note.metadata,
