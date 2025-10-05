@@ -1,7 +1,7 @@
 /**
  * Neo-Brutalist WhatsApp-Style Messenger Shell
  * Improved UX with proper centering and shadcn-style components
- * 
+ *
  * USER FLOW:
  * 1. User lands on chat interface (centered, max-width for readability)
  * 2. Header shows app name + quick actions (settings, sync status)
@@ -171,6 +171,10 @@ async function handleAdd(text: string, type: NoteType = 'text') {
       noteData = { content: text.trim() };
   }
   await store.create(type, noteData);
+  // Ensure the new note is visible even if a search filter was active
+  if (searchQuery.value) {
+    searchQuery.value = '';
+  }
   nextTick(() => scrollToLatest());
 }
 
@@ -258,7 +262,7 @@ async function handleImport() {
             {{ notes.length }}
           </Badge>
         </div>
-        
+
         <!-- Right: Sync Status + Settings -->
         <div class="flex items-center gap-2 shrink-0">
           <!-- Sync Indicator -->
@@ -343,7 +347,7 @@ async function handleImport() {
           <Card>
             <div class="p-4 sm:p-6 space-y-4">
               <h3 class="font-black text-sm sm:text-base uppercase">🎨 Appearance</h3>
-              
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div class="space-y-2">
                   <label class="block text-xs sm:text-sm font-black uppercase opacity-75">Theme</label>

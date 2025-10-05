@@ -13,7 +13,7 @@ const textContent = computed(() => getNoteContent(props.note));
 
 <template>
   <div class="text-viewer">
-    <div class="text-content">{{ textContent }}</div>
+    <div class="text-content whitespace-pre-wrap">{{ textContent }}</div>
   </div>
 </template>
 

@@ -1,0 +1,900 @@
+/**
+ * COMPLEMENTARY STYLES FOR UNOCSS
+ * Additional component styles that complement UnoCSS shortcuts
+ * UnoCSS handles: layout, spacing, colors, basic components
+ * This file handles: complex interactions, advanced animations, progressive enhancements
+ */
+
+/* ==========================================
+   1. ENHANCED ANIMATIONS
+   ========================================== */
+
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slide-down-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes brutal-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) rotate(-2deg);
+  }
+  50% {
+    transform: scale(1.05) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes brutal-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Animation classes */
+.animate-slide-up-fade {
+  animation: slide-up-fade 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-slide-down-fade {
+  animation: slide-down-fade 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.animate-brutal-pop {
+  animation: brutal-pop 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate-brutal-shake {
+  animation: brutal-shake 0.5s ease-in-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ==========================================
+   2. ADVANCED COMPONENT STATES
+   ========================================== */
+
+/* Message bubble tail (WhatsApp-style) */
+.msg-out::before,
+.msg-in::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.msg-out::before {
+  left: -10px;
+  border-width: 0 0 15px 15px;
+  border-color: transparent transparent var(--color-accent-green, #25D366) transparent;
+}
+
+.msg-in::before {
+  right: -10px;
+  border-width: 0 15px 15px 0;
+  border-color: transparent var(--color-bg-surface, #FFFFFF) transparent transparent;
+}
+
+.dark .msg-in::before {
+  border-color: transparent var(--color-bg-tertiary, #2A2A2A) transparent transparent;
+}
+
+/* Loading state for buttons */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: inherit;
+  border-radius: inherit;
+}
+
+.btn-loading::before {
+  content: '⏳';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2em;
+  animation: pulse-glow 1s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* ==========================================
+   3. PROGRESSIVE ENHANCEMENTS
+   ========================================== */
+
+/* Touch feedback for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .btn-base:active,
+  .btn-icon:active,
+  .menu-item:active {
+    background: var(--color-accent-yellow, #FFD700);
+    color: var(--color-black, #000);
+  }
+}
+
+/* Smooth scrolling with momentum on iOS */
+.chat-messages {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar on mobile for cleaner look */
+@media (max-width: 640px) {
+  .chat-messages::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chat-messages {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+.btn-base:focus-visible,
+.btn-icon:focus-visible,
+.input-base:focus-visible {
+  outline: 3px solid var(--color-accent-cyan, #00F5FF);
+  outline-offset: 2px;
+}
+
+/* ==========================================
+   4. MODAL & OVERLAY ENHANCEMENTS
+   ========================================== */
+
+/* Backdrop blur for modern browsers */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Modal entrance animation */
+.modal-enter {
+  animation: brutal-pop 0.3s ease-out;
+}
+
+/* ==========================================
+   5. ACCESSIBILITY ENHANCEMENTS
+   ========================================== */
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn-base,
+  .btn-icon,
+  .msg-out,
+  .msg-in {
+    border-width: 4px !important;
+  }
+}
+
+/* ==========================================
+   6. PRINT OPTIMIZATION
+   ========================================== */
+
+@media print {
+  /* Hide interactive elements */
+  .chat-header,
+  .chat-composer,
+  .btn-base,
+  .btn-icon,
+  .menu-dropdown {
+    display: none !important;
+  }
+
+  /* Simplify message bubbles for print */
+  .msg-out,
+  .msg-in {
+    box-shadow: none !important;
+    border: 2px solid #000 !important;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  .msg-out::before,
+  .msg-in::before {
+    display: none;
+  }
+
+  /* Expand container for print */
+  .chat-messages {
+    max-width: 100% !important;
+  }
+}
+
+/* ==========================================
+   7. PWA ENHANCEMENTS
+   ========================================== */
+
+/* Safe area insets for notched devices (iPhone X+) */
+@supports (padding: env(safe-area-inset-top)) {
+  .chat-header {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  .chat-composer {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Pull-to-refresh indicator hint */
+.chat-messages {
+  overscroll-behavior-y: contain;
+}
+
+/* ==========================================
+   8. DARK MODE SPECIFIC ADJUSTMENTS
+   ========================================== */
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark .msg-out {
+  /* Slightly dimmer green in dark mode for less eye strain */
+  background: #1EA952;
+}
+
+/* ==========================================
+   9. PERFORMANCE OPTIMIZATIONS
+   ========================================== */
+
+/* GPU acceleration for animations */
+.animate-slide-up-fade,
+.animate-brutal-pop,
+.msg-out,
+.msg-in,
+.btn-base,
+.btn-icon {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Remove will-change after animation */
+.chat-messages > * {
+  will-change: auto;
+}
+
+.chat-messages > *:hover,
+.chat-messages > *:focus-within {
+  will-change: transform;
+}
+
+
+:root {
+  /* Colors - Base */
+  --color-black: #000000;
+  --color-white: #FFFFFF;
+
+  /* Colors - Backgrounds (WhatsApp-inspired) */
+  --color-bg-primary: #ECE5DD;      /* Chat background */
+  --color-bg-surface: #FFFFFF;      /* Cards, bubbles */
+  --color-bg-secondary: #F0F0F5;    /* Panels */
+  --color-bg-tertiary: #E8E8E8;     /* Hover states */
+
+  /* Colors - Text */
+  --color-text-primary: #000000;
+  --color-text-secondary: #333333;
+  --color-text-tertiary: #666666;
+  --color-text-inverse: #FFFFFF;
+
+  /* Colors - Accents (Vibrant & Loud) */
+  --color-accent-green: #25D366;    /* WhatsApp green */
+  --color-accent-pink: #FF006E;
+  --color-accent-cyan: #00F5FF;
+  --color-accent-yellow: #FFD700;
+  --color-accent-purple: #B026FF;
+  --color-accent-orange: #FF6B00;
+
+  /* Colors - Semantic */
+  --color-success: #25D366;
+  --color-error: #FF006E;
+  --color-warning: #FFD700;
+  --color-info: #00F5FF;
+
+  /* Borders */
+  --border-width-sm: 2px;
+  --border-width-md: 3px;
+  --border-width-lg: 4px;
+  --border-color: var(--color-black);
+  --border-radius-none: 0;
+  --border-radius-sm: 2px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-full: 9999px;
+
+  /* Shadows (Hard, no blur) */
+  --shadow-sm: 2px 2px 0 var(--color-black);
+  --shadow-md: 4px 4px 0 var(--color-black);
+  --shadow-lg: 6px 6px 0 var(--color-black);
+  --shadow-xl: 8px 8px 0 var(--color-black);
+
+  /* Spacing */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Helvetica Neue', sans-serif;
+  --font-mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+
+  --text-xs: 0.75rem;   /* 12px */
+  --text-sm: 0.875rem;  /* 14px */
+  --text-base: 1rem;    /* 16px */
+  --text-lg: 1.125rem;  /* 18px */
+  --text-xl: 1.25rem;   /* 20px */
+  --text-2xl: 1.5rem;   /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-black: 900;
+
+  --line-tight: 1.25;
+  --line-normal: 1.5;
+  --line-relaxed: 1.75;
+
+  /* Transitions */
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-index Scale */
+  --z-base: 0;
+  --z-dropdown: 10;
+  --z-sticky: 100;
+  --z-fixed: 200;
+  --z-modal-backdrop: 900;
+  --z-modal: 1000;
+  --z-toast: 1100;
+
+  /* Layout */
+  --max-width-chat: 1280px;
+  --max-width-content: 768px;
+  --header-height: 64px;
+  --composer-height: auto;
+}
+
+/* Dark Mode */
+.dark {
+  --color-black: #FFFFFF;
+  --color-white: #0B141A;
+
+  --color-bg-primary: #0B141A;      /* WhatsApp dark */
+  --color-bg-surface: #1F2C34;
+  --color-bg-secondary: #202C33;
+  --color-bg-tertiary: #2A3942;
+
+  --color-text-primary: #E9EDEF;
+  --color-text-secondary: #8696A0;
+  --color-text-tertiary: #667781;
+  --color-text-inverse: #0B141A;
+
+  --border-color: #404040;
+
+  /* Shadows for dark mode */
+  --shadow-sm: 2px 2px 0 rgba(255, 255, 255, 0.1);
+  --shadow-md: 4px 4px 0 rgba(255, 255, 255, 0.1);
+  --shadow-lg: 6px 6px 0 rgba(255, 255, 255, 0.1);
+  --shadow-xl: 8px 8px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================
+   2. BASE STYLES
+   ========================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  line-height: var(--line-normal);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  overflow: hidden;
+}
+
+#app {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-tertiary);
+  border: 2px solid var(--color-bg-secondary);
+  border-radius: var(--border-radius-lg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-accent-yellow);
+  color: var(--color-black);
+}
+
+/* Focus */
+:focus-visible {
+  outline: var(--border-width-md) solid var(--color-accent-cyan);
+  outline-offset: 2px;
+}
+
+/* ==========================================
+   3. LAYOUT PRIMITIVES
+   ========================================== */
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: var(--color-bg-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.chat-header {
+  flex-shrink: 0;
+  background: var(--color-bg-surface);
+  border-bottom: var(--border-width-md) solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-4) var(--space-6);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  z-index: var(--z-base);
+}
+
+.chat-composer {
+  flex-shrink: 0;
+  background: var(--color-bg-surface);
+  border-top: var(--border-width-md) solid var(--border-color);
+  box-shadow: 0 calc(-1 * var(--border-width-md)) 0 var(--border-color);
+  padding: var(--space-4);
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-fixed);
+}
+
+/* Container max-width for larger screens */
+.container-chat {
+  width: 100%;
+  max-width: var(--max-width-chat);
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+/* ==========================================
+   4. COMPONENTS
+   ========================================== */
+
+/* Message Bubbles (WhatsApp-style) */
+.msg {
+  position: relative;
+  max-width: 75%;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-sm) solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  margin-bottom: var(--space-3);
+}
+
+.msg-out {
+  background: var(--color-bg-surface);
+  border-radius: var(--border-radius-md);
+  border-top-left-radius: var(--border-radius-sm);
+  align-self: flex-start;
+}
+
+.msg-in {
+  background: var(--color-accent-green);
+  color: var(--color-text-inverse);
+  border-radius: var(--border-radius-md);
+  border-top-right-radius: var(--border-radius-sm);
+  align-self: flex-end;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  border: var(--border-width-md) solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--transition-fast);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn:active:not(:disabled) {
+  transform: translate(0, 0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-accent-green);
+  color: var(--color-text-inverse);
+  border-color: var(--color-black);
+}
+
+.btn-secondary {
+  background: var(--color-accent-cyan);
+  color: var(--color-black);
+}
+
+.btn-danger {
+  background: var(--color-error);
+  color: var(--color-text-inverse);
+}
+
+.btn-ghost {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-bg-tertiary);
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-icon {
+  padding: var(--space-2);
+  aspect-ratio: 1;
+  font-size: var(--text-lg);
+}
+
+.btn-sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.btn-lg {
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-base);
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  line-height: var(--line-normal);
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface);
+  border: var(--border-width-md) solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.input:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.input:focus {
+  border-color: var(--color-accent-cyan);
+  box-shadow: var(--shadow-md);
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+textarea.input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Cards */
+.card {
+  background: var(--color-bg-surface);
+  border: var(--border-width-md) solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-4);
+}
+
+.card-hover {
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.card-hover:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: var(--border-width-sm) solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.badge-primary {
+  background: var(--color-accent-green);
+  color: var(--color-text-inverse);
+}
+
+.badge-secondary {
+  background: var(--color-accent-cyan);
+  color: var(--color-black);
+}
+
+/* Separator */
+.separator {
+  height: var(--border-width-sm);
+  background: var(--border-color);
+  border: none;
+  margin: var(--space-4) 0;
+}
+
+/* ==========================================
+   5. UTILITIES
+   ========================================== */
+
+/* Spacing */
+.p-0 { padding: var(--space-0); }
+.p-1 { padding: var(--space-1); }
+.p-2 { padding: var(--space-2); }
+.p-3 { padding: var(--space-3); }
+.p-4 { padding: var(--space-4); }
+.p-6 { padding: var(--space-6); }
+.p-8 { padding: var(--space-8); }
+
+.m-0 { margin: var(--space-0); }
+.m-1 { margin: var(--space-1); }
+.m-2 { margin: var(--space-2); }
+.m-3 { margin: var(--space-3); }
+.m-4 { margin: var(--space-4); }
+.m-6 { margin: var(--space-6); }
+.m-8 { margin: var(--space-8); }
+
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+
+/* Flexbox */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-end { justify-content: flex-end; }
+.flex-1 { flex: 1; }
+.flex-shrink-0 { flex-shrink: 0; }
+
+/* Typography */
+.text-xs { font-size: var(--text-xs); }
+.text-sm { font-size: var(--text-sm); }
+.text-base { font-size: var(--text-base); }
+.text-lg { font-size: var(--text-lg); }
+.text-xl { font-size: var(--text-xl); }
+.text-2xl { font-size: var(--text-2xl); }
+
+.font-normal { font-weight: var(--font-normal); }
+.font-medium { font-weight: var(--font-medium); }
+.font-semibold { font-weight: var(--font-semibold); }
+.font-bold { font-weight: var(--font-bold); }
+.font-black { font-weight: var(--font-black); }
+
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.uppercase { text-transform: uppercase; }
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Animations */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-slide-up {
+  animation: slide-up var(--transition-base) ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in var(--transition-base) ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  :root {
+    --space-4: 0.875rem;
+    --space-6: 1.25rem;
+  }
+
+  .msg {
+    max-width: 85%;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print */
+@media print {
+  .chat-header,
+  .chat-composer,
+  .btn {
+    display: none !important;
+  }
+
+  .msg {
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { moduleRegistry } from '@/core/ModuleRegistry';
 import type { NoteType } from '@/types/note';
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogContent, Button } from './ui';
@@ -15,9 +15,42 @@ const availableModules = computed(() => {
     .filter((m) => m.capabilities?.canCreate !== false);
 });
 
+const selectedIndex = ref(0);
+const moduleButtons = ref<HTMLButtonElement[]>([]);
+
+onMounted(() => {
+  if (moduleButtons.value[0]) {
+    moduleButtons.value[0].focus();
+  }
+});
+
 function selectModule(module: any) {
   const noteType = module.supportedTypes[0] as NoteType;
   emit('select', noteType);
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    selectedIndex.value = (selectedIndex.value + 1) % availableModules.value.length;
+    moduleButtons.value[selectedIndex.value]?.focus();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    selectedIndex.value = selectedIndex.value === 0
+      ? availableModules.value.length - 1
+      : selectedIndex.value - 1;
+    moduleButtons.value[selectedIndex.value]?.focus();
+  } else if (e.key === 'ArrowRight' && selectedIndex.value % 2 === 0) {
+    e.preventDefault();
+    if (selectedIndex.value + 1 < availableModules.value.length) {
+      selectedIndex.value += 1;
+      moduleButtons.value[selectedIndex.value]?.focus();
+    }
+  } else if (e.key === 'ArrowLeft' && selectedIndex.value % 2 === 1) {
+    e.preventDefault();
+    selectedIndex.value -= 1;
+    moduleButtons.value[selectedIndex.value]?.focus();
+  }
 }
 
 function getIcon(type: NoteType): string {
@@ -28,6 +61,7 @@ function getIcon(type: NoteType): string {
     'rich-text': '✏️',
     image: '🖼️',
     'smart-layer': '🤖',
+    todo: '✅',
   };
   return icons[type] || '📋';
 }
@@ -48,12 +82,19 @@ function getIcon(type: NoteType): string {
     </DialogHeader>
 
     <DialogContent>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3"
+        role="group"
+        aria-label="Note type selection"
+        @keydown="handleKeydown"
+      >
         <button
-          v-for="module in availableModules"
+          v-for="(module, index) in availableModules"
           :key="module.id"
+          :ref="(el) => { if (el) moduleButtons[index] = el as HTMLButtonElement }"
           @click="selectModule(module)"
           type="button"
+          :aria-label="`Create ${module.name} note - ${module.description}`"
           class="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 text-left border-2 sm:border-3 border-base-black dark:border-white rounded-lg bg-base-white dark:bg-dark-bg-secondary hover:(-translate-x-0.5 -translate-y-0.5) hover:shadow-hard active:(translate-x-0.5 translate-y-0.5) shadow-hard-sm transition-all duration-100 group"
         >
           <div class="text-3xl sm:text-4xl shrink-0">

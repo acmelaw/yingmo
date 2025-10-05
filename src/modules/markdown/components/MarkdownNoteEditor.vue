@@ -29,6 +29,7 @@
         v-if="mode === 'edit' || mode === 'split'"
         v-model="localMarkdown"
         @input="handleInput"
+        @keydown="emit('keydown', $event)"
         class="markdown-input"
         placeholder="Write your markdown here..."
       ></textarea>
@@ -52,6 +53,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "update", updates: Partial<MarkdownNote>): void;
+  (e: "keydown", event: KeyboardEvent): void;
 }>();
 
 const mode = ref<"edit" | "preview" | "split">("split");

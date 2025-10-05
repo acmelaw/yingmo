@@ -1,7 +1,6 @@
 import "@unocss/reset/tailwind.css";
 import "uno.css";
-import "./design-tokens.css";
-import "./style.css";
+import "./design/system.css"; // Additional component styles (complements UnoCSS)
 import "quasar/src/css/index.sass";
 import "@quasar/extras/material-icons/material-icons.css";
 

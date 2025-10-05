@@ -15,6 +15,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   update: [updates: Partial<TextNote>];
+  keydown: [event: KeyboardEvent];
 }>();
 
 const notesStore = useNotesStore();
@@ -204,6 +205,7 @@ const collaborationStatus = computed(() => collaboration.status.value);
       placeholder="Write your note..."
       @input="handleInput"
       @blur="handleUpdate"
+      @keydown="(e: KeyboardEvent) => $emit('keydown', e)"
     />
     <p
       v-if="collaborationEnabled"

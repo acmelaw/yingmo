@@ -255,33 +255,18 @@ export const useNotesStore = defineStore("notes", () => {
     const index = state.value.notes.findIndex((n) => n.id === note.id);
     if (index !== -1) {
       const oldNote = state.value.notes[index];
-      // Create a new array reference to trigger reactivity
-      const newNotes = [
-        ...state.value.notes.slice(0, index),
-        note,
-        ...state.value.notes.slice(index + 1),
-      ];
-
-      // Update the entire state object to ensure storage persistence
-      state.value = {
-        ...state.value,
-        notes: newNotes,
-      };
+      // Replace entire array element to trigger reactivity
+      const newNotes = [...state.value.notes];
+      newNotes[index] = note;
+      state.value.notes = newNotes;
 
       if (oldNote.category !== note.category) {
         categoryManager.untrack(oldNote.category);
         categoryManager.track(note.category);
       }
     } else {
-      // Create a new array reference to trigger reactivity
-      const newNotes = [...state.value.notes, note];
-
-      // Update the entire state object to ensure storage persistence
-      state.value = {
-        ...state.value,
-        notes: newNotes,
-      };
-
+      // Direct array mutation for useStorage reactivity
+      state.value.notes.push(note);
       categoryManager.track(note.category);
     }
   }
@@ -290,15 +275,8 @@ export const useNotesStore = defineStore("notes", () => {
     const index = state.value.notes.findIndex((n) => n.id === id);
     if (index !== -1) {
       const removed = state.value.notes[index];
-      // Create a new array reference to trigger reactivity
-      const newNotes = state.value.notes.filter((n) => n.id !== id);
-
-      // Update the entire state object to ensure storage persistence
-      state.value = {
-        ...state.value,
-        notes: newNotes,
-      };
-
+      // Direct array mutation for useStorage reactivity
+      state.value.notes.splice(index, 1);
       categoryManager.untrack(removed.category ?? null);
     }
   }
@@ -405,26 +383,26 @@ export const useNotesStore = defineStore("notes", () => {
       payload.tags = finalTags;
     }
 
-    // Try to create on server if online
-    if (shouldSync.value) {
-      const serverNote = await syncManager.createOnServer(type, payload);
+    // Clear any remote overlay so local state is shown immediately
+    remoteSearchResults.value = null;
 
-      if (serverNote) {
-        upsertNote(serverNote);
-        lastSyncedAt.value = Date.now();
-        syncError.value = null;
-        return serverNote.id;
-      }
-    }
-
-    // Create locally
+    // Optimistic local create first for instant UI feedback
     const note = await noteService.create(type, payload);
     upsertNote(note);
 
-    // Add to pending sync if needed
+    // Queue for sync (non-blocking)
     if (settings.syncEnabled) {
       syncManager.addToPendingQueue(note.id);
       state.value.pendingSync = syncManager.getPendingNotes();
+
+      // Kick off a background sync attempt; ignore errors for UI responsiveness
+      void (async () => {
+        try {
+          await syncPendingNotes();
+        } catch (e) {
+          // swallow - pending queue will retry later
+        }
+      })();
     }
 
     return note.id;
@@ -524,6 +502,19 @@ export const useNotesStore = defineStore("notes", () => {
     deleteFromState(id);
     syncManager.removeFromPendingQueue(id);
     state.value.pendingSync = syncManager.getPendingNotes();
+  }
+
+  // Bulk operations
+  async function bulkUpdate(ids: string[], updates: Partial<Note>): Promise<void> {
+    if (!ids || ids.length === 0) return;
+    // Run updates in parallel; update() will handle sync/pending queue logic
+    await Promise.all(ids.map((id) => update(id, updates)));
+  }
+
+  async function bulkRemove(ids: string[]): Promise<void> {
+    if (!ids || ids.length === 0) return;
+    // Run removals in parallel; remove() will handle server/local logic
+    await Promise.all(ids.map((id) => remove(id)));
   }
 
   // ===========================

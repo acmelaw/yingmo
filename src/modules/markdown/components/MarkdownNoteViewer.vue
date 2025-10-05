@@ -16,11 +16,8 @@ const props = defineProps<{
 // Get markdown content (unified)
 const markdownContent = computed(() => getNoteContent(props.note));
 
-// Try to get cached HTML first, otherwise render
+// Render HTML (removed caching as it caused stale content bugs)
 const renderedHtml = computed(() => {
-  const cached = getNoteMeta<string>(props.note, 'renderedHtml');
-  if (cached) return cached;
-
   return simpleMarkdownToHtml(markdownContent.value);
 });
 
@@ -44,14 +41,14 @@ function simpleMarkdownToHtml(markdown: string): string {
   // Links
   html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
 
-  // Inline code
-  html = html.replace(/`(.*?)`/g, "<code>$1</code>");
-
-  // Code blocks
+  // Code blocks (MUST come before inline code to avoid triple backticks being matched)
   html = html.replace(
     /```(.*?)\n([\s\S]*?)```/g,
     '<pre><code class="language-$1">$2</code></pre>'
   );
+
+  // Inline code
+  html = html.replace(/`(.*?)`/g, "<code>$1</code>");
 
   // Line breaks
   html = html.replace(/\n\n/g, "</p><p>");

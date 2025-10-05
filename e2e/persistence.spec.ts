@@ -38,7 +38,7 @@ test.describe("Data Persistence", () => {
 
   test("should persist single note across reload", async ({ page }) => {
     // Create a note
-  const input = page.getByPlaceholder("Write your note...");
+    const input = page.getByPlaceholder("Write your note...");
     await input.fill("persisted note");
     await page.getByRole("button", { name: "⚡" }).click();
 
@@ -54,8 +54,8 @@ test.describe("Data Persistence", () => {
   });
 
   test("should persist multiple notes with metadata", async ({ page }) => {
-  const input = page.getByPlaceholder("Write your note...");
-  const sendButton = page.getByTitle("Send message");
+    const input = page.getByPlaceholder("Write your note...");
+    const sendButton = page.getByTitle("Send message");
 
     // Create notes with tags
     await input.fill("work task #work #urgent");
@@ -117,5 +117,21 @@ test.describe("Data Persistence", () => {
 
     const lastNoteText = page.getByText("Note number 20", { exact: true });
     await expect(lastNoteText).toBeVisible();
+  });
+
+  test("should show new note immediately even when sync is enabled (optimistic UI)", async ({ page }) => {
+    // Enable sync in settings
+    await page.getByRole("button", { name: "⚙️" }).click();
+    const syncToggle = page.getByRole("switch");
+    await syncToggle.click();
+    await page.getByRole("button", { name: "✕" }).click();
+
+    // Create a note and verify it appears right away
+    const input = page.getByPlaceholder("Write your note...");
+    const sendButton = page.getByTitle("Send message");
+    await input.fill("optimistic note");
+    await sendButton.click();
+
+    await expect(page.getByText("optimistic note")).toBeVisible();
   });
 });

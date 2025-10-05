@@ -3,7 +3,7 @@
  */
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { cn } from '@/lib/utils';
 
 export interface InputProps {
@@ -26,6 +26,8 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
 }>();
 
+const inputElement = ref<HTMLInputElement | null>(null);
+
 const inputClass = computed(() => {
   const base = 'w-full font-bold border-2 sm:border-3 border-base-black dark:border-white bg-base-white dark:bg-dark-bg-primary text-base-black dark:text-dark-text-primary rounded-lg shadow-hard-sm focus:outline-none focus:border-accent-cyan focus:shadow-hard transition-all duration-100 placeholder:opacity-50 disabled:opacity-50 disabled:cursor-not-allowed';
 
@@ -42,10 +44,17 @@ function handleInput(e: Event) {
   const target = e.target as HTMLInputElement;
   emit('update:modelValue', target.value);
 }
+
+function focus() {
+  inputElement.value?.focus();
+}
+
+defineExpose({ focus });
 </script>
 
 <template>
   <input
+    ref="inputElement"
     :type="type"
     :value="modelValue"
     :placeholder="placeholder"

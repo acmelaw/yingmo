@@ -40,11 +40,11 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
 
   test("should create a note and display it immediately", async ({ page }) => {
     // Type a message
-  const input = page.getByPlaceholder("Write your note...");
-  await input.fill("hello world");
+    const input = page.getByPlaceholder("Write your note...");
+    await input.fill("hello world");
 
     // Verify send button becomes enabled
-  const sendButton = page.getByTitle("Send message");
+    const sendButton = page.getByTitle("Send message");
     await expect(sendButton).toBeEnabled();
 
     // Verify typing indicator appears
@@ -117,14 +117,16 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
       .locator("article")
       .filter({ hasText: "This is a note with" });
     await expect(noteCard.getByText("#test", { exact: true })).toBeVisible();
-    await expect(noteCard.getByText("#important", { exact: true })).toBeVisible();
+    await expect(
+      noteCard.getByText("#important", { exact: true })
+    ).toBeVisible();
   });
 
   test("should persist notes after page reload", async ({ page }) => {
     // Create a note
-  const input = page.getByPlaceholder("Write your note...");
-  await input.fill("persistent note");
-  await page.getByTitle("Send message").click();
+    const input = page.getByPlaceholder("Write your note...");
+    await input.fill("persistent note");
+    await page.getByTitle("Send message").click();
 
     // Verify note is visible
     await expect(page.getByText("persistent note")).toBeVisible();
@@ -152,9 +154,9 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
 
   test("should delete a note", async ({ page }) => {
     // Create a note
-  const input = page.getByPlaceholder("Write your note...");
-  await input.fill("note to delete");
-  await page.getByTitle("Send message").click();
+    const input = page.getByPlaceholder("Write your note...");
+    await input.fill("note to delete");
+    await page.getByTitle("Send message").click();
 
     // Verify note exists
     await expect(page.getByText("note to delete")).toBeVisible();
@@ -163,7 +165,7 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
     const noteCard = page
       .locator("article")
       .filter({ hasText: "note to delete" });
-  await noteCard.getByTitle("Delete").click();
+    await noteCard.getByTitle("Delete").click();
 
     // Verify note is gone
     await expect(page.getByText("note to delete")).not.toBeVisible();
@@ -174,15 +176,15 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
 
   test("should archive a note", async ({ page }) => {
     // Create a note
-  const input = page.getByPlaceholder("Write your note...");
-  await input.fill("note to archive");
-  await page.getByTitle("Send message").click();
+    const input = page.getByPlaceholder("Write your note...");
+    await input.fill("note to archive");
+    await page.getByTitle("Send message").click();
 
     // Click archive button (📦)
     const noteCard = page
       .locator("article")
       .filter({ hasText: "note to archive" });
-  await noteCard.getByTitle("Archive").click();
+    await noteCard.getByTitle("Archive").click();
 
     // Verify note is no longer in main view
     await expect(page.getByText("note to archive")).not.toBeVisible();
@@ -193,8 +195,8 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
 
   test("should search notes by text", async ({ page }) => {
     // Create multiple notes
-  const input = page.getByPlaceholder("Write your note...");
-  const sendButton = page.getByTitle("Send message");
+    const input = page.getByPlaceholder("Write your note...");
+    const sendButton = page.getByTitle("Send message");
 
     await input.fill("apple pie recipe");
     await sendButton.click();
@@ -221,6 +223,29 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
     await expect(page.getByText("banana smoothie")).toBeVisible();
     await expect(page.getByText("apple pie recipe")).toBeVisible();
     await expect(page.getByText("cherry cake")).toBeVisible();
+  });
+
+  test("creating a note clears active search filter so it appears immediately", async ({ page }) => {
+    const input = page.getByPlaceholder("Write your note...");
+    const sendButton = page.getByTitle("Send message");
+
+    // Seed with one note
+    await input.fill("seed note");
+    await sendButton.click();
+    await expect(page.getByText("seed note")).toBeVisible();
+
+    // Apply a search that would hide subsequent notes
+    const searchBox = page.getByPlaceholder("🔍 Search notes...");
+    await searchBox.fill("unrelated");
+    await expect(page.getByText("seed note")).not.toBeVisible();
+
+    // Now create a new note; UI should clear the filter and show it
+    await input.fill("note visible after send");
+    await sendButton.click();
+
+    await expect(page.getByText("note visible after send")).toBeVisible();
+    // And the search should be cleared
+    await expect(searchBox).toHaveValue("");
   });
 
   test("should filter notes by hashtag search", async ({ page }) => {
@@ -250,7 +275,7 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
   });
 
   test("should handle empty input gracefully", async ({ page }) => {
-  const sendButton = page.getByTitle("Send message");
+    const sendButton = page.getByTitle("Send message");
 
     // Verify send button is disabled when empty
     await expect(sendButton).toBeDisabled();
@@ -263,8 +288,8 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
   });
 
   test("should handle whitespace-only input", async ({ page }) => {
-  const input = page.getByPlaceholder("Write your note...");
-  const sendButton = page.getByTitle("Send message");
+    const input = page.getByPlaceholder("Write your note...");
+    const sendButton = page.getByTitle("Send message");
 
     // Type only spaces
     await input.fill("   ");
@@ -337,9 +362,9 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
   });
 
   test("should show timestamp on notes", async ({ page }) => {
-  const input = page.getByPlaceholder("Write your note...");
+    const input = page.getByPlaceholder("Write your note...");
     await input.fill("timestamped note");
-  await page.getByTitle("Send message").click();
+    await page.getByTitle("Send message").click();
 
     // Verify time is displayed (looking for time format like "02:40 PM")
     const noteCard = page
@@ -350,8 +375,8 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
   });
 
   test("should insert emoji from picker", async ({ page }) => {
-  // Click emoji button
-  await page.getByRole("button", { name: "Emoji" }).click();
+    // Click emoji button
+    await page.getByRole("button", { name: "Emoji" }).click();
 
     // Wait for emoji picker to appear
     await expect(page.getByText("😀", { exact: true })).toBeVisible();
@@ -362,23 +387,23 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
       .first()
       .click({ force: true });
 
-     // Verify emoji is inserted in composer (any emoji)
-     const input = page.getByPlaceholder("Write your note...");
-     await expect(input).toHaveValue(/\p{Extended_Pictographic}/u);
+    // Verify emoji is inserted in composer (any emoji)
+    const input = page.getByPlaceholder("Write your note...");
+    await expect(input).toHaveValue(/\p{Extended_Pictographic}/u);
 
-     // Compose message with whatever emoji is present
-     const current = await input.inputValue();
-     const message = `${current} This is lit!`;
-     await input.fill(message);
-     await page.getByTitle("Send message").click();
+    // Compose message with whatever emoji is present
+    const current = await input.inputValue();
+    const message = `${current} This is lit!`;
+    await input.fill(message);
+    await page.getByTitle("Send message").click();
 
-     // Verify note contains text and an emoji
-     await expect(page.getByText("This is lit!")).toBeVisible();
+    // Verify note contains text and an emoji
+    await expect(page.getByText("This is lit!")).toBeVisible();
   });
 
   test("should maintain note order (newest first)", async ({ page }) => {
-  const input = page.getByPlaceholder("Write your note...");
-  const sendButton = page.getByTitle("Send message");
+    const input = page.getByPlaceholder("Write your note...");
+    const sendButton = page.getByTitle("Send message");
 
     // Create notes with delay to ensure different timestamps
     await input.fill("first note");

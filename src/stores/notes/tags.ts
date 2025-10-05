@@ -4,12 +4,12 @@
 
 /**
  * Enhanced Unicode-aware hashtag extraction
- * Supports: #hello, #café, #日本語, #hello123, #hello_world
+ * Supports: #hello, #café, #日本語, #hello123, #hello_world, #kebab-case
  */
 export function extractHashtags(text: string): string[] {
-  // Match # followed by unicode word characters, numbers, and underscores
+  // Match # followed by unicode word characters, numbers, underscores, and hyphens
   // \p{L} = any unicode letter, \p{N} = any unicode number
-  const matches = text.match(/#[\p{L}\p{N}_]+/gu);
+  const matches = text.match(/#[\p{L}\p{N}_-]+/gu);
   if (!matches) return [];
 
   // Remove # and return unique tags (case-insensitive deduplication)
@@ -41,7 +41,7 @@ export function mergeTags(
  */
 export function stripHashtags(text: string): string {
   return text
-    .replace(/#[\p{L}\p{N}_]+/gu, "")
+    .replace(/#[\p{L}\p{N}_-]+/gu, "")
     .replace(/\s+/g, " ")
     .trim();
 }

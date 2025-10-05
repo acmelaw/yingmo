@@ -45,14 +45,19 @@ export class DefaultNoteService implements NoteService {
   }
 
   async update(note: Note, updates: Partial<Note>): Promise<Note> {
-    const handler = moduleRegistry.getTypeHandler(note.type);
+    // If type is changing, skip handler and use fallback
+    const isTypeChanging = updates.type && updates.type !== note.type;
 
-    if (handler) {
-      const updated = await handler.update(note, updates);
-      return this.normalizeNote(updated);
+    if (!isTypeChanging) {
+      const handler = moduleRegistry.getTypeHandler(note.type);
+
+      if (handler) {
+        const updated = await handler.update(note, updates);
+        return this.normalizeNote(updated);
+      }
     }
 
-    // Fallback to basic update
+    // Fallback to basic update (used when type changes or no handler)
     const merged = {
       ...note,
       ...updates,

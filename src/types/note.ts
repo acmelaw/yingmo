@@ -13,7 +13,8 @@ export type NoteType =
   | "image"
   | "smart-layer"
   | "markdown"
-  | "code";
+  | "code"
+  | "todo";
 
 export interface BaseNote {
   id: string;
@@ -132,6 +133,21 @@ export interface SmartLayerConfig {
   parameters?: Record<string, any>;
 }
 
+// Todo item
+export interface TodoItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+// Todo note (checkbox list)
+export interface TodoNote extends BaseNote {
+  type: "todo";
+  content: string; // Text representation "[x] task\n[ ] task"
+  text: string; // Alias for search
+  items: TodoItem[]; // Array of todo items
+}
+
 // Union type for all note types
 export type Note =
   | TextNote
@@ -139,7 +155,8 @@ export type Note =
   | ImageNote
   | SmartLayerNote
   | MarkdownNote
-  | CodeNote;
+  | CodeNote
+  | TodoNote;
 
 // ============================================================================
 // HELPER FUNCTIONS for accessing note content

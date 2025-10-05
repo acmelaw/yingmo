@@ -11,13 +11,19 @@ import { Badge, Button } from '@/components/ui';
 const props = defineProps<{
   note: Note;
   mode?: 'view' | 'edit' | 'preview';
+  // When true the card should show a selection checkbox for bulk operations
+  selectable?: boolean;
+  // Whether the card is currently selected
+  selected?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'delete'): void;
   (e: 'update', updates: Partial<Note>): void;
   (e: 'archive'): void;
+  (e: 'pin'): void;
   (e: 'transform'): void;
+  (e: 'select', selected: boolean): void;
 }>();
 
 const { t } = useI18n();
@@ -52,17 +58,34 @@ const editorComponent = computed(() => moduleDefinition.value?.components?.edito
 const supportsEditing = computed(() => Boolean(editorComponent.value));
 
 const noteActions = computed(() => moduleRegistry.getActionsForNote(props.note));
-const noteTransforms = computed(() => moduleRegistry.getTransformsForType(props.note.type));
-const hasTransforms = computed(() => noteTransforms.value.length > 0);
+const hasTransforms = computed(() => true); // Always show transform button for type conversion
 
 function toggleEdit() {
   if (!supportsEditing.value) return;
   isEditing.value = !isEditing.value;
 }
+
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && isEditing.value) {
+    isEditing.value = false;
+    event.preventDefault();
+    event.stopPropagation(); // Don't let ESC propagate to ChatView
+  }
+}
 </script>
 
 <template>
-  <article class="note-card flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-3 op-0 translate-y-10px animate-[slide-up_0.2s_ease-out_forwards]">
+  <article class="note-card group flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-3 op-0 translate-y-10px animate-[slide-up_0.2s_ease-out_forwards]">
+    <!-- Selection checkbox (bulk mode) -->
+    <div v-if="props.selectable" class="mr-1 flex items-start shrink-0">
+      <input
+        type="checkbox"
+        :checked="props.selected"
+        @change="$emit('select', $event.target.checked)"
+        aria-label="Select note for bulk actions"
+        class="w-4 h-4 mt-1"
+      />
+    </div>
     <!-- Message Bubble (WhatsApp style) -->
     <div class="msg-out flex-1">
       <!-- Metadata badges at top -->
@@ -86,6 +109,7 @@ function toggleEdit() {
         :note="note"
         :readonly="false"
         @update="(updates: Partial<Note>) => emit('update', updates)"
+        @keydown="handleKeydown"
         class="mb-2 text-sm sm:text-base"
       />
       <component
@@ -93,6 +117,7 @@ function toggleEdit() {
         :is="viewerComponent"
         :note="note"
         :readonly="true"
+        @update="(updates: Partial<Note>) => emit('update', updates)"
         class="mb-2 text-sm sm:text-base"
       />
       <div v-else class="mb-2 text-brutal-pink text-xs sm:text-sm font-black">
@@ -105,27 +130,39 @@ function toggleEdit() {
           @click="emit('transform')"
           class="text-2xs sm:text-xs font-black uppercase underline hover:text-brutal-pink transition-colors"
         >
-          🔄 {{ noteTransforms.length }} transform{{ noteTransforms.length !== 1 ? 's' : '' }}
+          🔄 Change type
         </button>
       </div>
 
       <!-- Timestamp (WhatsApp style - bottom right) -->
-      <time
-        class="block text-right text-2xs sm:text-xs op-70 font-black mt-1"
-        :datetime="(wasUpdated ? updatedAt : createdAt).toISOString()"
-        :title="titleLabel"
-      >
-        {{ timeLabel }}{{ wasUpdated ? ' ✓✓' : '' }}
-      </time>
+      <div class="flex items-center justify-between gap-2">
+        <time
+          class="text-2xs sm:text-xs op-70 font-black"
+          :datetime="(wasUpdated ? updatedAt : createdAt).toISOString()"
+          :title="titleLabel"
+        >
+          {{ timeLabel }}{{ wasUpdated ? ' ✓✓' : '' }}
+        </time>
+
+        <!-- Quick action: Pin indicator (always visible if pinned) -->
+        <button
+          v-if="note.pinned"
+          @click="emit('pin')"
+          class="text-xs op-70 hover:op-100 transition-opacity"
+          title="Unpin"
+        >
+          ⭐
+        </button>
+      </div>
     </div>
 
-    <!-- Action buttons column -->
-    <div class="flex flex-col gap-1 sm:gap-1.5 shrink-0">
+    <!-- Action buttons (hidden, show on hover) -->
+    <div class="flex flex-col gap-1 op-0 group-hover:op-100 transition-opacity shrink-0">
       <Button
         v-if="supportsEditing"
         variant="secondary"
         size="icon"
-        class="w-10 h-10 sm:w-11 sm:h-11 text-base sm:text-lg"
+        class="w-8 h-8 text-sm"
         type="button"
         :aria-label="isEditing ? 'Done' : 'Edit'"
         @click="toggleEdit"
@@ -133,9 +170,22 @@ function toggleEdit() {
         {{ isEditing ? '✅' : '✏️' }}
       </Button>
       <Button
+        v-if="!note.pinned"
         variant="secondary"
         size="icon"
-        class="w-10 h-10 sm:w-11 sm:h-11 text-base sm:text-lg"
+        class="w-8 h-8 text-sm"
+        type="button"
+        @click="emit('pin')"
+        title="Pin (P)"
+        aria-label="Pin note (keyboard shortcut: P)"
+      >
+        📌
+      </Button>
+      <Button
+        v-if="hasTransforms"
+        variant="secondary"
+        size="icon"
+        class="w-8 h-8 text-sm"
         type="button"
         @click="emit('transform')"
         title="Transform"
@@ -145,20 +195,22 @@ function toggleEdit() {
       <Button
         variant="secondary"
         size="icon"
-        class="w-10 h-10 sm:w-11 sm:h-11 text-base sm:text-lg"
+        class="w-8 h-8 text-sm"
         type="button"
         @click="emit('archive')"
-        title="Archive"
+        title="Archive (A)"
+        aria-label="Archive note (keyboard shortcut: A)"
       >
         📦
       </Button>
       <Button
         variant="danger"
         size="icon"
-        class="w-10 h-10 sm:w-11 sm:h-11 text-base sm:text-lg"
+        class="w-8 h-8 text-sm"
         type="button"
         @click="emit('delete')"
-        title="Delete"
+        title="Delete (D)"
+        aria-label="Delete note (keyboard shortcut: D)"
       >
         ×
       </Button>
