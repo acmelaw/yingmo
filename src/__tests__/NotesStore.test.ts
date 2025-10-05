@@ -184,7 +184,8 @@ describe("NotesStore (Modular)", () => {
     const settings = useSettingsStore();
     const auth = useAuthStore();
 
-    const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
+    const flushPromises = () =>
+      new Promise((resolve) => setTimeout(resolve, 0));
 
     vi.spyOn(apiClient, "listNotes").mockResolvedValue([]);
     vi.spyOn(apiClient, "searchNotes").mockResolvedValue([]);
