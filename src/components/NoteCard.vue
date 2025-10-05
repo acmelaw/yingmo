@@ -24,6 +24,8 @@ const { t } = useI18n();
 const isEditing = ref(false);
 
 const displayType = computed(() => props.note.viewAs || props.note.type);
+const hasCategory = computed(() => Boolean(props.note.category));
+const showTransformBadge = computed(() => Boolean(props.note.viewAs));
 
 const displayModule = computed(() => {
   const modules = moduleRegistry.getModulesForType(displayType.value);
@@ -60,17 +62,21 @@ function toggleEdit() {
 </script>
 
 <template>
-  <article class="flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-3 op-0 translate-y-10px animate-[slide-up_0.2s_ease-out_forwards]">
+  <article class="note-card flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-3 op-0 translate-y-10px animate-[slide-up_0.2s_ease-out_forwards]">
     <!-- Message Bubble (WhatsApp style) -->
     <div class="msg-out flex-1">
       <!-- Metadata badges at top -->
-      <div v-if="note.category || note.tags?.length || note.viewAs" class="flex flex-wrap gap-1 sm:gap-1.5 mb-2">
-        <Badge v-if="note.category" variant="category">{{ note.category }}</Badge>
+      <div class="flex flex-wrap gap-1 sm:gap-1.5 mb-2">
+        <Badge v-if="hasCategory" variant="category">{{ note.category }}</Badge>
         <Badge v-for="tag in note.tags ?? []" :key="tag" variant="tag">#{{ tag }}</Badge>
-        <Badge v-if="note.viewAs" variant="type" :title="`Original: ${note.type}, viewing as: ${note.viewAs}`">
-          🔄 {{ note.type }} → {{ note.viewAs }}
+        <Badge
+          v-if="showTransformBadge"
+          variant="type"
+          :title="`Original: ${note.type}, viewing as: ${displayType}`"
+        >
+          🔄 {{ note.type }} → {{ displayType }}
         </Badge>
-        <Badge v-else variant="type">{{ note.type }}</Badge>
+        <Badge v-else variant="type">{{ displayType }}</Badge>
       </div>
 
       <!-- Note content (editable or view mode) -->
@@ -90,7 +96,7 @@ function toggleEdit() {
         class="mb-2 text-sm sm:text-base"
       />
       <div v-else class="mb-2 text-brutal-pink text-xs sm:text-sm font-black">
-        ⚠️ Unsupported: {{ note.type }}
+        ⚠️ Unsupported note type: {{ note.type }}
       </div>
 
       <!-- Transform hint -->

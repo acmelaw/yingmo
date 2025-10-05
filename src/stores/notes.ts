@@ -656,10 +656,14 @@ export const useNotesStore = defineStore("notes", () => {
       userId: auth.userId,
     }),
     async ({ sync, tenantId, userId }) => {
-      if (sync && tenantId && userId) {
-        await syncFromServer();
-        await syncPendingNotes();
+      if (!sync || !tenantId || !userId) {
+        searchGeneration.value++;
+        remoteSearchResults.value = null;
+        return;
       }
+
+      await syncFromServer();
+      await syncPendingNotes();
     },
     { immediate: true }
   );
@@ -682,9 +686,9 @@ export const useNotesStore = defineStore("notes", () => {
 
       try {
         const results = await apiClient.searchNotes(
-          trimmed,
           auth.tenantId!,
-          auth.userId!
+          auth.userId!,
+          trimmed
         );
 
         if (currentGeneration === searchGeneration.value) {

@@ -1,9 +1,12 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useNotesStore } from "@/stores/notes";
+import { useSettingsStore } from "@/stores/settings";
+import { useAuthStore } from "@/stores/auth";
 import { moduleRegistry } from "@/core/ModuleRegistry";
 import { textNoteModule } from "@/modules/text";
 import { isTextNote } from "@/types/note";
+import { apiClient } from "@/services/apiClient";
 
 describe("NotesStore (Modular)", () => {
   beforeEach(() => {
@@ -173,5 +176,42 @@ describe("NotesStore (Modular)", () => {
     expect(store.categories).toHaveLength(2);
     expect(store.categories).toContain("work");
     expect(store.categories).toContain("personal");
+  });
+
+  it("should restore local results after going offline with cached remote search", async () => {
+    await moduleRegistry.register(textNoteModule);
+    const store = useNotesStore();
+    const settings = useSettingsStore();
+    const auth = useAuthStore();
+
+    const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+    vi.spyOn(apiClient, "listNotes").mockResolvedValue([]);
+    vi.spyOn(apiClient, "searchNotes").mockResolvedValue([]);
+
+    auth.state.email = "user@example.com";
+    auth.state.token = "token";
+    auth.state.tenantId = "tenant-1";
+    auth.state.userId = "user-1";
+
+    settings.syncEnabled = true;
+    await flushPromises();
+
+    store.searchQuery = "hello";
+    await flushPromises();
+    await flushPromises();
+
+    expect(store.filteredNotes).toHaveLength(0);
+
+    settings.syncEnabled = false;
+    await flushPromises();
+
+    await store.create("text", { text: "hello world" });
+
+    expect(store.filteredNotes).toHaveLength(1);
+    const note = store.filteredNotes[0];
+    if (isTextNote(note)) {
+      expect(note.text).toBe("hello world");
+    }
   });
 });
