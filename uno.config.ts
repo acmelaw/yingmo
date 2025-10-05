@@ -20,7 +20,7 @@ export default defineConfig({
         yellow: "#FFFF00",
         purple: "#B026FF",
         orange: "#FF6B00",
-        "text": "#000000",
+        text: "#000000",
         "text-secondary": "#666666",
         "border-color": "#000000",
       },
@@ -95,9 +95,12 @@ export default defineConfig({
 
     animation: {
       keyframes: {
-        'brutal-pop': '{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}',
-        'slide-up': '{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}',
-        'slide-down': '{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}',
+        "brutal-pop":
+          "{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}",
+        "slide-up":
+          "{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}",
+        "slide-down":
+          "{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}",
       },
     },
   },

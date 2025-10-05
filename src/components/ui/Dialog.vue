@@ -23,7 +23,7 @@ const emit = defineEmits<{
 
 const dialogClass = computed(() => {
   const base = 'relative bg-base-white dark:bg-dark-bg-primary border-3 sm:border-4 border-base-black dark:border-white shadow-hard-xl dark:shadow-dark-hard-xl rounded-lg overflow-hidden';
-  
+
   const sizes = {
     sm: 'w-full max-w-sm',
     md: 'w-full max-w-md sm:max-w-lg',
@@ -31,7 +31,7 @@ const dialogClass = computed(() => {
     xl: 'w-full max-w-2xl sm:max-w-4xl',
     full: 'w-full max-w-[95vw]',
   };
-  
+
   return cn(base, sizes[props.size]);
 });
 

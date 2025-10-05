@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<BadgeProps>(), {
 
 const badgeClass = computed(() => {
   const base = 'inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 text-2xs sm:text-xs font-black uppercase border-1.5 sm:border-2 border-base-black dark:border-white rounded shadow-hard-sm dark:shadow-dark-hard-sm';
-  
+
   const variants = {
     default: 'bg-base-white text-base-black',
     tag: 'bg-accent-pink text-base-white',
@@ -26,7 +26,7 @@ const badgeClass = computed(() => {
     error: 'bg-semantic-error text-base-white',
     warning: 'bg-semantic-warning text-base-black',
   };
-  
+
   return cn(base, variants[props.variant]);
 });
 </script>

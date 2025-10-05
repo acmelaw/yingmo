@@ -43,7 +43,7 @@
 
 ### NoteShell.vue (Complete Rewrite)
 
-**Before**: Mixed styling, inline CSS, custom classes  
+**Before**: Mixed styling, inline CSS, custom classes
 **After**: 100% UnoCSS + shadcn components
 
 **Changes**:
@@ -307,15 +307,15 @@ import { Button, Input, Badge } from '@/components/ui';
 
 ## Verification Checklist
 
-✅ **Zero `<style scoped>` blocks** in main components  
-✅ **Zero custom BEM/CSS classes** (`.modal-brutal`, `.server-chip`, etc.)  
-✅ **Zero CSS variables** (except ProseMirror)  
-✅ **All components use shadcn UI primitives**  
-✅ **All animations defined in uno.config.ts**  
-✅ **Brutal colors accessible as `brutal-*` classes**  
-✅ **Cross-platform responsive** (mobile-first)  
-✅ **No TypeScript compilation errors**  
-✅ **No linting errors**  
+✅ **Zero `<style scoped>` blocks** in main components
+✅ **Zero custom BEM/CSS classes** (`.modal-brutal`, `.server-chip`, etc.)
+✅ **Zero CSS variables** (except ProseMirror)
+✅ **All components use shadcn UI primitives**
+✅ **All animations defined in uno.config.ts**
+✅ **Brutal colors accessible as `brutal-*` classes**
+✅ **Cross-platform responsive** (mobile-first)
+✅ **No TypeScript compilation errors**
+✅ **No linting errors**
 
 ---
 
@@ -333,12 +333,12 @@ import { Button, Input, Badge } from '@/components/ui';
 - **PR-ready** with zero inconsistencies
 
 ### Design Head Approval
-✅ Consistent design system  
-✅ No inline styles  
-✅ No magic CSS  
-✅ Reusable component library  
-✅ Accessible class names  
-✅ Mobile-first responsive  
+✅ Consistent design system
+✅ No inline styles
+✅ No magic CSS
+✅ Reusable component library
+✅ Accessible class names
+✅ Mobile-first responsive
 
 ---
 

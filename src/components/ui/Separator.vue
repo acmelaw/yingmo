@@ -17,12 +17,12 @@ const props = withDefaults(defineProps<SeparatorProps>(), {
 
 const separatorClass = computed(() => {
   const base = 'bg-base-black dark:bg-white shrink-0';
-  
+
   const orientations = {
     horizontal: 'h-0.5 sm:h-1 w-full',
     vertical: 'w-0.5 sm:w-1 h-full',
   };
-  
+
   return cn(base, orientations[props.orientation], props.class);
 });
 </script>

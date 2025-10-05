@@ -39,7 +39,7 @@ Defined reusable utility shortcuts in `uno.config.ts`:
   - Collapsible settings panel using shadcn Dialog
   - Clean Card-based settings sections
   - Responsive breakpoints (mobile-first)
-  
+
 - ✅ `NoteTypeTransformDialog.vue` - Using Dialog components, clean grid layout
 - ✅ `ModulePicker.vue` - Using Dialog components, responsive grid
 - ✅ `Composer.vue` - WhatsApp-style message input bar with emoji picker

@@ -59,7 +59,7 @@ function getIcon(type: NoteType): string {
           <div class="text-3xl sm:text-4xl shrink-0">
             {{ getIcon(module.supportedTypes[0]) }}
           </div>
-          
+
           <div class="flex-1 min-w-0">
             <div class="font-black text-sm sm:text-base uppercase text-base-black dark:text-dark-text-primary">
               {{ module.name }}
@@ -68,7 +68,7 @@ function getIcon(type: NoteType): string {
               {{ module.description }}
             </p>
           </div>
-          
+
           <div class="text-lg sm:text-xl font-black opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all shrink-0">
             →
           </div>
