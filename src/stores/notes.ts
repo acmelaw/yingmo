@@ -255,14 +255,33 @@ export const useNotesStore = defineStore("notes", () => {
     const index = state.value.notes.findIndex((n) => n.id === note.id);
     if (index !== -1) {
       const oldNote = state.value.notes[index];
-      state.value.notes[index] = note;
+      // Create a new array reference to trigger reactivity
+      const newNotes = [
+        ...state.value.notes.slice(0, index),
+        note,
+        ...state.value.notes.slice(index + 1),
+      ];
+
+      // Update the entire state object to ensure storage persistence
+      state.value = {
+        ...state.value,
+        notes: newNotes,
+      };
 
       if (oldNote.category !== note.category) {
         categoryManager.untrack(oldNote.category);
         categoryManager.track(note.category);
       }
     } else {
-      state.value.notes.push(note);
+      // Create a new array reference to trigger reactivity
+      const newNotes = [...state.value.notes, note];
+
+      // Update the entire state object to ensure storage persistence
+      state.value = {
+        ...state.value,
+        notes: newNotes,
+      };
+
       categoryManager.track(note.category);
     }
   }
@@ -271,7 +290,15 @@ export const useNotesStore = defineStore("notes", () => {
     const index = state.value.notes.findIndex((n) => n.id === id);
     if (index !== -1) {
       const removed = state.value.notes[index];
-      state.value.notes.splice(index, 1);
+      // Create a new array reference to trigger reactivity
+      const newNotes = state.value.notes.filter((n) => n.id !== id);
+
+      // Update the entire state object to ensure storage persistence
+      state.value = {
+        ...state.value,
+        notes: newNotes,
+      };
+
       categoryManager.untrack(removed.category ?? null);
     }
   }

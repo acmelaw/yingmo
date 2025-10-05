@@ -6,3 +6,8 @@ node_modules
 
 *storybook.log
 storybook-static
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/

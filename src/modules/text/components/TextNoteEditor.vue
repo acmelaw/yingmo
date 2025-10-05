@@ -183,6 +183,14 @@ function handleUpdate() {
   }
 }
 
+function handleInput() {
+  if (props.readonly) return;
+  if (collaborationEnabled.value) return;
+
+  // Emit updates immediately on input for real-time reactivity
+  emit('update', { content: localText.value, text: localText.value });
+}
+
 const collaborationStatus = computed(() => collaboration.status.value);
 </script>
 
@@ -193,6 +201,7 @@ const collaborationStatus = computed(() => collaboration.status.value);
       :readonly="readonly"
       class="w-full min-h-[8rem] rounded border border-gray-300 bg-transparent p-3 focus:border-accent focus:outline-none dark:border-gray-600"
       placeholder="Write your note..."
+      @input="handleInput"
       @blur="handleUpdate"
     />
     <p
