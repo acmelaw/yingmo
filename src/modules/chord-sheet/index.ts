@@ -22,10 +22,10 @@ function nextTimestamp(previous: number): number {
 const chordSheetHandler: NoteTypeHandler = {
   async create(data: any): Promise<ChordSheetNote> {
     const content = (data?.content ?? data?.text ?? "") as string;
-    
+
     // Extract metadata from ChordPro format if present
     const extractedMeta = extractMetadata(content);
-    
+
     // Merge parameters from slash command, ChordPro directives, and explicit metadata
     const metadata = {
       transpose: data?.transpose ?? data.metadata?.transpose ?? 0,
@@ -36,7 +36,7 @@ const chordSheetHandler: NoteTypeHandler = {
       format: data?.format ?? data.metadata?.format,
       ...data.metadata,
     };
-    
+
     return {
       id: createId(),
       type: "chord-sheet",
@@ -54,7 +54,7 @@ const chordSheetHandler: NoteTypeHandler = {
     const chordNote = note as ChordSheetNote;
     const nextContent =
       (updates.content as string | undefined) ?? chordNote.content;
-    
+
     return {
       ...chordNote,
       ...updates,

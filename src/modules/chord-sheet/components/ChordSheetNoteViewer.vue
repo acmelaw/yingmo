@@ -34,7 +34,7 @@ const parsedContent = computed(() => {
 });
 
 // Transpose from slash command parameters or metadata (fallback)
-const transpose = computed(() => 
+const transpose = computed(() =>
   parsedContent.value.parameters.transpose ?? props.note.metadata?.transpose ?? 0
 );
 
@@ -70,10 +70,10 @@ type BracketLine = {
 // Toggle between plain text and bracket format
 function toggleFormat() {
   const currentContent = props.note.content;
-  const newContent = isPlainText.value 
+  const newContent = isPlainText.value
     ? plainTextToBracket(currentContent)
     : bracketToPlainText(currentContent);
-  
+
   emit('update', { content: newContent });
 }
 
@@ -81,33 +81,33 @@ function toggleFormat() {
 const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
   const content = displayContent.value;
   const lines = content.split('\n');
-  
+
   // If plain text format, just return lines as-is for monospace display
   if (isPlainText.value) {
     return lines.map(line => {
       const isChordLine = !line.trim().startsWith('#') && /[A-G][#b]?/.test(line);
       const isLyricLine = line.trim().startsWith('#');
-      
+
       return {
         type: isChordLine ? 'chords' as const : isLyricLine ? 'lyrics' as const : 'plain' as const,
         content: isLyricLine ? line.replace(/^#\s*/, '') : line
       };
     });
   }
-  
+
   // Bracket format - parse into chord/text parts
   return lines.map(line => {
     // Check if line contains chords
     const hasChords = /\[([A-G][#b]?[^\]]*)\]/.test(line);
-    
+
     if (hasChords) {
       // Split line into chord and lyric parts
       const parts: Array<{ type: 'chord' | 'text', content: string }> = [];
       let lastIndex = 0;
-      
+
       const regex = /\[([A-G][#b]?[^\]]*)\]/g;
       let match;
-      
+
       while ((match = regex.exec(line)) !== null) {
         // Add text before chord
         if (match.index > lastIndex) {
@@ -116,16 +116,16 @@ const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
             content: line.substring(lastIndex, match.index)
           });
         }
-        
+
         // Add chord
         parts.push({
           type: 'chord',
           content: match[1]
         });
-        
+
         lastIndex = regex.lastIndex;
       }
-      
+
       // Add remaining text
       if (lastIndex < line.length) {
         parts.push({
@@ -133,10 +133,10 @@ const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
           content: line.substring(lastIndex)
         });
       }
-      
+
       return { hasChords: true as const, parts };
     }
-    
+
     return { hasChords: false as const, content: line };
   });
 });
@@ -162,7 +162,7 @@ const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
           (Key: {{ key }})
         </span>
       </div>
-      
+
       <Button
         @click="toggleFormat"
         size="sm"
@@ -206,7 +206,7 @@ const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
           </div>
         </div>
       </template>
-      
+
       <!-- Bracket format with inline chords -->
       <template v-else>
         <div v-for="(line, index) in parsedLines as BracketLine[]" :key="index" class="mb-2">

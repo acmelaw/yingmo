@@ -1,6 +1,6 @@
 /**
  * Universal Slash Command Parser with K-V Parameters
- * 
+ *
  * Supports formats like:
  * - /chords {title:Song} {artist:Artist} lyrics here
  * - /chord-sheet/transpose=2/key=G/capo=3 content
@@ -22,7 +22,7 @@ export interface ParsedSlashCommand {
  */
 export function parseSlashCommand(text: string): ParsedSlashCommand | null {
   const trimmed = text.trim();
-  
+
   // Check if starts with slash
   if (!trimmed.startsWith('/')) {
     return null;
@@ -36,14 +36,14 @@ export function parseSlashCommand(text: string): ParsedSlashCommand | null {
 
   // Try /command/k=v/k=v format first
   const slashMatch = trimmed.match(/^(\/[^/\s]+(?:\/[^/\s]+=[^/\s]+)*)\s*(.*)/);
-  
+
   if (slashMatch) {
     rawCommand = slashMatch[1];
     content = slashMatch[2] || '';
-    
+
     const parts = rawCommand.split('/').filter(p => p);
     command = parts[0].toLowerCase();
-    
+
     // Parse k=v pairs
     for (let i = 1; i < parts.length; i++) {
       const kvMatch = parts[i].match(/^([^=]+)=(.+)$/);
@@ -91,17 +91,17 @@ function parseValue(value: string): any {
   // Boolean
   if (value === 'true') return true;
   if (value === 'false') return false;
-  
+
   // Number
   if (/^-?\d+(\.\d+)?$/.test(value)) {
     return parseFloat(value);
   }
-  
+
   // Array (comma-separated)
   if (value.includes(',')) {
     return value.split(',').map(v => v.trim());
   }
-  
+
   // String
   return value;
 }
@@ -110,12 +110,12 @@ function parseValue(value: string): any {
  * Build slash command string from parameters
  */
 export function buildSlashCommand(
-  command: string, 
+  command: string,
   parameters: Record<string, any> = {},
   content: string = ''
 ): string {
   let result = `/${command}`;
-  
+
   // Add k=v parameters
   const kvParams = Object.entries(parameters)
     .filter(([_, v]) => v !== null && v !== undefined)
@@ -125,15 +125,15 @@ export function buildSlashCommand(
       }
       return `${k}=${v}`;
     });
-  
+
   if (kvParams.length > 0) {
     result += '/' + kvParams.join('/');
   }
-  
+
   if (content) {
     result += ' ' + content;
   }
-  
+
   return result;
 }
 
@@ -143,13 +143,13 @@ export function buildSlashCommand(
 export function extractChordProDirectives(content: string): Record<string, any> {
   const params: Record<string, any> = {};
   const matches = content.matchAll(/\{([^:}]+):([^}]+)\}/g);
-  
+
   for (const match of matches) {
     const key = match[1].trim();
     const value = parseValue(match[2].trim());
     params[key] = value;
   }
-  
+
   return params;
 }
 

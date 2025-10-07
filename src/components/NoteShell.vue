@@ -157,13 +157,13 @@ async function handleAdd(text: string, type: NoteType = 'text', color?: NoteColo
   try {
     // Parse slash command to detect preferred view type
     const parsed = parseSlashCommand(text);
-    
+
     let noteData: Record<string, any> = {};
     let preferredViewType = type; // Default to passed type (from button)
-    
+
     if (parsed) {
       console.log('[handleAdd] Detected slash command:', parsed);
-      
+
       // Resolve preferred view type from slash command
       // Note: parseSlashCommand returns command WITHOUT /, but registry stores WITH /
       const commandWithSlash = parsed.command.startsWith('/') ? parsed.command : `/${parsed.command}`;
@@ -172,12 +172,12 @@ async function handleAdd(text: string, type: NoteType = 'text', color?: NoteColo
         preferredViewType = slashCmd.module.supportedTypes[0]; // Slash command suggests view type
       }
     }
-    
+
     // CRITICAL: Store the FULL TEXT including slash command
     // The viewer will parse it to determine how to render
     noteData.content = text.trim();
     noteData.text = text.trim();
-    
+
     // Create note with preferred view type (just a hint for the viewer)
     const noteId = await store.create(preferredViewType, noteData);
 

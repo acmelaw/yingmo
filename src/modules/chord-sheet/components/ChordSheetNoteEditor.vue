@@ -106,7 +106,7 @@ watch(() => props.note.metadata?.transpose, (newTranspose) => {
         class="px-2 py-1 border-2 border-base-black dark:border-white rounded font-bold text-sm bg-white dark:bg-dark-bg-primary flex-1 min-w-[120px]"
         @input="emitUpdate"
       />
-      
+
       <!-- Transpose controls -->
       <div class="flex items-center gap-2 px-3 py-1.5 bg-accent-cyan border-2 border-base-black dark:border-white rounded">
         <span class="font-black text-xs">Transpose:</span>

@@ -46,7 +46,7 @@ const formatLabel = computed(() => {
 const lines = computed((): any[] => {
   const content = displayContent.value;
   const format = currentFormat.value;
-  
+
   if (format === 'tab') {
     // Tab format: highlight chord lines
     return content.split('\n').map(line => ({
@@ -59,7 +59,7 @@ const lines = computed((): any[] => {
       if (/\[([A-G][#b]?[^\]]*)\]/.test(line)) {
         const parts: Array<{ type: 'chord' | 'text', content: string }> = [];
         let lastIndex = 0;
-        
+
         line.replace(/\[([A-G][#b]?[^\]]*)\]/g, (match, chord, index) => {
           if (index > lastIndex) {
             parts.push({ type: 'text', content: line.slice(lastIndex, index) });
@@ -68,11 +68,11 @@ const lines = computed((): any[] => {
           lastIndex = index + match.length;
           return match;
         });
-        
+
         if (lastIndex < line.length) {
           parts.push({ type: 'text', content: line.slice(lastIndex) });
         }
-        
+
         return { hasChords: true, parts };
       }
       return { hasChords: false, content: line };
@@ -83,7 +83,7 @@ const lines = computed((): any[] => {
       if (/\[([A-G][#b]?[^\]]*)\]/.test(line)) {
         const parts: Array<{ type: 'chord' | 'text', content: string }> = [];
         let lastIndex = 0;
-        
+
         line.replace(/\[([A-G][#b]?[^\]]*)\]/g, (match, chord, index) => {
           if (index > lastIndex) {
             parts.push({ type: 'text', content: line.slice(lastIndex, index) });
@@ -92,11 +92,11 @@ const lines = computed((): any[] => {
           lastIndex = index + match.length;
           return match;
         });
-        
+
         if (lastIndex < line.length) {
           parts.push({ type: 'text', content: line.slice(lastIndex) });
         }
-        
+
         return { hasChords: true, parts };
       }
       return { hasChords: false, content: line };
@@ -112,7 +112,7 @@ const lines = computed((): any[] => {
       <Button @click="cycleFormat" variant="outline" size="sm">
         {{ formatLabel }}
       </Button>
-      
+
       <!-- Metadata display -->
       <div v-if="Object.keys(metadata).length > 0" class="text-sm text-gray-600 dark:text-gray-400">
         <span v-if="metadata.title">{{ metadata.title }}</span>
@@ -152,7 +152,7 @@ const lines = computed((): any[] => {
       <div v-for="(line, i) in lines" :key="i" class="leading-relaxed">
         <template v-if="line.hasChords">
           <span v-for="(part, j) in line.parts" :key="j">
-            <span v-if="part.type === 'chord'" 
+            <span v-if="part.type === 'chord'"
                   class="inline-block px-1.5 py-0.5 text-xs font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded mx-0.5">
               {{ part.content }}
             </span>

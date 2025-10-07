@@ -18,14 +18,14 @@ export function detectFormat(content: string): ChordFormat {
 export function extractMetadata(content: string): Record<string, string> {
   const meta: Record<string, string> = {};
   const lines = content.split('\n');
-  
+
   for (const line of lines) {
     const match = line.match(/^\{([^:]+):\s*([^}]+)\}/);
     if (match) {
       meta[match[1].toLowerCase()] = match[2].trim();
     }
   }
-  
+
   return meta;
 }
 
@@ -33,16 +33,16 @@ export function extractMetadata(content: string): Record<string, string> {
 export function transposeChord(chord: string, semitones: number): string {
   const match = chord.match(/^([A-G][#b]?)(.*)/);
   if (!match) return chord;
-  
+
   const [, root, suffix] = match;
   const noteMap: Record<string, number> = {
     'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3, 'E': 4,
     'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8, 'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
   };
-  
+
   const index = noteMap[root];
   if (index === undefined) return chord;
-  
+
   const newIndex = (index + semitones + 12) % 12;
   return NOTES[newIndex] + suffix;
 }
@@ -51,7 +51,7 @@ export function transposeChord(chord: string, semitones: number): string {
 export function extractChords(content: string): string[] {
   const format = detectFormat(content);
   const chords = new Set<string>();
-  
+
   if (format === 'chordpro') {
     // ChordPro: [C]lyrics or standalone [C]
     const matches = content.matchAll(/\[([A-G][#b]?[^\]]*)\]/g);
@@ -75,16 +75,16 @@ export function extractChords(content: string): string[] {
       chords.add(match[1].split('/')[0].trim());
     }
   }
-  
+
   return Array.from(chords).filter(c => c.length > 0);
 }
 
 // Transpose entire sheet
 export function transposeSheet(content: string, semitones: number): string {
   if (semitones === 0) return content;
-  
+
   const format = detectFormat(content);
-  
+
   if (format === 'chordpro' || format === 'inline') {
     // Transpose [C] style chords
     return content.replace(/\[([A-G][#b]?[^\]]*)\]/g, (_match, chord: string) => {
@@ -97,7 +97,7 @@ export function transposeSheet(content: string, semitones: number): string {
     const lines = content.split('\n');
     return lines.map(line => {
       if (line.includes('|')) {
-        return line.replace(/([A-G][#b]?(?:m|maj|dim|aug|sus|add|[0-9])*)/g, 
+        return line.replace(/([A-G][#b]?(?:m|maj|dim|aug|sus|add|[0-9])*)/g,
           chord => transposeChord(chord, semitones));
       }
       return line;
@@ -109,15 +109,15 @@ export function transposeSheet(content: string, semitones: number): string {
 export function convertFormat(content: string, targetFormat: ChordFormat): string {
   const currentFormat = detectFormat(content);
   if (currentFormat === targetFormat) return content;
-  
+
   // Extract metadata first
   const meta = extractMetadata(content);
-  
+
   if (targetFormat === 'chordpro') {
     // Convert to ChordPro
     const metaLines = Object.entries(meta).map(([k, v]) => `{${k}: ${v}}`);
     const contentLines = content.split('\n').filter(l => !l.match(/^\{[^}]+\}/));
-    
+
     if (currentFormat === 'tab') {
       // Tab → ChordPro: convert | C D | + # lyrics to [C][D]lyrics
       const converted = contentLines.map(line => {
@@ -136,7 +136,7 @@ export function convertFormat(content: string, targetFormat: ChordFormat): strin
     // Convert to Tab format
     const lines = content.split('\n').filter(l => !l.match(/^\{[^}]+\}/));
     const result: string[] = [];
-    
+
     for (const line of lines) {
       if (/\[([A-G][#b]?[^\]]*)\]/.test(line)) {
         // Extract chords and lyrics separately
@@ -145,7 +145,7 @@ export function convertFormat(content: string, targetFormat: ChordFormat): strin
           chords.push(chord);
           return '';
         }).trim();
-        
+
         if (chords.length > 0) {
           result.push(`| ${chords.join(' ')} |`);
         }
@@ -156,16 +156,16 @@ export function convertFormat(content: string, targetFormat: ChordFormat): strin
         result.push(`# ${line}`);
       }
     }
-    
+
     return result.join('\n');
   }
-  
+
   // Target is inline - convert from tab or chordpro
   if (currentFormat === 'tab') {
     const lines = content.split('\n');
     const result: string[] = [];
     let currentChords: string[] = [];
-    
+
     for (const line of lines) {
       if (line.includes('|')) {
         currentChords = (line.match(/([A-G][#b]?[^\s|]+)/g) || []);
@@ -184,7 +184,7 @@ export function convertFormat(content: string, targetFormat: ChordFormat): strin
         }
       }
     }
-    
+
     return result.join('\n');
   } else if (currentFormat === 'chordpro') {
     // ChordPro → inline: strip metadata directives
@@ -192,6 +192,6 @@ export function convertFormat(content: string, targetFormat: ChordFormat): strin
       .filter(l => !l.match(/^\{[^}]+\}/))
       .join('\n');
   }
-  
+
   return content;
 }

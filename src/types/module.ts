@@ -41,10 +41,10 @@ export interface NoteModule {
   version: string;
   description?: string;
   supportedTypes: NoteType[];
-  
+
   // Slash command(s) for creating this type of note
   slashCommands?: SlashCommand[];
-  
+
   // Parameters that can be configured for notes of this type
   parameters?: ModuleParameter[];
 

@@ -47,7 +47,7 @@ const hasHashtags = computed(() => detectedHashtags.value.length > 0);
 const slashCommandMap = computed(() => {
   const map: Record<string, NoteType> = {};
   const commands = moduleRegistry.getAllSlashCommands();
-  
+
   commands.forEach(({ command, module }) => {
     const type = module.supportedTypes[0];
     if (type) {
@@ -57,7 +57,7 @@ const slashCommandMap = computed(() => {
       });
     }
   });
-  
+
   return map;
 });
 
@@ -65,13 +65,13 @@ const slashCommandMap = computed(() => {
 const detectedSlashCommand = computed(() => {
   const trimmed = input.value.trim();
   if (!trimmed.startsWith('/')) return null;
-  
+
   const parsed = parseSlashCommand(trimmed);
   if (!parsed) return null;
-  
+
   const slashCmd = moduleRegistry.getSlashCommand(parsed.command);
   if (!slashCmd) return null;
-  
+
   return {
     command: parsed.rawCommand || parsed.command,
     type: slashCmd.module.supportedTypes[0] || 'text'
@@ -106,7 +106,7 @@ function send() {
   // DON'T strip slash command - handleAdd needs the full text with k-v parameters
   // The parser in handleAdd will extract command, parameters, and content
   // Type is always "text" - handleAdd will determine actual type from slash command
-  
+
   emit("submit", text, "text", selectedColor.value !== 'default' ? selectedColor.value : undefined);
 
   // Reset
@@ -171,7 +171,7 @@ function insertEmoji(emoji: string) {
 <template>
     <div class="flex items-end gap-1.5 sm:gap-2 w-full max-w-4xl">
     <!-- REMOVED: Type selector - slash commands now auto-determine type -->
-    
+
     <!-- Color Picker -->
     <div class="relative shrink-0">
       <Button

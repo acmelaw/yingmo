@@ -162,14 +162,14 @@ class ModuleRegistry {
    */
   getAllSlashCommands(): Array<{ command: SlashCommand; module: NoteModule }> {
     const uniqueCommands = new Map<string, { command: SlashCommand; module: NoteModule }>();
-    
+
     // Get unique commands (primary commands only, not aliases)
     this.slashCommands.forEach((value, key) => {
       if (key === value.command.command.toLowerCase()) {
         uniqueCommands.set(key, value);
       }
     });
-    
+
     return Array.from(uniqueCommands.values());
   }
 

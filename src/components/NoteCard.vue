@@ -130,14 +130,14 @@ function handleEditorKeydown(e: KeyboardEvent) {
         >
           #{{ tag }}
         </Badge>
-        
+
         <!-- View As Selector - replaces static type badge -->
         <ViewAsSelector
           :current-type="note.type"
           :view-as="note.viewAs as NoteType | undefined"
           @change="(type: NoteType) => emit('update', { viewAs: type })"
         />
-        
+
         <!-- Show transform indicator if viewing as different type -->
         <Badge
           v-if="showTransformBadge"
