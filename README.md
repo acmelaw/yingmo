@@ -1,32 +1,42 @@
 # Yingmo
 
-A modern notes application built with Vue 3 + Quasar, rich-text editing via Tiptap, and optional real-time collaboration using Yjs. Designed with an offline-first mindset and a modular store architecture for maintainability and testability.
+A pluggable, modular notes application designed for **parallel development by multiple independent agents**. The architecture emphasizes extensibility, separation of concerns, and minimal code delta changes to enable simultaneous work across the codebase.
 
-- UI: Vue 3, Quasar, Vue Router, Vue I18n
-- Editor: Tiptap (Starter Kit and rich extensions)
-- State: Pinia
-- Collaboration & Offline: Yjs, y-indexeddb, y-websocket, idb/localforage
-- Build: Vite + TypeScript
-- Tests: Vitest (unit), Playwright (e2e)
+## Core Philosophy
 
-For detailed store architecture and refactoring guidance, see the notes store documentation:
-See src/stores/notes/README.md
+**Modularity First**: Every feature is a self-contained module that registers itself with the central registry. This allows multiple agents to work on different modules simultaneously without conflicts.
+
+**Dependency Injection**: Services, stores, and handlers are injected rather than imported directly, enabling isolated development and testing.
+
+**Convention over Configuration**: Follow established patterns (see CONTRIBUTING.md) to ensure consistent code style across all contributions.
+
+**Library Agnostic**: Current UI/state libraries are implementation details subject to refactoring. Focus on architectural patterns, not specific frameworks.
+
+For detailed store architecture patterns, see:
+- src/stores/notes/README.md
 
 ## Repository Structure
 
 ```
 .
-├── src/                      # Frontend source (Vue 3 + Quasar)
-│   └── stores/
-│       └── notes/
-│           └── README.md     # Notes store refactoring doc (modular architecture)
-├── sync-server/              # Optional sync server (Fastify, Drizzle, Better Auth, Yjs)
-│   ├── package.json
-│   └── tsconfig.json
-├── package.json              # Frontend scripts and dependencies
-├── tsconfig.json             # Frontend TypeScript configuration
-└── docs/                     # Project documentation (added in this PR)
+├── src/
+│   ├── modules/              # 🔌 Pluggable note type modules (text, markdown, code, etc.)
+│   ├── stores/
+│   │   └── notes/           # 📦 Modular store (utils, tags, sync, categories, storage)
+│   ├── core/                # 🏗️  Module registry and initialization
+│   ├── types/               # 📝 Shared type definitions (module.ts, note.ts)
+│   ├── services/            # 🔧 Injectable services (NoteService, apiClient)
+│   └── components/          # 🎨 UI components
+├── sync-server/             # 🔄 Optional sync server with module system
+├── docs/                    # 📚 Architecture and development guides
+└── CONTRIBUTING.md          # 🤖 Agent collaboration guide
 ```
+
+**Key Directories for Parallel Development:**
+- `src/modules/*` - Add new note types independently
+- `src/stores/notes/*` - Extend store capabilities in isolation
+- `src/services/*` - Add new services without touching existing code
+- `sync-server/modules/*` - Mirror frontend modules on server
 
 ## Quickstart
 
@@ -104,22 +114,46 @@ Sync server scripts (see docs/sync-server.md):
 
 ## Architecture
 
-- Frontend
-  - Vue 3 + Quasar for UI
-  - Pinia store with modular design for notes (see src/stores/notes/README.md)
-  - Tiptap-based editor with common extensions
-  - Offline persistence with IndexedDB (via y-indexeddb / idb / localforage)
-- Collaboration & Sync
-  - Yjs for CRDT-based collaboration
-  - y-websocket for real-time sync
-  - Optional server for multi-device synchronization and auth (Fastify + Better Auth + Drizzle + better-sqlite3)
-- Tooling
-  - Vite, TypeScript, UnoCSS, Vitest, Playwright
+**Plugin System**: Central `ModuleRegistry` manages all note type modules
+- Each module: self-contained with types, handlers, components
+- Registration: `await moduleRegistry.register(yourModule)`
+- Zero coupling between modules
 
-See more in:
-- docs/architecture.md
-- docs/sync-server.md
+**Modular Store**: Pinia store split into focused modules
+- `utils.ts` - Pure functions (ID generation, cloning, timestamps)
+- `tags.ts` - Tag extraction with Unicode support
+- `sync.ts` - Offline queue and server sync with dependency injection
+- `categories.ts` - Reference-counted category indexing
+- `storage.ts` - Persistence abstraction (in-memory for tests)
 
-## Contributing
+**Service Layer**: Injectable services via registry
+- `NoteService` - CRUD operations abstracted from store
+- `apiClient` - HTTP client for sync server
+- Custom services registered in `ModuleRegistry`
 
-See CONTRIBUTING.md for development workflow, testing guidance, and PR conventions.
+**Type Safety**: Strict TypeScript with shared types
+- `src/types/module.ts` - Module system contracts
+- `src/types/note.ts` - Note type definitions
+- All modules implement standard interfaces
+
+See detailed patterns in:
+- docs/architecture.md - System design and data flow
+- docs/development.md - Code conventions and patterns
+- src/stores/notes/README.md - Store refactoring guide
+
+## For Coding Agents
+
+**Read CONTRIBUTING.md first** - Essential guide for parallel development by multiple agents
+
+Key principles for agents:
+1. **One module per PR** - Minimize merge conflicts
+2. **Follow existing patterns** - Check similar modules for conventions
+3. **Use dependency injection** - Never hardcode service references
+4. **Write isolated tests** - Each module must be independently testable
+5. **Register, don't import** - Use `ModuleRegistry` for cross-module access
+
+CONTRIBUTING.md contains:
+- Module development workflow
+- Code patterns and conventions
+- Testing requirements
+- How to avoid conflicts with other agents
