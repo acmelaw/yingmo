@@ -43,12 +43,17 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
     const input = page.getByPlaceholder("Write your note...");
     await input.fill("hello world");
 
+    // Wait for UI to update after input
+    await page.waitForTimeout(100);
+
     // Verify send button becomes enabled
     const sendButton = page.getByTitle("Send message");
     await expect(sendButton).toBeEnabled();
 
     // Verify typing indicator appears
-    await expect(page.getByText("✍️ typing...")).toBeVisible();
+    await expect(page.getByText("✍️ typing...")).toBeVisible({
+      timeout: 2000,
+    });
 
     // Send the message
     await sendButton.click();
@@ -104,8 +109,11 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
     const input = page.getByPlaceholder("Write your note...");
     await input.fill("This is a note with #test and #important tags");
 
+    // Wait for UI to update after input
+    await page.waitForTimeout(100);
+
     // Verify hashtag badge appears while typing
-    await expect(page.getByText("2 tags")).toBeVisible();
+    await expect(page.getByText("2 tags")).toBeVisible({ timeout: 2000 });
     await expect(page.getByText("#test", { exact: true })).toBeVisible();
     await expect(page.getByText("#important", { exact: true })).toBeVisible();
 
