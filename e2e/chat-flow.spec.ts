@@ -106,10 +106,8 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
 
     // Verify hashtag badge appears while typing
     // Use a robust locator that works across different systems
-    await expect(
-      page.locator('div[class*="badge"]').filter({ hasText: "2" }).filter({ hasText: "tags" })
-    ).toBeVisible({ timeout: 5000 });
-    
+    await expect(page.getByText("2 tags")).toBeVisible({ timeout: 5000 });
+
     await expect(page.getByText("#test", { exact: true })).toBeVisible({
       timeout: 2000,
     });

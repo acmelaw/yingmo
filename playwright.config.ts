@@ -33,15 +33,21 @@ export default defineConfig({
     /* Screenshot on failure */
     screenshot: "only-on-failure",
 
-    /* Video on failure */
-    video: "retain-on-failure",
+    /* Video on failure - disabled in CI to avoid ffmpeg dependency */
+    video: process.env.CI ? "off" : "retain-on-failure",
   },
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        // Use system chromium browser in CI where download may fail
+        ...(process.env.CI && {
+          launchOptions: { executablePath: "/usr/bin/chromium" },
+        }),
+      },
     },
   ],
 

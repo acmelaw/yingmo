@@ -49,48 +49,30 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e
 
-      - name: Generate hero screenshot
+      - name: Generate screenshots
         if: success()
-        run: |
-          # Start the dev server in the background
-          npm run dev &
-          DEV_PID=$!
-
-          # Wait for server to be ready
-          echo "Waiting for dev server to start..."
-          for i in {1..30}; do
-            if curl -s http://localhost:5174 > /dev/null; then
-              echo "Dev server is ready"
-              break
-            fi
-            sleep 1
-          done
-
-          # Run screenshot test
-          npx playwright test e2e/screenshot.spec.ts --reporter=line || echo "Screenshot test completed with status: $?"
-
-          # Kill the dev server
-          kill $DEV_PID || true
+        run: ./scripts/generate-screenshots.sh
         continue-on-error: true
 
-      - name: Upload screenshot artifact
+      - name: Upload screenshots as artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: hero-screenshot
-          path: hero-screenshot.png
+          name: screenshots
+          path: |
+            hero-screenshot.png
+            docs/images/*.png
           if-no-files-found: ignore
+          retention-days: 30
 
-      - name: Commit and push screenshot if changed
+      - name: Commit and push screenshots if changed
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          if [ -f hero-screenshot.png ]; then
-            git add hero-screenshot.png || true
-            git diff --staged --quiet || git commit -m "Update hero screenshot [skip ci]" || true
-            git push || echo "No changes to push"
-          fi
+          git add hero-screenshot.png docs/images/*.png || true
+          git diff --staged --quiet || git commit -m "Update screenshots [skip ci]" || true
+          git push || echo "No changes to push"
         continue-on-error: true
 
       - name: Upload test results

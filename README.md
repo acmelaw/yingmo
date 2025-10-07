@@ -5,6 +5,24 @@ A pluggable, modular notes application designed for **parallel development by mu
 ![Hero Screenshot](hero-screenshot.png)
 _Auto-generated screenshot from CI showing the current state of the application_
 
+## ✨ Key Features
+
+### 🏷️ Smart Hashtag Detection
+
+Automatically detects and displays hashtags as you type, making it easy to organize and categorize your notes.
+
+![Hashtag Detection](docs/images/feature-hashtag-detection.png)
+
+### ⚡ Slash Commands
+
+Quick note type selection with slash commands (e.g., `/markdown`, `/code`, `/todo`)
+
+![Slash Commands](docs/images/feature-slash-commands.png)
+
+### 🔌 Modular Architecture
+
+Every feature is a self-contained module - add new note types without touching existing code.
+
 ## Core Philosophy
 
 **Modularity First**: Every feature is a self-contained module that registers itself with the central registry. This allows multiple contributors to work on different modules simultaneously without conflicts.

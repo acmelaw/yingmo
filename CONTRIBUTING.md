@@ -368,6 +368,53 @@ Before submitting:
 - [ ] **No hardcoded dependencies** (use DI)
 - [ ] **Follows existing patterns** (check similar modules)
 - [ ] **Minimal file changes** (only affected files)
+- [ ] **Screenshots updated** (if UI changes): `npm run screenshots`
+
+### Screenshot Generation
+
+For UI changes or new features, update documentation screenshots:
+
+```bash
+# Generate all screenshots (hero + feature demos)
+npm run screenshots
+
+# Generate only hero screenshot
+npm run screenshots:hero
+
+# Generate only feature demo screenshots
+npm run screenshots:features
+```
+
+**Adding a new feature demo screenshot:**
+
+1. Add test in `e2e/feature-demos.spec.ts`:
+
+```typescript
+test("capture my-feature demo", async ({ page }) => {
+  await page.goto("/");
+  await setupAppForScreenshot(page);
+
+  // Set up the feature state
+  await typeInInput(page, "Demo text");
+
+  // Capture screenshot
+  await captureOptimizedScreenshot(page, {
+    path: "docs/images/feature-my-feature.png",
+    type: "png",
+  });
+});
+```
+
+2. Add screenshot to README with description
+3. Run `npm run screenshots` to generate
+4. Commit both test and screenshot
+
+**Helper functions** (in `e2e/utils/screenshot-helper.ts`):
+
+- `setupAppForScreenshot(page)` - Close modals, prepare app
+- `captureOptimizedScreenshot(page, options)` - Take optimized screenshot
+- `createNote(page, content, slashCommand)` - Create a note
+- `typeInInput(page, content)` - Type without sending (for live features)
 
 ### PR Description Template
 
