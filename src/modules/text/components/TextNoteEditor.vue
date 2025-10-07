@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import * as Y from 'yjs';
 import type { TextNote } from '@/types/note';
@@ -14,12 +14,22 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  update: [updates: Partial<TextNote>];
+  "update:modelValue": [value: string];
   keydown: [event: KeyboardEvent];
+  update: [updates: { content: string; text: string }];
+  close: [];
 }>();
 
 const notesStore = useNotesStore();
 const authStore = useAuthStore();
+const textareaRef = ref<HTMLTextAreaElement | null>(null);
+
+// Auto-focus the textarea when component mounts (for double-click edit UX)
+onMounted(() => {
+  if (!props.readonly && textareaRef.value) {
+    textareaRef.value.focus();
+  }
+});
 
 const { shouldSync } = storeToRefs(notesStore);
 
@@ -199,13 +209,21 @@ const collaborationStatus = computed(() => collaboration.status.value);
 <template>
   <div class="text-note-editor space-y-2">
     <textarea
+      ref="textareaRef"
       v-model="localText"
       :readonly="readonly"
       class="w-full min-h-[8rem] rounded border border-gray-300 bg-transparent p-3 focus:border-accent focus:outline-none dark:border-gray-600"
       placeholder="Write your note..."
       @input="handleInput"
       @blur="handleUpdate"
-      @keydown="(e: KeyboardEvent) => $emit('keydown', e)"
+      @keydown="(e: KeyboardEvent) => {
+        $emit('keydown', e);
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          $emit('close');
+        }
+      }"
     />
     <p
       v-if="collaborationEnabled"

@@ -1,267 +1,5 @@
-<script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue';
-import { useI18n } from 'vue-i18n';
-import type { NoteType, Note } from '@/types/note';
-import { moduleRegistry } from '@/core/ModuleRegistry';
-import { getNoteContent } from '@/types/note';
-import { Badge, Button } from '@/components/ui';
-
-export interface ComposerActionItem {
-  id: string;
-  label: string;
-  value?: string;
-  icon?: string;
-}
-
-export interface ComposerActionContext {
-  append: (value: string) => void;
-  focus: () => void;
-  close: () => void;
-}
-
-export interface ComposerAction {
-  id: string;
-  label: string;
-  icon?: string;
-  type?: 'button' | 'menu';
-  items?: ComposerActionItem[];
-  onTrigger?: (ctx: ComposerActionContext) => void;
-  onSelect?: (item: ComposerActionItem, ctx: ComposerActionContext) => void;
-}
-
-const props = withDefaults(
-  defineProps<{
-    actions?: ComposerAction[];
-    availableTypes?: NoteType[];
-  }>(),
-  {
-    actions: () => [],
-    availableTypes: () => ['text'],
-  }
-);
-
-const emit = defineEmits<{
-  (e: 'submit', text: string, type: NoteType): void;
-  (e: 'create-advanced', type: NoteType): void;
-}>();
-
-const { t } = useI18n();
-
-const selectedType = ref<NoteType>('text');
-const menuOpen = ref<string | null>(null);
-const showHashtagHelper = ref(false);
-
-// Create a draft note that the editor will work with
-const draftNote = ref<Note>({
-  id: 'draft',
-  type: selectedType.value,
-  content: '',
-  metadata: {},
-  created: Date.now(),
-  updated: Date.now(),
-} as Note);
-
-// Get the editor component for the selected type
-const editorComponent = computed(() => {
-  const modules = moduleRegistry.getModulesForType(selectedType.value);
-  return modules.length > 0 && modules[0].components?.editor
-    ? modules[0].components.editor
-    : null;
-});
-
-// Extract text content for hashtag detection
-const draftText = computed(() => getNoteContent(draftNote.value));
-
-const isTyping = computed(() => draftText.value.trim().length > 0);
-
-// Extract hashtags from the current draft (Unicode-aware)
-const detectedHashtags = computed(() => {
-  const matches = draftText.value.match(/#[\p{L}\p{N}_]+/gu);
-  return matches ? [...new Set(matches)] : [];
-});
-
-// Show hashtag count and visual feedback
-const hashtagCount = computed(() => detectedHashtags.value.length);
-
-// Update draft note when type changes
-watch(selectedType, (newType) => {
-  // Keep content, just change type and reset metadata for new type
-  const currentContent = getNoteContent(draftNote.value);
-  draftNote.value = {
-    id: 'draft',
-    type: newType,
-    content: currentContent,
-    metadata: {},
-    created: Date.now(),
-    updated: Date.now(),
-  } as Note;
-});
-
-function handleEditorUpdate(updates: Partial<Note>) {
-  // Update the draft note with changes from the editor
-  draftNote.value = {
-    ...draftNote.value,
-    ...updates,
-    updated: Date.now(),
-  } as Note;
-}
-
-const defaultEmojiAction = computed<ComposerAction>(() => ({
-  id: 'emoji',
-  label: t('emoji'),
-  icon: '😊',
-  type: 'menu',
-  items: [
-    '😀', '😅', '😍', '🤔', '🔥', '🎉',
-    '✅', '🙌', '📌', '🧠', '🚀', '✨',
-    '💡', '⭐', '💯', '👍', '❤️', '🎊',
-    '🎯', '📝', '💬', '🎨', '🌟', '🏆'
-  ].map((emoji) => ({
-    id: emoji,
-    label: emoji
-  })),
-  onSelect: (item, ctx) => {
-    ctx.append(item.label);
-    ctx.focus();
-  }
-}));
-
-const quickHashtagAction = computed<ComposerAction>(() => ({
-  id: 'hashtag',
-  label: t('hashtag') || 'Add Tag',
-  icon: '#️⃣',
-  onTrigger: (ctx) => {
-    ctx.append(' #');
-    ctx.focus();
-    showHashtagHelper.value = true;
-  }
-}));
-
-const allActions = computed(() => [quickHashtagAction.value, ...props.actions, defaultEmojiAction.value]);
-
-function focusInput() {
-  // Focus handled by editor component
-  nextTick(() => {
-    // Could implement editor-specific focus if needed
-  });
-}
-
-function append(value: string) {
-  // Append to the current content
-  const currentContent = getNoteContent(draftNote.value);
-  handleEditorUpdate({ content: currentContent + value });
-}
-
-function changeType(type: NoteType) {
-  selectedType.value = type;
-  closeMenus();
-}
-
-function closeMenus() {
-  menuOpen.value = null;
-  showHashtagHelper.value = false;
-}
-
-function send() {
-  const content = getNoteContent(draftNote.value);
-  if (!content.trim()) return;
-
-  emit('submit', content.trim(), selectedType.value);
-
-  // Reset draft
-  draftNote.value = {
-    id: 'draft',
-    type: selectedType.value,
-    content: '',
-    metadata: {},
-    created: Date.now(),
-    updated: Date.now(),
-  } as Note;
-
-  closeMenus();
-  focusInput();
-}
-
-function createAdvanced(type: NoteType) {
-  emit('create-advanced', type);
-}
-
-function selectType(type: NoteType) {
-  selectedType.value = type;
-  menuOpen.value = null;
-}
-
-function getNoteTypeIcon(type: NoteType): string {
-  const icons: Record<NoteType, string> = {
-    text: '📝',
-    markdown: '📄',
-    code: '💻',
-    'rich-text': '✏️',
-    image: '🖼️',
-    'smart-layer': '🤖',
-  };
-  return icons[type] || '📋';
-}
-
-function onKey(e: KeyboardEvent) {
-  // Only auto-send on Enter for simple text types
-  // Rich editors like TipTap handle Enter themselves
-  if (e.key === 'Enter' && !e.shiftKey && selectedType.value === 'text') {
-    e.preventDefault();
-    send();
-    return;
-  }
-  if (e.key === 'Escape') {
-    e.preventDefault();
-    closeMenus();
-  }
-
-  // Show hashtag helper when # is typed
-  if (e.key === '#') {
-    showHashtagHelper.value = true;
-  }
-}
-
-const context: ComposerActionContext = {
-  append(value: string) {
-    append(value);
-  },
-  focus() {
-    focusInput();
-  },
-  close() {
-    // Not needed in always-visible composer
-  }
-};
-
-function triggerAction(action: ComposerAction) {
-  if (action.type === 'menu') {
-    menuOpen.value = menuOpen.value === action.id ? null : action.id;
-    return;
-  }
-  action.onTrigger?.(context);
-}
-
-function selectActionItem(action: ComposerAction, item: ComposerActionItem) {
-  if (action.onSelect) {
-    action.onSelect(item, context);
-  } else {
-    append(item.value ?? item.label);
-  }
-  closeMenus();
-  focusInput();
-}
-
-watch(draftText, () => {
-  // Hide hashtag helper when space is typed
-  if (draftText.value.endsWith(' ') || draftText.value.endsWith('\n')) {
-    showHashtagHelper.value = false;
-  }
-});
-</script>
-
 <template>
-  <div class="w-full">
+  <div class="w-full max-w-2xl mx-auto">
     <!-- Hashtag helper - above input -->
     <Transition
       enter-active-class="transition-all duration-150 ease-out"
@@ -345,7 +83,10 @@ watch(draftText, () => {
             enter-active-class="animate-[brutal-pop_0.15s_ease-out]"
             leave-active-class="animate-[brutal-pop_0.1s_ease-in_reverse]"
           >
-            <div v-if="menuOpen === 'note-type'" class="absolute bottom-full left-0 mb-2 p-2 bg-brutal-white border-3 border-brutal-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 min-w-[140px]">
+            <div
+              v-if="menuOpen === 'note-type'"
+              class="absolute bottom-full left-0 mb-2 p-2 bg-brutal-white border-3 border-brutal-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 min-w-[140px]"
+            >
               <button
                 v-for="type in availableTypes"
                 :key="type"
@@ -408,3 +149,150 @@ watch(draftText, () => {
     </Transition>
   </div>
 </template>
+
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+// Props
+const props = defineProps({
+  availableTypes: {
+    type: Array,
+    default: () => ['text']
+  },
+  initialType: {
+    type: String,
+    default: 'text'
+  }
+})
+
+// I18n
+const { t } = useI18n()
+
+// State
+const menuOpen = ref(null)
+const showHashtagHelper = ref(false)
+const selectedType = ref(props.initialType)
+const draftNote = ref({
+  id: 'draft',
+  type: props.initialType,
+  content: '',
+  metadata: {},
+  created: Date.now(),
+  updated: Date.now()
+})
+
+// Computed
+const isTyping = computed(() => draftNote.value.content.trim().length > 0)
+const hashtagCount = computed(() => detectedHashtags.value.length)
+const detectedHashtags = computed(() => {
+  const content = draftNote.value.content
+  const hashtags = content.match(/#[a-zA-Z0-9_]+/g)
+  return hashtags ? [...new Set(hashtags)] : []
+})
+
+// Emoji data
+const emojiData = [
+  '😀', '😂', '🥰', '😎', '🤩', '😍', '🤗', '🤑', '🤠', '🥳',
+  '😭', '😡', '🤯', '🥶', '😱', '👻', '💩', '👾', '🤖', '👋',
+  '👍', '👏', '🙌', '💪', '🦾', '🦿', '🧠', '🦷', '🦴', '👀',
+  '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯',
+  '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🦆', '🦅'
+]
+
+// Action context
+const context = {
+  append(value) {
+    const currentContent = draftNote.value.content
+    draftNote.value.content = currentContent + value
+  },
+  focus() {
+    // Focus logic would go here
+  },
+  close() {
+    menuOpen.value = null
+  }
+}
+
+// Components
+const defaultEmojiAction = {
+  id: 'emoji',
+  type: 'menu',
+  items: emojiData.map(emoji => ({ id: emoji, label: emoji }))
+}
+
+const editorComponent = computed(() => {
+  // This would be dynamically imported based on selectedType
+  // For demo purposes, we'll return a simple textarea
+  return 'textarea'
+})
+
+// Methods
+const triggerAction = (action) => {
+  if (action.type === 'menu') {
+    menuOpen.value = menuOpen.value === action.id ? null : action.id
+    return
+  }
+  action.handler?.()
+}
+
+const selectActionItem = (action, item) => {
+  if (action.id === 'emoji') {
+    context.append(item.label)
+  }
+  menuOpen.value = null
+}
+
+const changeType = (type) => {
+  selectedType.value = type
+  menuOpen.value = null
+}
+
+const handleEditorUpdate = (event) => {
+  draftNote.value.content = event.target.value
+}
+
+const onKeydown = (event) => {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault()
+    send()
+  }
+}
+
+const send = () => {
+  if (!isTyping.value) return
+
+  // Emit the message
+  const message = {
+    id: Date.now(),
+    content: draftNote.value.content,
+    type: selectedType.value,
+    timestamp: Date.now(),
+    sender: 'user'
+  }
+
+  // Reset the input
+  draftNote.value.content = ''
+  menuOpen.value = null
+  showHashtagHelper.value = false
+
+  // Emit the message event
+  emit('send', message)
+}
+
+// Watchers
+watch(() => draftNote.value.content, (newContent) => {
+  // Update the note with new content
+  draftNote.value.updated = Date.now()
+
+  // Show hashtag helper when content contains #
+  showHashtagHelper.value = newContent.includes('#')
+})
+
+// Emit events
+const emit = defineEmits(['send'])
+</script>
+
+<style scoped>
+/* Add your custom styles here */
+</style>

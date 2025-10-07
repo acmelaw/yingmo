@@ -15,6 +15,8 @@ const props = defineProps<{
   selectable?: boolean;
   // Whether the card is currently selected
   selected?: boolean;
+  // Active tag filter (to highlight)
+  activeTag?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -24,6 +26,7 @@ const emit = defineEmits<{
   (e: 'pin'): void;
   (e: 'transform'): void;
   (e: 'select', selected: boolean): void;
+  (e: 'tag-click', tag: string): void;
 }>();
 
 const { t } = useI18n();
@@ -65,33 +68,48 @@ function toggleEdit() {
   isEditing.value = !isEditing.value;
 }
 
-function handleKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape' && isEditing.value) {
+function handleEditorKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
     isEditing.value = false;
-    event.preventDefault();
-    event.stopPropagation(); // Don't let ESC propagate to ChatView
   }
 }
 </script>
 
 <template>
-  <article class="note-card group flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-3 op-0 translate-y-10px animate-[slide-up_0.2s_ease-out_forwards]">
+  <article :class="[
+    'note-card group flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-3 op-0 translate-y-10px animate-[slide-up_0.2s_ease-out_forwards]',
+    note.pinned ? 'pinned-note' : ''
+  ]">
     <!-- Selection checkbox (bulk mode) -->
     <div v-if="props.selectable" class="mr-1 flex items-start shrink-0">
       <input
         type="checkbox"
         :checked="props.selected"
-        @change="$emit('select', $event.target.checked)"
+        @change="$emit('select', ($event.target as HTMLInputElement).checked)"
         aria-label="Select note for bulk actions"
         class="w-4 h-4 mt-1"
       />
     </div>
     <!-- Message Bubble (WhatsApp style) -->
-    <div class="msg-out flex-1">
+    <div :class="[
+      'msg-out flex-1 transition-all',
+      note.pinned ? 'bg-accent-green/5 border-l-4 border-accent-green/30 pl-3' : ''
+    ]">
       <!-- Metadata badges at top -->
       <div class="flex flex-wrap gap-1 sm:gap-1.5 mb-2">
         <Badge v-if="hasCategory" variant="category">{{ note.category }}</Badge>
-        <Badge v-for="tag in note.tags ?? []" :key="tag" variant="tag">#{{ tag }}</Badge>
+        <Badge
+          v-for="tag in note.tags ?? []"
+          :key="tag"
+          variant="tag"
+          :class="[
+            'cursor-pointer hover:opacity-80 transition-all',
+            activeTag === tag ? 'ring-2 ring-accent-green ring-offset-2 scale-110' : ''
+          ]"
+          @click="emit('tag-click', tag)"
+        >
+          #{{ tag }}
+        </Badge>
         <Badge
           v-if="showTransformBadge"
           variant="type"
@@ -103,36 +121,38 @@ function handleKeydown(event: KeyboardEvent) {
       </div>
 
       <!-- Note content (editable or view mode) -->
-      <component
-        v-if="isEditing && editorComponent"
-        :is="editorComponent"
-        :note="note"
-        :readonly="false"
-        @update="(updates: Partial<Note>) => emit('update', updates)"
-        @keydown="handleKeydown"
-        class="mb-2 text-sm sm:text-base"
-      />
-      <component
+      <div v-if="isEditing && editorComponent">
+        <component
+          :is="editorComponent"
+          :note="note"
+          :readonly="false"
+          @update="(updates: Partial<Note>) => emit('update', updates)"
+          @close="isEditing = false"
+          class="mb-2 text-sm sm:text-base"
+        />
+      </div>
+      <!-- BRAVE UX: Double-click content to enter edit mode (industry standard like Notion/Linear) -->
+      <div
         v-else-if="viewerComponent"
-        :is="viewerComponent"
-        :note="note"
-        :readonly="true"
-        @update="(updates: Partial<Note>) => emit('update', updates)"
-        class="mb-2 text-sm sm:text-base"
-      />
+        @dblclick="supportsEditing && !selectable ? (isEditing = true) : null"
+        :class="[
+          'mb-2 text-sm sm:text-base',
+          supportsEditing && !selectable ? 'cursor-text' : ''
+        ]"
+      >
+        <component
+          :is="viewerComponent"
+          :note="note"
+          :readonly="true"
+          @update="(updates: Partial<Note>) => emit('update', updates)"
+        />
+      </div>
       <div v-else class="mb-2 text-brutal-pink text-xs sm:text-sm font-black">
         ⚠️ Unsupported note type: {{ note.type }}
       </div>
 
       <!-- Transform hint -->
-      <div v-if="hasTransforms && mode === 'view'" class="mb-2">
-        <button
-          @click="emit('transform')"
-          class="text-2xs sm:text-xs font-black uppercase underline hover:text-brutal-pink transition-colors"
-        >
-          🔄 Change type
-        </button>
-      </div>
+      <!-- REMOVED: Transform button moved to always-visible action bar -->
 
       <!-- Timestamp (WhatsApp style - bottom right) -->
       <div class="flex items-center justify-between gap-2">
@@ -144,58 +164,35 @@ function handleKeydown(event: KeyboardEvent) {
           {{ timeLabel }}{{ wasUpdated ? ' ✓✓' : '' }}
         </time>
 
-        <!-- Quick action: Pin indicator (always visible if pinned) -->
-        <button
-          v-if="note.pinned"
-          @click="emit('pin')"
-          class="text-xs op-70 hover:op-100 transition-opacity"
-          title="Unpin"
-        >
-          ⭐
-        </button>
+        <!-- REMOVED: Pin indicator - now always visible in action bar -->
       </div>
     </div>
 
-    <!-- Action buttons (hidden, show on hover) -->
-    <div class="flex flex-col gap-1 op-0 group-hover:op-100 transition-opacity shrink-0">
+    <!-- Action buttons (ALWAYS VISIBLE - no more hover friction!) -->
+    <div class="flex flex-col gap-1 shrink-0">
+      <!-- REMOVED: Edit button - now double-click content to edit (industry standard) -->
+
+      <!-- Pin/Unpin toggle -->
       <Button
-        v-if="supportsEditing"
         variant="secondary"
         size="icon"
-        class="w-8 h-8 text-sm"
-        type="button"
-        :aria-label="isEditing ? 'Done' : 'Edit'"
-        @click="toggleEdit"
-      >
-        {{ isEditing ? '✅' : '✏️' }}
-      </Button>
-      <Button
-        v-if="!note.pinned"
-        variant="secondary"
-        size="icon"
-        class="w-8 h-8 text-sm"
+        :class="[
+          'w-7 h-7 text-xs sm:w-8 sm:h-8 sm:text-sm transition-all',
+          note.pinned ? 'scale-110 bg-accent-green/20' : ''
+        ]"
         type="button"
         @click="emit('pin')"
-        title="Pin (P)"
-        aria-label="Pin note (keyboard shortcut: P)"
+        :title="note.pinned ? 'Unpin (P)' : 'Pin (P)'"
+        :aria-label="note.pinned ? 'Unpin note (keyboard shortcut: P)' : 'Pin note (keyboard shortcut: P)'"
       >
-        📌
+        {{ note.pinned ? '⭐' : '📌' }}
       </Button>
-      <Button
-        v-if="hasTransforms"
-        variant="secondary"
-        size="icon"
-        class="w-8 h-8 text-sm"
-        type="button"
-        @click="emit('transform')"
-        title="Transform"
-      >
-        🔄
-      </Button>
+
+      <!-- Archive -->
       <Button
         variant="secondary"
         size="icon"
-        class="w-8 h-8 text-sm"
+        class="w-7 h-7 text-xs sm:w-8 sm:h-8 sm:text-sm opacity-70 hover:opacity-100"
         type="button"
         @click="emit('archive')"
         title="Archive (A)"
@@ -203,10 +200,12 @@ function handleKeydown(event: KeyboardEvent) {
       >
         📦
       </Button>
+
+      <!-- Delete (danger zone - subtle) -->
       <Button
         variant="danger"
         size="icon"
-        class="w-8 h-8 text-sm"
+        class="w-7 h-7 text-xs sm:w-8 sm:h-8 sm:text-sm opacity-40 hover:opacity-100"
         type="button"
         @click="emit('delete')"
         title="Delete (D)"

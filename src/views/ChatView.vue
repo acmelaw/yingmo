@@ -39,10 +39,13 @@ const searchInputRef = ref<HTMLInputElement | null>(null);
 const composerRef = ref<InstanceType<typeof QuickComposer> | null>(null);
 const showSettings = ref(false);
 const activeFilter = ref<"all" | "pinned" | "archived">("all");
+const activeTagFilter = ref<string | null>(null); // New: direct tag filtering
 const showSuccessToast = ref(false);
 const successMessage = ref("");
 const showTransformDialog = ref(false);
 const transformingNoteId = ref<string | null>(null);
+const isSelectionMode = ref(false);
+const selectedNoteIds = ref<string[]>([]);
 
 let toastTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -60,6 +63,13 @@ const displayNotes = computed(() => {
       break;
     default:
       result = result.filter((n) => !n.archived);
+  }
+
+  // Apply tag filter (direct, no search UI)
+  if (activeTagFilter.value) {
+    result = result.filter((note) => {
+      return (note.tags || []).includes(activeTagFilter.value!);
+    });
   }
 
   // Apply search
@@ -130,6 +140,15 @@ function showToast(message: string) {
   toastTimeout = setTimeout(() => {
     showSuccessToast.value = false;
   }, 2000);
+}
+
+function handleTagClick(tag: string) {
+  // Direct tag filtering - toggle on/off
+  if (activeTagFilter.value === tag) {
+    activeTagFilter.value = null; // Clear filter
+  } else {
+    activeTagFilter.value = tag; // Set filter
+  }
 }
 
 function scrollToBottom() {
@@ -263,6 +282,34 @@ async function handleSync() {
   }
 }
 
+async function handleBulkArchive() {
+  if (selectedNoteIds.value.length === 0) return;
+  await notesStore.bulkUpdate(selectedNoteIds.value, { archived: true });
+  showToast(`📦 ${selectedNoteIds.value.length} notes archived`);
+  selectedNoteIds.value = [];
+}
+
+async function handleBulkDelete() {
+  if (selectedNoteIds.value.length === 0) return;
+  await notesStore.bulkRemove(selectedNoteIds.value);
+  showToast(`🗑️ ${selectedNoteIds.value.length} notes deleted`);
+  selectedNoteIds.value = [];
+}
+
+function handleCancelSelection() {
+  selectedNoteIds.value = [];
+}
+
+function handleNoteSelect(id: string, selected: boolean) {
+  if (selected) {
+    if (!selectedNoteIds.value.includes(id)) {
+      selectedNoteIds.value.push(id);
+    }
+  } else {
+    selectedNoteIds.value = selectedNoteIds.value.filter(noteId => noteId !== id);
+  }
+}
+
 // === Watchers ===
 watch(
   () => displayNotes.value.length,
@@ -283,6 +330,14 @@ function handleGlobalKeydown(e: KeyboardEvent) {
   if (e.key === "Escape" && showSearch.value) {
     showSearch.value = false;
     searchQuery.value = "";
+    return;
+  }
+
+  // Allow Cmd+Shift+A for selection mode even when input focused
+  if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+    e.preventDefault();
+    isSelectionMode.value = !isSelectionMode.value;
+    selectedNoteIds.value = [];
     return;
   }
 
@@ -313,12 +368,15 @@ function handleGlobalKeydown(e: KeyboardEvent) {
     if (e.key === "1") {
       e.preventDefault();
       activeFilter.value = "all";
+      activeTagFilter.value = null; // Clear tag filter
     } else if (e.key === "2") {
       e.preventDefault();
       activeFilter.value = "pinned";
+      activeTagFilter.value = null; // Clear tag filter
     } else if (e.key === "3") {
       e.preventDefault();
       activeFilter.value = "archived";
+      activeTagFilter.value = null; // Clear tag filter
     }
   }
 
@@ -443,7 +501,7 @@ onUnmounted(() => {
           ? 'bg-accent-cyan text-base-black shadow-hard-sm'
           : 'bg-base-white dark:bg-dark-bg-tertiary hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard-sm)'"
         aria-label="Show all notes (keyboard shortcut: Cmd+1)"
-        @click="activeFilter = 'all'"
+        @click="activeFilter = 'all'; activeTagFilter = null"
       >
         💬 All <span v-if="noteStats.all > 0">({{ noteStats.all }})</span>
       </button>
@@ -455,7 +513,7 @@ onUnmounted(() => {
           ? 'bg-accent-yellow text-base-black shadow-hard-sm'
           : 'bg-base-white dark:bg-dark-bg-tertiary hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard-sm)'"
         aria-label="Show pinned notes (keyboard shortcut: Cmd+2)"
-        @click="activeFilter = 'pinned'"
+        @click="activeFilter = 'pinned'; activeTagFilter = null"
       >
         ⭐ Pinned <span v-if="noteStats.pinned > 0">({{ noteStats.pinned }})</span>
       </button>
@@ -467,12 +525,23 @@ onUnmounted(() => {
           ? 'bg-accent-purple text-base-white shadow-hard-sm'
           : 'bg-base-white dark:bg-dark-bg-tertiary hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard-sm)'"
         aria-label="Show archived notes (keyboard shortcut: Cmd+3)"
-        @click="activeFilter = 'archived'"
+        @click="activeFilter = 'archived'; activeTagFilter = null"
       >
         📦 Archived <span v-if="noteStats.archived > 0">({{ noteStats.archived }})</span>
       </button>
 
       <div class="flex-1"></div>
+
+      <!-- Active tag filter indicator -->
+      <button
+        v-if="activeTagFilter"
+        type="button"
+        class="px-2 py-1 text-xs font-bold bg-accent-green text-base-black border-2 border-base-black rounded-md shadow-hard-sm animate-pulse"
+        @click="activeTagFilter = null"
+        title="Click to clear filter"
+      >
+        🏷️ #{{ activeTagFilter }} ✕
+      </button>
 
       <!-- Total count -->
       <span class="text-2xs font-bold opacity-60">
@@ -514,13 +583,18 @@ onUnmounted(() => {
           v-for="note in displayNotes"
           :key="note.id"
           :note="note"
+          :active-tag="activeTagFilter"
+          :selectable="isSelectionMode"
+          :selected="selectedNoteIds.includes(note.id)"
           :class="{ 'ring-2 ring-accent-green': focusedNoteId === note.id }"
-          @click="focusedNoteId = note.id"
+          @click="isSelectionMode ? handleNoteSelect(note.id, !selectedNoteIds.includes(note.id)) : focusedNoteId = note.id"
           @delete="handleDelete(note.id)"
           @update="(updates) => handleUpdate(note.id, updates)"
           @archive="handleArchive(note.id)"
           @pin="handlePin(note.id)"
           @transform="handleTransform(note.id)"
+          @select="handleNoteSelect(note.id, $event)"
+          @tag-click="handleTagClick"
         />
       </TransitionGroup>
     </div>

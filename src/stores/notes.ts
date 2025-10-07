@@ -764,6 +764,8 @@ export const useNotesStore = defineStore("notes", () => {
     remove,
     archive,
     unarchive,
+    bulkUpdate,
+    bulkRemove,
 
     // Tag operations
     addTag,
