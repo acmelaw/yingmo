@@ -7,28 +7,28 @@
 :root {
   /* === BASE COLORS === */
   --brutal-black: #000000;
-  --brutal-white: #FFFFFF;
+  --brutal-white: #ffffff;
 
   /* === CHAT BACKGROUNDS (WhatsApp inspired) === */
-  --brutal-bg: #ECE5DD;              /* Main chat background - WhatsApp beige */
-  --brutal-bg-alt: #F0F2F5;          /* Alternative background */
-  --brutal-bg-secondary: #E8E8E8;    /* Secondary panels */
+  --brutal-bg: #ece5dd; /* Main chat background - WhatsApp beige */
+  --brutal-bg-alt: #f0f2f5; /* Alternative background */
+  --brutal-bg-secondary: #e8e8e8; /* Secondary panels */
   --brutal-text: #000000;
   --brutal-text-secondary: #333333;
 
   /* === ACCENT COLORS - VIBRANT & LOUD === */
-  --brutal-pink: #FF006E;
-  --brutal-cyan: #00F5FF;
-  --brutal-yellow: #FFD700;          /* Slightly warmer yellow */
-  --brutal-green: #25D366;           /* WhatsApp green */
-  --brutal-purple: #B026FF;
-  --brutal-orange: #FF6B00;
+  --brutal-pink: #ff006e;
+  --brutal-cyan: #00f5ff;
+  --brutal-yellow: #ffd700; /* Slightly warmer yellow */
+  --brutal-green: #25d366; /* WhatsApp green */
+  --brutal-purple: #b026ff;
+  --brutal-orange: #ff6b00;
 
   /* === SEMANTIC (still brutal) === */
-  --brutal-success: #25D366;         /* WhatsApp green */
-  --brutal-error: #FF006E;
-  --brutal-warning: #FFD700;
-  --brutal-info: #00F5FF;
+  --brutal-success: #25d366; /* WhatsApp green */
+  --brutal-error: #ff006e;
+  --brutal-warning: #ffd700;
+  --brutal-info: #00f5ff;
 
   /* === BORDERS === */
   --brutal-border-thin: 2px;
@@ -47,23 +47,24 @@
   --brutal-shadow-active: 2px 2px 0 var(--brutal-black);
 
   /* === SPACING - Intentionally irregular === */
-  --space-xs: 0.25rem;   /* 4px */
-  --space-sm: 0.5rem;    /* 8px */
-  --space-md: 1rem;      /* 16px */
-  --space-lg: 1.5rem;    /* 24px */
-  --space-xl: 2rem;      /* 32px */
-  --space-2xl: 3rem;     /* 48px */
+  --space-xs: 0.25rem; /* 4px */
+  --space-sm: 0.5rem; /* 8px */
+  --space-md: 1rem; /* 16px */
+  --space-lg: 1.5rem; /* 24px */
+  --space-xl: 2rem; /* 32px */
+  --space-2xl: 3rem; /* 48px */
 
   /* === TYPOGRAPHY - BOLD & LOUD === */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Arial', 'Helvetica', sans-serif;
-  --font-mono: 'Courier New', 'Courier', monospace;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Arial", "Helvetica", sans-serif;
+  --font-mono: "Courier New", "Courier", monospace;
 
-  --text-xs: 0.7rem;       /* 11px */
-  --text-sm: 0.85rem;      /* 14px */
-  --text-base: 1rem;       /* 16px */
-  --text-lg: 1.25rem;      /* 20px */
-  --text-xl: 1.5rem;       /* 24px */
-  --text-2xl: 2rem;        /* 32px */
+  --text-xs: 0.7rem; /* 11px */
+  --text-sm: 0.85rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.25rem; /* 20px */
+  --text-xl: 1.5rem; /* 24px */
+  --text-2xl: 2rem; /* 32px */
 
   --font-normal: 400;
   --font-bold: 700;
@@ -75,7 +76,7 @@
   /* === NO BORDER RADIUS (or minimal) === */
   --radius-none: 0;
   --radius-sm: 2px;
-  --radius-brutal: 0;      /* Most elements */
+  --radius-brutal: 0; /* Most elements */
 
   /* === TRANSITIONS - SNAPPY === */
   --transition-brutal: 0.1s ease-out;
@@ -90,22 +91,22 @@
 
 /* === DARK MODE - WhatsApp Dark Theme === */
 .dark {
-  --brutal-black: #FFFFFF;
-  --brutal-white: #0B141A;           /* WhatsApp dark background */
-  --brutal-bg: #0B141A;              /* WhatsApp dark chat bg */
-  --brutal-bg-alt: #1F2C34;          /* WhatsApp dark secondary */
-  --brutal-bg-secondary: #202C33;    /* WhatsApp dark panels */
-  --brutal-text: #E9EDEF;            /* WhatsApp dark text */
-  --brutal-text-secondary: #8696A0;  /* WhatsApp dark secondary text */
+  --brutal-black: #ffffff;
+  --brutal-white: #0b141a; /* WhatsApp dark background */
+  --brutal-bg: #0b141a; /* WhatsApp dark chat bg */
+  --brutal-bg-alt: #1f2c34; /* WhatsApp dark secondary */
+  --brutal-bg-secondary: #202c33; /* WhatsApp dark panels */
+  --brutal-text: #e9edef; /* WhatsApp dark text */
+  --brutal-text-secondary: #8696a0; /* WhatsApp dark secondary text */
   --brutal-border-color: var(--brutal-black);
 
   /* Accents stay loud but adjusted for dark mode */
-  --brutal-pink: #FF1A8C;
-  --brutal-cyan: #00D9FF;
-  --brutal-yellow: #FFE066;
-  --brutal-green: #25D366;           /* WhatsApp green stays consistent */
-  --brutal-purple: #C855FF;
-  --brutal-orange: #FF8533;
+  --brutal-pink: #ff1a8c;
+  --brutal-cyan: #00d9ff;
+  --brutal-yellow: #ffe066;
+  --brutal-green: #25d366; /* WhatsApp green stays consistent */
+  --brutal-purple: #c855ff;
+  --brutal-orange: #ff8533;
 
   /* Shadows inverted */
   --brutal-shadow-sm: 3px 3px 0 var(--brutal-black);
@@ -174,22 +175,50 @@ body {
 }
 
 /* === Typography Utilities === */
-.text-xs { font-size: var(--text-xs); }
-.text-sm { font-size: var(--text-sm); }
-.text-base { font-size: var(--text-base); }
-.text-lg { font-size: var(--text-lg); }
-.text-xl { font-size: var(--text-xl); }
-.text-2xl { font-size: var(--text-2xl); }
-.text-3xl { font-size: var(--text-3xl); }
+.text-xs {
+  font-size: var(--text-xs);
+}
+.text-sm {
+  font-size: var(--text-sm);
+}
+.text-base {
+  font-size: var(--text-base);
+}
+.text-lg {
+  font-size: var(--text-lg);
+}
+.text-xl {
+  font-size: var(--text-xl);
+}
+.text-2xl {
+  font-size: var(--text-2xl);
+}
+.text-3xl {
+  font-size: var(--text-3xl);
+}
 
-.font-normal { font-weight: var(--font-normal); }
-.font-medium { font-weight: var(--font-medium); }
-.font-semibold { font-weight: var(--font-semibold); }
-.font-bold { font-weight: var(--font-bold); }
+.font-normal {
+  font-weight: var(--font-normal);
+}
+.font-medium {
+  font-weight: var(--font-medium);
+}
+.font-semibold {
+  font-weight: var(--font-semibold);
+}
+.font-bold {
+  font-weight: var(--font-bold);
+}
 
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-tertiary { color: var(--text-tertiary); }
+.text-primary {
+  color: var(--text-primary);
+}
+.text-secondary {
+  color: var(--text-secondary);
+}
+.text-tertiary {
+  color: var(--text-tertiary);
+}
 
 /* === BRUTAL BUTTON SYSTEM === */
 .btn {
@@ -427,9 +456,23 @@ body {
 }
 
 @keyframes brutal-shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-  20%, 40%, 60%, 80% { transform: translateX(2px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
 }
 
 .animate-pop {

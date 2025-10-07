@@ -14,7 +14,9 @@
       </aside>
 
       <!-- Center blade: primary content -->
-      <main class="flex-1 flex flex-col overflow-hidden bg-bg-primary dark:bg-dark-bg-primary">
+      <main
+        class="flex-1 flex flex-col overflow-hidden bg-bg-primary dark:bg-dark-bg-primary"
+      >
         <slot />
       </main>
 

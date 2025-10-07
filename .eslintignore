@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+dist
+.playwright-mcp
+
+# Build outputs
+/dist
+/src/auto-imports.d.ts
+/src/components.d.ts
+storybook-static
+
+# Test results
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Config files
+*.config.js
+*.config.ts
+
+# Sync server (has its own linting)
+sync-server

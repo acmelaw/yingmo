@@ -119,7 +119,9 @@ test.describe("Data Persistence", () => {
     await expect(lastNoteText).toBeVisible();
   });
 
-  test("should show new note immediately even when sync is enabled (optimistic UI)", async ({ page }) => {
+  test("should show new note immediately even when sync is enabled (optimistic UI)", async ({
+    page,
+  }) => {
     // Enable sync in settings
     await page.getByRole("button", { name: "⚙️" }).click();
     const syncToggle = page.getByRole("switch");

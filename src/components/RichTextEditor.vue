@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount, computed } from 'vue';
-import { useEditor, EditorContent } from '@tiptap/vue-3';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
-import Collaboration from '@tiptap/extension-collaboration';
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
-import * as Y from 'yjs';
+import { ref, watch, onBeforeUnmount, computed } from "vue";
+import { useEditor, EditorContent } from "@tiptap/vue-3";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
+import * as Y from "yjs";
 
 const props = withDefaults(
   defineProps<{
@@ -18,17 +18,17 @@ const props = withDefaults(
     editable?: boolean;
   }>(),
   {
-    placeholder: 'Start typing...',
+    placeholder: "Start typing...",
     enableCollaboration: false,
-    minHeight: '80px',
-    maxHeight: '400px',
+    minHeight: "80px",
+    maxHeight: "400px",
     editable: true,
   }
 );
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void;
-  (e: 'update:json', value: any): void;
+  (e: "update:modelValue", value: string): void;
+  (e: "update:json", value: any): void;
 }>();
 
 // Create a Y.Doc for collaboration if not provided
@@ -55,8 +55,8 @@ const extensions = computed(() => {
       CollaborationCursor.configure({
         provider: null, // Set externally if needed
         user: {
-          name: 'Anonymous',
-          color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+          name: "Anonymous",
+          color: "#" + Math.floor(Math.random() * 16777215).toString(16),
         },
       })
     );
@@ -74,8 +74,8 @@ const editor = useEditor({
     const text = editor.getText();
     const json = editor.getJSON();
 
-    emit('update:modelValue', text);
-    emit('update:json', json);
+    emit("update:modelValue", text);
+    emit("update:json", json);
   },
 });
 
@@ -159,7 +159,7 @@ defineExpose({
   background: #f5f5f5;
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: 'Monaco', 'Courier New', monospace;
+  font-family: "Monaco", "Courier New", monospace;
   font-size: 0.9em;
 }
 

@@ -24,24 +24,24 @@ export function parseSlashCommand(text: string): ParsedSlashCommand | null {
   const trimmed = text.trim();
 
   // Check if starts with slash
-  if (!trimmed.startsWith('/')) {
+  if (!trimmed.startsWith("/")) {
     return null;
   }
 
   // Extract command and parameters
-  let command = '';
+  let command = "";
   const parameters: Record<string, any> = {};
-  let content = '';
-  let rawCommand = '';
+  let content = "";
+  let rawCommand = "";
 
   // Try /command/k=v/k=v format first
   const slashMatch = trimmed.match(/^(\/[^/\s]+(?:\/[^/\s]+=[^/\s]+)*)\s*(.*)/);
 
   if (slashMatch) {
     rawCommand = slashMatch[1];
-    content = slashMatch[2] || '';
+    content = slashMatch[2] || "";
 
-    const parts = rawCommand.split('/').filter(p => p);
+    const parts = rawCommand.split("/").filter((p) => p);
     command = parts[0].toLowerCase();
 
     // Parse k=v pairs
@@ -59,7 +59,7 @@ export function parseSlashCommand(text: string): ParsedSlashCommand | null {
     if (simpleMatch) {
       rawCommand = simpleMatch[1];
       command = simpleMatch[1].slice(1).toLowerCase();
-      content = simpleMatch[2] || '';
+      content = simpleMatch[2] || "";
     }
   }
 
@@ -80,7 +80,7 @@ export function parseSlashCommand(text: string): ParsedSlashCommand | null {
     type: null, // Will be resolved by module registry
     parameters,
     content: content.trim(),
-    rawCommand
+    rawCommand,
   };
 }
 
@@ -89,8 +89,8 @@ export function parseSlashCommand(text: string): ParsedSlashCommand | null {
  */
 function parseValue(value: string): any {
   // Boolean
-  if (value === 'true') return true;
-  if (value === 'false') return false;
+  if (value === "true") return true;
+  if (value === "false") return false;
 
   // Number
   if (/^-?\d+(\.\d+)?$/.test(value)) {
@@ -98,8 +98,8 @@ function parseValue(value: string): any {
   }
 
   // Array (comma-separated)
-  if (value.includes(',')) {
-    return value.split(',').map(v => v.trim());
+  if (value.includes(",")) {
+    return value.split(",").map((v) => v.trim());
   }
 
   // String
@@ -112,7 +112,7 @@ function parseValue(value: string): any {
 export function buildSlashCommand(
   command: string,
   parameters: Record<string, any> = {},
-  content: string = ''
+  content: string = ""
 ): string {
   let result = `/${command}`;
 
@@ -121,17 +121,17 @@ export function buildSlashCommand(
     .filter(([_, v]) => v !== null && v !== undefined)
     .map(([k, v]) => {
       if (Array.isArray(v)) {
-        return `${k}=${v.join(',')}`;
+        return `${k}=${v.join(",")}`;
       }
       return `${k}=${v}`;
     });
 
   if (kvParams.length > 0) {
-    result += '/' + kvParams.join('/');
+    result += "/" + kvParams.join("/");
   }
 
   if (content) {
-    result += ' ' + content;
+    result += " " + content;
   }
 
   return result;
@@ -140,7 +140,9 @@ export function buildSlashCommand(
 /**
  * Extract parameters from ChordPro-style directives
  */
-export function extractChordProDirectives(content: string): Record<string, any> {
+export function extractChordProDirectives(
+  content: string
+): Record<string, any> {
   const params: Record<string, any> = {};
   const matches = content.matchAll(/\{([^:}]+):([^}]+)\}/g);
 
@@ -157,5 +159,5 @@ export function extractChordProDirectives(content: string): Record<string, any> 
  * Strip ChordPro directives from content
  */
 export function stripChordProDirectives(content: string): string {
-  return content.replace(/\{[^:}]+:[^}]+\}/g, '').trim();
+  return content.replace(/\{[^:}]+:[^}]+\}/g, "").trim();
 }

@@ -1,23 +1,40 @@
 <template>
-  <Dialog v-model:open="isOpen" @update:open="(val: boolean) => { if (!val) onClose(); }">
+  <Dialog
+    v-model:open="isOpen"
+    @update:open="
+      (val: boolean) => {
+        if (!val) onClose();
+      }
+    "
+  >
     <DialogContent class="max-w-2xl">
       <DialogHeader>
         <DialogTitle class="flex items-start gap-3">
           <span class="text-4xl">🌐</span>
           <div class="flex flex-col gap-1">
-            <span class="uppercase font-black text-lg tracking-wider">Select Server</span>
-            <p class="text-xs text-brutal-text-secondary font-normal normal-case tracking-normal">
-              Connect to a Vue Notes sync server to unlock real-time collaboration and cross-device sync.
+            <span class="uppercase font-black text-lg tracking-wider"
+              >Select Server</span
+            >
+            <p
+              class="text-xs text-brutal-text-secondary font-normal normal-case tracking-normal"
+            >
+              Connect to a Vue Notes sync server to unlock real-time
+              collaboration and cross-device sync.
             </p>
           </div>
         </DialogTitle>
       </DialogHeader>
 
       <!-- Connection Status Banners -->
-      <div v-if="connectionState.connected" class="flex items-center gap-3 p-4 border-3 border-brutal-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-brutal-green">
+      <div
+        v-if="connectionState.connected"
+        class="flex items-center gap-3 p-4 border-3 border-brutal-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-brutal-green"
+      >
         <div class="text-2xl">✅</div>
         <div class="flex-1 flex flex-col gap-1">
-          <p class="text-sm font-black uppercase tracking-wider">Connected to {{ connectionState.server?.name }}</p>
+          <p class="text-sm font-black uppercase tracking-wider">
+            Connected to {{ connectionState.server?.name }}
+          </p>
           <p class="text-xs tracking-wide">{{ connectionState.server?.url }}</p>
         </div>
         <Button size="sm" variant="secondary" @click="handleDisconnect">
@@ -25,19 +42,30 @@
         </Button>
       </div>
 
-      <div v-else-if="connectionState.error" class="flex items-center gap-3 p-4 border-3 border-brutal-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-brutal-pink text-brutal-white">
+      <div
+        v-else-if="connectionState.error"
+        class="flex items-center gap-3 p-4 border-3 border-brutal-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-brutal-pink text-brutal-white"
+      >
         <div class="text-2xl">⚠️</div>
         <div class="flex-1 flex flex-col gap-1">
-          <p class="text-sm font-black uppercase tracking-wider">Connection failed</p>
+          <p class="text-sm font-black uppercase tracking-wider">
+            Connection failed
+          </p>
           <p class="text-xs tracking-wide">{{ connectionState.error }}</p>
         </div>
       </div>
 
       <!-- Server Configuration -->
       <div class="flex flex-col gap-4">
-        <h3 class="text-sm font-black uppercase tracking-widest">Server configuration</h3>
+        <h3 class="text-sm font-black uppercase tracking-widest">
+          Server configuration
+        </h3>
         <div class="flex flex-col gap-2">
-          <label for="server-url" class="text-xs font-black uppercase tracking-widest">Server URL</label>
+          <label
+            for="server-url"
+            class="text-xs font-black uppercase tracking-widest"
+            >Server URL</label
+          >
           <div class="flex items-center gap-3">
             <Input
               id="server-url"
@@ -51,18 +79,31 @@
               variant="secondary"
               size="icon"
               :disabled="discovering || connectionState.connecting"
-              @click="handleAutoDiscover"
               aria-label="Auto-discover servers"
+              @click="handleAutoDiscover"
             >
-              <span v-if="discovering" class="inline-block w-4 h-4 border-3 border-brutal-black border-t-transparent rounded-full animate-spin" aria-hidden="true"></span>
+              <span
+                v-if="discovering"
+                class="inline-block w-4 h-4 border-3 border-brutal-black border-t-transparent rounded-full animate-spin"
+                aria-hidden="true"
+              ></span>
               <span v-else>🔍</span>
             </Button>
           </div>
-          <p v-if="urlError" class="text-xs text-brutal-pink font-black uppercase tracking-wide">{{ urlError }}</p>
+          <p
+            v-if="urlError"
+            class="text-xs text-brutal-pink font-black uppercase tracking-wide"
+          >
+            {{ urlError }}
+          </p>
         </div>
 
         <div class="flex flex-col gap-2">
-          <label for="server-name" class="text-xs font-black uppercase tracking-widest">Server name (optional)</label>
+          <label
+            for="server-name"
+            class="text-xs font-black uppercase tracking-widest"
+            >Server name (optional)</label
+          >
           <Input
             id="server-name"
             v-model="serverName"
@@ -74,10 +115,16 @@
 
       <!-- Authentication -->
       <div class="flex flex-col gap-4">
-        <h3 class="text-sm font-black uppercase tracking-widest">Authentication</h3>
+        <h3 class="text-sm font-black uppercase tracking-widest">
+          Authentication
+        </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="flex flex-col gap-2">
-            <label for="server-email" class="text-xs font-black uppercase tracking-widest">Email</label>
+            <label
+              for="server-email"
+              class="text-xs font-black uppercase tracking-widest"
+              >Email</label
+            >
             <Input
               id="server-email"
               v-model="email"
@@ -85,10 +132,19 @@
               placeholder="you@example.com"
               @keydown.enter="handleConnect"
             />
-            <p v-if="authError" class="text-xs text-brutal-pink font-black uppercase tracking-wide">{{ authError }}</p>
+            <p
+              v-if="authError"
+              class="text-xs text-brutal-pink font-black uppercase tracking-wide"
+            >
+              {{ authError }}
+            </p>
           </div>
           <div class="flex flex-col gap-2">
-            <label for="display-name" class="text-xs font-black uppercase tracking-widest">Display name (optional)</label>
+            <label
+              for="display-name"
+              class="text-xs font-black uppercase tracking-widest"
+              >Display name (optional)</label
+            >
             <Input
               id="display-name"
               v-model="displayName"
@@ -97,23 +153,35 @@
             />
           </div>
           <div class="flex flex-col gap-2 md:col-span-2">
-            <label for="tenant" class="text-xs font-black uppercase tracking-widest">Workspace slug (optional)</label>
+            <label
+              for="tenant"
+              class="text-xs font-black uppercase tracking-widest"
+              >Workspace slug (optional)</label
+            >
             <Input
               id="tenant"
               v-model="tenantSlug"
               :disabled="connectionState.connecting"
               placeholder="default"
             />
-            <p class="text-xs text-brutal-text-secondary">Leave blank to use the default workspace.</p>
+            <p class="text-xs text-brutal-text-secondary">
+              Leave blank to use the default workspace.
+            </p>
           </div>
         </div>
       </div>
 
       <!-- Quick Connect -->
       <div class="flex flex-col gap-4">
-        <h3 class="text-sm font-black uppercase tracking-widest">Quick connect</h3>
+        <h3 class="text-sm font-black uppercase tracking-widest">
+          Quick connect
+        </h3>
         <div class="flex flex-wrap gap-3">
-          <Button size="sm" variant="secondary" @click="setUrl('http://localhost:4444')">
+          <Button
+            size="sm"
+            variant="secondary"
+            @click="setUrl('http://localhost:4444')"
+          >
             Localhost
           </Button>
           <Button size="sm" variant="secondary" @click="showCustomPort = true">
@@ -124,19 +192,34 @@
 
       <!-- Saved Servers -->
       <div v-if="savedServers.length > 0" class="flex flex-col gap-4">
-        <h3 class="text-sm font-black uppercase tracking-widest">Saved servers</h3>
+        <h3 class="text-sm font-black uppercase tracking-widest">
+          Saved servers
+        </h3>
         <ul class="flex flex-col gap-3">
-          <li v-for="server in savedServers" :key="server.url" class="flex items-center gap-3">
+          <li
+            v-for="server in savedServers"
+            :key="server.url"
+            class="flex items-center gap-3"
+          >
             <button
               type="button"
               class="flex-1 flex items-start gap-3 p-3 border-3 border-brutal-black bg-brutal-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all text-left"
               @click="selectSavedServer(server)"
             >
-              <span class="text-xl">{{ currentServerConfig?.url === server.url ? '●' : '○' }}</span>
+              <span class="text-xl">{{
+                currentServerConfig?.url === server.url ? "●" : "○"
+              }}</span>
               <span class="flex flex-col gap-0.5 flex-1">
-                <span class="text-sm font-black uppercase tracking-wider">{{ server.name }}</span>
-                <span class="text-xs text-brutal-text-secondary">{{ server.url }}</span>
-                <span v-if="server.lastConnected" class="text-xs text-brutal-text-secondary">
+                <span class="text-sm font-black uppercase tracking-wider">{{
+                  server.name
+                }}</span>
+                <span class="text-xs text-brutal-text-secondary">{{
+                  server.url
+                }}</span>
+                <span
+                  v-if="server.lastConnected"
+                  class="text-xs text-brutal-text-secondary"
+                >
                   Last used: {{ formatDate(server.lastConnected) }}
                 </span>
               </span>
@@ -155,17 +238,33 @@
 
       <!-- Discovered Servers -->
       <div v-if="discoveredServers.length > 0" class="flex flex-col gap-4">
-        <h3 class="text-sm font-black uppercase tracking-widest">Discovered servers</h3>
+        <h3 class="text-sm font-black uppercase tracking-widest">
+          Discovered servers
+        </h3>
         <ul class="flex flex-col gap-3">
-          <li v-for="server in discoveredServers" :key="server.url" class="flex items-center gap-3">
-            <div class="flex-1 flex items-start gap-3 p-3 border-3 border-brutal-black bg-brutal-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          <li
+            v-for="server in discoveredServers"
+            :key="server.url"
+            class="flex items-center gap-3"
+          >
+            <div
+              class="flex-1 flex items-start gap-3 p-3 border-3 border-brutal-black bg-brutal-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+            >
               <span class="text-xl">📡</span>
               <span class="flex flex-col gap-0.5 flex-1">
-                <span class="text-sm font-black uppercase tracking-wider">{{ server.name }}</span>
-                <span class="text-xs text-brutal-text-secondary">{{ server.url }}</span>
+                <span class="text-sm font-black uppercase tracking-wider">{{
+                  server.name
+                }}</span>
+                <span class="text-xs text-brutal-text-secondary">{{
+                  server.url
+                }}</span>
               </span>
             </div>
-            <Button size="sm" variant="primary" @click="selectDiscoveredServer(server)">
+            <Button
+              size="sm"
+              variant="primary"
+              @click="selectDiscoveredServer(server)"
+            >
               Connect
             </Button>
           </li>
@@ -173,10 +272,14 @@
       </div>
 
       <!-- Footer -->
-      <DialogFooter class="flex-col sm:flex-row gap-4 pt-4 border-t-2 border-brutal-border-color">
+      <DialogFooter
+        class="flex-col sm:flex-row gap-4 pt-4 border-t-2 border-brutal-border-color"
+      >
         <div class="flex flex-col gap-1 flex-1">
           <p class="text-sm font-black uppercase">Prefer to stay local?</p>
-          <p class="text-xs text-brutal-text-secondary">You can keep working offline and sync later.</p>
+          <p class="text-xs text-brutal-text-secondary">
+            You can keep working offline and sync later.
+          </p>
         </div>
         <div class="flex flex-wrap gap-3">
           <Button variant="ghost" @click="handleOfflineMode">
@@ -197,10 +300,16 @@
       <Dialog v-model:open="showCustomPort">
         <DialogContent class="max-w-sm">
           <DialogHeader>
-            <DialogTitle class="uppercase font-black text-lg tracking-wider">Custom port</DialogTitle>
+            <DialogTitle class="uppercase font-black text-lg tracking-wider"
+              >Custom port</DialogTitle
+            >
           </DialogHeader>
           <div class="flex flex-col gap-2">
-            <label for="custom-port" class="text-xs font-black uppercase tracking-widest">Port</label>
+            <label
+              for="custom-port"
+              class="text-xs font-black uppercase tracking-widest"
+              >Port</label
+            >
             <Input
               id="custom-port"
               v-model="customPortInput"
@@ -209,7 +318,9 @@
             />
           </div>
           <DialogFooter>
-            <Button variant="ghost" @click="showCustomPort = false">Cancel</Button>
+            <Button variant="ghost" @click="showCustomPort = false"
+              >Cancel</Button
+            >
             <Button variant="primary" @click="applyCustomPort">Apply</Button>
           </DialogFooter>
         </DialogContent>
@@ -223,7 +334,13 @@ import { ref, computed, watch } from "vue";
 import { useServerConnection } from "@/composables/useServerConnection";
 import type { ServerConfig } from "@/stores/settings";
 import { useAuthStore } from "@/stores/auth";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui";
 import { Button, Input } from "@/components/ui";
 
 interface Props {

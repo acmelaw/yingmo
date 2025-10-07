@@ -17,7 +17,7 @@ const encryptedText = computed(() => {
 
 function rot13(text: string): string {
   return text.replace(/[a-zA-Z]/g, (char) => {
-    const base = char <= 'Z' ? 65 : 97;
+    const base = char <= "Z" ? 65 : 97;
     return String.fromCharCode(((char.charCodeAt(0) - base + 13) % 26) + base);
   });
 }
@@ -33,9 +33,7 @@ function rot13(text: string): string {
         </div>
       </div>
 
-      <div class="cipher-arrow">
-        ROT13 →
-      </div>
+      <div class="cipher-arrow">ROT13 →</div>
 
       <div class="cipher-section encrypted">
         <h3>🔐 Encrypted Text</h3>
@@ -46,7 +44,8 @@ function rot13(text: string): string {
     </div>
 
     <div class="cipher-hint">
-      💡 ROT13 is a simple letter substitution cipher that replaces each letter with the letter 13 positions after it in the alphabet.
+      💡 ROT13 is a simple letter substitution cipher that replaces each letter
+      with the letter 13 positions after it in the alphabet.
     </div>
   </div>
 </template>
@@ -85,7 +84,7 @@ function rot13(text: string): string {
 .cipher-section.encrypted {
   background: #1a1a1a;
   color: #00ff00;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
 }
 
 .cipher-section h3 {

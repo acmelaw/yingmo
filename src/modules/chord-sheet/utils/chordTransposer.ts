@@ -2,17 +2,40 @@
  * Guitar chord transposition utilities
  */
 
-const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-const FLAT_NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const FLAT_NOTES = [
+  "C",
+  "Db",
+  "D",
+  "Eb",
+  "E",
+  "F",
+  "Gb",
+  "G",
+  "Ab",
+  "A",
+  "Bb",
+  "B",
+];
 
 const NOTE_TO_INDEX: Record<string, number> = {
-  'C': 0, 'C#': 1, 'Db': 1,
-  'D': 2, 'D#': 3, 'Eb': 3,
-  'E': 4,
-  'F': 5, 'F#': 6, 'Gb': 6,
-  'G': 7, 'G#': 8, 'Ab': 8,
-  'A': 9, 'A#': 10, 'Bb': 10,
-  'B': 11
+  C: 0,
+  "C#": 1,
+  Db: 1,
+  D: 2,
+  "D#": 3,
+  Eb: 3,
+  E: 4,
+  F: 5,
+  "F#": 6,
+  Gb: 6,
+  G: 7,
+  "G#": 8,
+  Ab: 8,
+  A: 9,
+  "A#": 10,
+  Bb: 10,
+  B: 11,
 };
 
 /**
@@ -20,7 +43,7 @@ const NOTE_TO_INDEX: Record<string, number> = {
  */
 export function transposeChord(chord: string, semitones: number): string {
   // Handle empty or invalid chords
-  if (!chord || chord.trim() === '') return chord;
+  if (!chord || chord.trim() === "") return chord;
 
   // Match the root note (including # or b)
   const match = chord.match(/^([A-G][#b]?)(.*)/);
@@ -37,7 +60,7 @@ export function transposeChord(chord: string, semitones: number): string {
   if (newIndex < 0) newIndex += 12;
 
   // Prefer sharps for sharp keys, flats for flat keys
-  const useFlats = root.includes('b');
+  const useFlats = root.includes("b");
   const newRoot = useFlats ? FLAT_NOTES[newIndex] : NOTES[newIndex];
 
   return newRoot + suffix;
@@ -46,7 +69,10 @@ export function transposeChord(chord: string, semitones: number): string {
 /**
  * Transpose all chords in a chord sheet (supports both bracket and plain text formats)
  */
-export function transposeChordSheet(content: string, semitones: number): string {
+export function transposeChordSheet(
+  content: string,
+  semitones: number
+): string {
   if (semitones === 0) return content;
 
   // Detect format and use appropriate transposition
@@ -77,16 +103,18 @@ export function extractChords(content: string): string[] {
 
   // Extract from bracket format [C]
   const bracketMatches = content.matchAll(/\[([A-G][#b]?[^\]]*)\]/g);
-  chords.push(...Array.from(bracketMatches, m => m[1]));
+  chords.push(...Array.from(bracketMatches, (m) => m[1]));
 
   // Extract from plain text tab format (chord lines)
-  const lines = content.split('\n');
+  const lines = content.split("\n");
   for (const line of lines) {
     // Skip lines that start with # (lyrics/comments)
-    if (line.trim().startsWith('#')) continue;
+    if (line.trim().startsWith("#")) continue;
 
     // Look for chord patterns like | E  D  | A |
-    const chordMatches = line.matchAll(/([A-G][#b]?(?:maj|min|m|sus|add|dim|aug|\d)*)/g);
+    const chordMatches = line.matchAll(
+      /([A-G][#b]?(?:maj|min|m|sus|add|dim|aug|\d)*)/g
+    );
     for (const match of chordMatches) {
       const chord = match[1];
       // Only add if it looks like a standalone chord (not part of a word)
@@ -116,23 +144,25 @@ export function isPlainTextFormat(content: string): boolean {
  * e.g., "| E  D | A |" with "# lyrics" → "[E] lyrics [D] [A]"
  */
 export function plainTextToBracket(content: string): string {
-  const lines = content.split('\n');
+  const lines = content.split("\n");
   const result: string[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
     // If line starts with #, it's a lyric line
-    if (line.trim().startsWith('#')) {
-      result.push(line.replace(/^#\s*/, ''));
+    if (line.trim().startsWith("#")) {
+      result.push(line.replace(/^#\s*/, ""));
       continue;
     }
 
     // If line has pipes, it's a chord line
-    if (line.includes('|')) {
+    if (line.includes("|")) {
       // Extract chords from the chord line
       const chords: string[] = [];
-      const chordMatches = line.matchAll(/([A-G][#b]?(?:maj|min|m|sus|add|dim|aug|\d)*)/g);
+      const chordMatches = line.matchAll(
+        /([A-G][#b]?(?:maj|min|m|sus|add|dim|aug|\d)*)/g
+      );
 
       for (const match of chordMatches) {
         chords.push(match[1]);
@@ -140,12 +170,12 @@ export function plainTextToBracket(content: string): string {
 
       // If there's a lyric line following, interleave chords
       const nextLine = lines[i + 1];
-      if (nextLine && nextLine.trim().startsWith('#')) {
+      if (nextLine && nextLine.trim().startsWith("#")) {
         // Skip, we'll process it with the lyric line
         continue;
       } else {
         // Just output the chords
-        result.push(chords.map(c => `[${c}]`).join(' '));
+        result.push(chords.map((c) => `[${c}]`).join(" "));
       }
     } else {
       // Plain text line
@@ -153,7 +183,7 @@ export function plainTextToBracket(content: string): string {
     }
   }
 
-  return result.join('\n');
+  return result.join("\n");
 }
 
 /**
@@ -161,12 +191,12 @@ export function plainTextToBracket(content: string): string {
  * e.g., "[C]Amazing [Am]grace" → "| C  Am |\n# Amazing grace"
  */
 export function bracketToPlainText(content: string): string {
-  const lines = content.split('\n');
+  const lines = content.split("\n");
   const result: string[] = [];
 
   for (const line of lines) {
     // Extract chords and lyrics
-    const parts: Array<{type: 'chord' | 'text', content: string}> = [];
+    const parts: Array<{ type: "chord" | "text"; content: string }> = [];
     let lastIndex = 0;
 
     const chordMatches = line.matchAll(/\[([A-G][#b]?[^\]]*)\]/g);
@@ -180,7 +210,7 @@ export function bracketToPlainText(content: string): string {
 
     // Build chord line and lyric line
     const chords: string[] = [];
-    let lyrics = '';
+    let lyrics = "";
 
     for (const match of matches) {
       const chord = match[1];
@@ -201,7 +231,7 @@ export function bracketToPlainText(content: string): string {
     }
 
     // Output chord line
-    result.push(`| ${chords.join('  ')} |`);
+    result.push(`| ${chords.join("  ")} |`);
 
     // Output lyric line if there are lyrics
     if (lyrics.trim()) {
@@ -209,7 +239,7 @@ export function bracketToPlainText(content: string): string {
     }
   }
 
-  return result.join('\n');
+  return result.join("\n");
 }
 
 /**
@@ -218,27 +248,30 @@ export function bracketToPlainText(content: string): string {
 export function transposePlainText(content: string, semitones: number): string {
   if (semitones === 0) return content;
 
-  const lines = content.split('\n');
+  const lines = content.split("\n");
   const result: string[] = [];
 
   for (const line of lines) {
     // Skip lyric lines (start with #)
-    if (line.trim().startsWith('#')) {
+    if (line.trim().startsWith("#")) {
       result.push(line);
       continue;
     }
 
     // Transpose chords in the line
-    const transposed = line.replace(/([A-G][#b]?(?:maj|min|m|sus|add|dim|aug|\d)*)/g, (match) => {
-      // Only transpose if it's a valid chord
-      if (NOTE_TO_INDEX[match[0]] !== undefined) {
-        return transposeChord(match, semitones);
+    const transposed = line.replace(
+      /([A-G][#b]?(?:maj|min|m|sus|add|dim|aug|\d)*)/g,
+      (match) => {
+        // Only transpose if it's a valid chord
+        if (NOTE_TO_INDEX[match[0]] !== undefined) {
+          return transposeChord(match, semitones);
+        }
+        return match;
       }
-      return match;
-    });
+    );
 
     result.push(transposed);
   }
 
-  return result.join('\n');
+  return result.join("\n");
 }

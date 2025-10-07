@@ -1,42 +1,41 @@
-/**
- * Dialog Component - shadcn-style with UnoCSS
- * Modal overlay with backdrop
- */
+/** * Dialog Component - shadcn-style with UnoCSS * Modal overlay with backdrop
+*/
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { cn } from '@/lib/utils';
+import { computed } from "vue";
+import { cn } from "@/lib/utils";
 
 export interface DialogProps {
   open?: boolean;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: "sm" | "md" | "lg" | "xl" | "full";
 }
 
 const props = withDefaults(defineProps<DialogProps>(), {
   open: false,
-  size: 'md',
+  size: "md",
 });
 
 const emit = defineEmits<{
-  (e: 'close'): void;
+  (e: "close"): void;
 }>();
 
 const dialogClass = computed(() => {
-  const base = 'relative bg-base-white dark:bg-dark-bg-primary border-3 sm:border-4 border-base-black dark:border-white shadow-hard-xl dark:shadow-dark-hard-xl rounded-lg overflow-hidden';
+  const base =
+    "relative bg-base-white dark:bg-dark-bg-primary border-3 sm:border-4 border-base-black dark:border-white shadow-hard-xl dark:shadow-dark-hard-xl rounded-lg overflow-hidden";
 
   const sizes = {
-    sm: 'w-full max-w-sm',
-    md: 'w-full max-w-md sm:max-w-lg',
-    lg: 'w-full max-w-lg sm:max-w-2xl',
-    xl: 'w-full max-w-2xl sm:max-w-4xl',
-    full: 'w-full max-w-[95vw]',
+    sm: "w-full max-w-sm",
+    md: "w-full max-w-md sm:max-w-lg",
+    lg: "w-full max-w-lg sm:max-w-2xl",
+    xl: "w-full max-w-2xl sm:max-w-4xl",
+    full: "w-full max-w-[95vw]",
   };
 
   return cn(base, sizes[props.size]);
 });
 
 function handleBackdropClick() {
-  emit('close');
+  emit("close");
 }
 </script>
 

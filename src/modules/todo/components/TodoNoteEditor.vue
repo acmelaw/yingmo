@@ -13,26 +13,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import type { TodoNote } from '@/types/note';
+import { ref, watch } from "vue";
+import type { TodoNote } from "@/types/note";
 
 const props = defineProps<{
   note: TodoNote;
 }>();
 
 const emit = defineEmits<{
-  (e: 'update', updates: Partial<TodoNote>): void;
+  (e: "update", updates: Partial<TodoNote>): void;
 }>();
 
-const localContent = ref(props.note.content || '');
+const localContent = ref(props.note.content || "");
 
-watch(() => props.note.content, (newContent) => {
-  localContent.value = newContent || '';
-});
+watch(
+  () => props.note.content,
+  (newContent) => {
+    localContent.value = newContent || "";
+  }
+);
 
 function handleUpdate() {
   if (localContent.value !== props.note.content) {
-    emit('update', { content: localContent.value });
+    emit("update", { content: localContent.value });
   }
 }
 </script>
@@ -42,6 +45,6 @@ code {
   padding: 0.125rem 0.25rem;
   background: var(--color-accent-yellow);
   border-radius: 2px;
-  font-family: 'Monaco', 'Courier New', monospace;
+  font-family: "Monaco", "Courier New", monospace;
 }
 </style>
