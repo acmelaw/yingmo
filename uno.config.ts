@@ -226,5 +226,14 @@ export default defineConfig({
     "rounded-none",
     "rounded-sm",
     "rounded-lg",
+    // Note color backgrounds (Google Keep-style)
+    "bg-base-white",
+    "bg-red-50", "border-red-500",
+    "bg-orange-50", "border-orange-500",
+    "bg-yellow-50", "border-yellow-500",
+    "bg-green-50", "border-green-500",
+    "bg-blue-50", "border-blue-500",
+    "bg-purple-50", "border-purple-500",
+    "bg-pink-50", "border-pink-500",
   ],
 });

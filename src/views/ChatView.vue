@@ -17,7 +17,7 @@ import NoteTypeTransformDialog from "../components/NoteTypeTransformDialog.vue";
 import { Button, Input, Badge } from "../components/ui";
 
 // Types
-import type { NoteType } from "../types/note";
+import type { NoteType, NoteColor } from "../types/note";
 import { moduleRegistry } from "../core/ModuleRegistry";
 
 const emit = defineEmits<{
@@ -159,7 +159,7 @@ function scrollToBottom() {
   });
 }
 
-async function handleCreateNote(text: string, type: NoteType) {
+async function handleCreateNote(text: string, type: NoteType, color?: NoteColor) {
   const trimmed = text.trim();
   if (!trimmed) return;
 
@@ -210,6 +210,11 @@ async function handleCreateNote(text: string, type: NoteType) {
   // Add extracted tags to note data
   if (tags.length > 0) {
     noteData.tags = tags;
+  }
+
+  // Add color if specified
+  if (color && color !== 'default') {
+    noteData.color = color;
   }
 
   await notesStore.create(type, noteData);
@@ -459,10 +464,11 @@ onUnmounted(() => {
         <Button
           variant="ghost"
           size="icon"
-          title="Server settings"
+          title="Settings"
+          aria-label="Settings"
           @click="emit('open-server-settings')"
         >
-          🌐
+          ⚙️
         </Button>
       </div>
     </header>

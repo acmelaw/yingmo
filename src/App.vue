@@ -9,7 +9,7 @@ import { useI18n } from "vue-i18n";
 import { useHead } from "@unhead/vue";
 
 // Components
-import ChatView from "./views/ChatView.vue";
+import NoteShell from "./components/NoteShell.vue";
 import ServerSelector from "./components/ServerSelector.vue";
 
 // Stores
@@ -70,7 +70,7 @@ function handleOfflineMode() {
   settings.syncEnabled = false;
 }
 
-function openServerSettings() {
+function openServerSelector() {
   showServerSelector.value = true;
 }
 </script>
@@ -95,10 +95,10 @@ function openServerSettings() {
       </div>
     </div>
 
-    <!-- Main Chat View -->
-    <ChatView
+    <!-- Main App Shell -->
+    <NoteShell
       v-else
-      @open-server-settings="openServerSettings"
+      @open-server-selector="openServerSelector"
     />
 
     <!-- Server Selector Modal -->

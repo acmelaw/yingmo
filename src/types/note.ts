@@ -16,6 +16,8 @@ export type NoteType =
   | "code"
   | "todo";
 
+export type NoteColor = 'default' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink';
+
 export interface BaseNote {
   id: string;
   type: NoteType;
@@ -27,6 +29,7 @@ export interface BaseNote {
   category?: string;
   tags?: string[];
   archived?: boolean;
+  color?: NoteColor; // Google Keep-style color coding
   metadata?: Record<string, any>; // Type-specific parameters (language, dimensions, etc.)
   // View-only display type (doesn't affect underlying data)
   // Can be a NoteType or a view-only module ID like 'caesar-cipher'

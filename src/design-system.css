@@ -458,6 +458,48 @@ body {
   }
 }
 
+/* === NEO-BRUTALIST HARD SHADOWS === */
+.shadow-hard {
+  box-shadow: 4px 4px 0 var(--brutal-black);
+}
+
+.shadow-hard-sm {
+  box-shadow: 2px 2px 0 var(--brutal-black);
+}
+
+.shadow-hard-lg {
+  box-shadow: 6px 6px 0 var(--brutal-black);
+}
+
+/* Colored shadows for note cards */
+.shadow-hard-red {
+  box-shadow: 4px 4px 0 rgba(239, 68, 68, 0.4);
+}
+
+.shadow-hard-orange {
+  box-shadow: 4px 4px 0 rgba(249, 115, 22, 0.4);
+}
+
+.shadow-hard-yellow {
+  box-shadow: 4px 4px 0 rgba(234, 179, 8, 0.4);
+}
+
+.shadow-hard-green {
+  box-shadow: 4px 4px 0 rgba(37, 211, 102, 0.4);
+}
+
+.shadow-hard-blue {
+  box-shadow: 4px 4px 0 rgba(59, 130, 246, 0.4);
+}
+
+.shadow-hard-purple {
+  box-shadow: 4px 4px 0 rgba(168, 85, 247, 0.4);
+}
+
+.shadow-hard-pink {
+  box-shadow: 4px 4px 0 rgba(236, 72, 153, 0.4);
+}
+
 /* === REDUCED MOTION === */
 @media (prefers-reduced-motion: reduce) {
   *,

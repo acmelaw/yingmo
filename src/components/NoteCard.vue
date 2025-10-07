@@ -4,7 +4,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { Note } from '@/types/note';
+import type { Note, NoteColor } from '@/types/note';
 import { moduleRegistry } from '@/core/ModuleRegistry';
 import { Badge, Button } from '@/components/ui';
 
@@ -63,6 +63,23 @@ const supportsEditing = computed(() => Boolean(editorComponent.value));
 const noteActions = computed(() => moduleRegistry.getActionsForNote(props.note));
 const hasTransforms = computed(() => true); // Always show transform button for type conversion
 
+// Color styling helper with neo-brutalist shadows
+function getColorClasses(color?: NoteColor): string {
+  const colorMap: Record<NoteColor, string> = {
+    'default': 'bg-base-white shadow-hard',
+    'red': 'bg-red-50 border-red-500 shadow-hard-red',
+    'orange': 'bg-orange-50 border-orange-500 shadow-hard-orange',
+    'yellow': 'bg-yellow-50 border-yellow-500 shadow-hard-yellow',
+    'green': 'bg-green-50 border-green-500 shadow-hard-green',
+    'blue': 'bg-blue-50 border-blue-500 shadow-hard-blue',
+    'purple': 'bg-purple-50 border-purple-500 shadow-hard-purple',
+    'pink': 'bg-pink-50 border-pink-500 shadow-hard-pink',
+  };
+  return colorMap[color || 'default'];
+}
+
+const noteColor = computed(() => props.note.color || 'default');
+
 function toggleEdit() {
   if (!supportsEditing.value) return;
   isEditing.value = !isEditing.value;
@@ -77,7 +94,7 @@ function handleEditorKeydown(e: KeyboardEvent) {
 
 <template>
   <article :class="[
-    'note-card group flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-3 op-0 translate-y-10px animate-[slide-up_0.2s_ease-out_forwards]',
+    'note-card group flex items-start gap-2 sm:gap-2.5 mb-2 sm:mb-3 animate-slide-up',
     note.pinned ? 'pinned-note' : ''
   ]">
     <!-- Selection checkbox (bulk mode) -->
@@ -90,10 +107,11 @@ function handleEditorKeydown(e: KeyboardEvent) {
         class="w-4 h-4 mt-1"
       />
     </div>
-    <!-- Message Bubble (WhatsApp style) -->
+    <!-- Message Bubble (WhatsApp style + color coding + neo-brutalist depth) -->
     <div :class="[
-      'msg-out flex-1 transition-all',
-      note.pinned ? 'bg-accent-green/5 border-l-4 border-accent-green/30 pl-3' : ''
+      'msg-out flex-1 transition-all duration-200 rounded-lg p-3 border-2 hover:translate-x-0.5 hover:translate-y-0.5',
+      getColorClasses(note.color),
+      note.pinned ? 'border-l-4 border-accent-green/50 pl-3 shadow-hard-green' : ''
     ]">
       <!-- Metadata badges at top -->
       <div class="flex flex-wrap gap-1 sm:gap-1.5 mb-2">

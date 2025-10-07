@@ -104,18 +104,13 @@
 
       <!-- Center: Editor (flexible) -->
       <div class="flex-1 min-w-0">
-        <component
-          v-if="editorComponent"
-          :is="editorComponent"
-          :note="draftNote"
-          :readonly="false"
-          @update="handleEditorUpdate"
-          @keydown="onKey"
-          class="w-full text-sm sm:text-base"
+        <textarea
+          v-model="draftNote.content"
+          class="w-full px-3 py-2.5 min-h-[44px] max-h-32 font-bold text-sm sm:text-base bg-brutal-white text-brutal-black border-3 border-brutal-black rounded-lg resize-none outline-none transition-all duration-100 focus:(shadow-hard border-brutal-green) placeholder:opacity-60"
+          placeholder="Write your note..."
+          @keydown="onKeydown"
+          rows="1"
         />
-        <div v-else class="p-3 text-xs sm:text-sm text-brutal-text-secondary font-black border-2 border-brutal-black bg-brutal-white">
-          No editor for {{ selectedType }}
-        </div>
       </div>
 
       <!-- Right: Send Button -->
@@ -153,6 +148,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { Button, Badge } from './ui'
 
 // Props
 const props = defineProps({
@@ -165,6 +161,9 @@ const props = defineProps({
     default: 'text'
   }
 })
+
+// Emits
+const emit = defineEmits(['submit'])
 
 // I18n
 const { t } = useI18n()
@@ -248,6 +247,19 @@ const changeType = (type) => {
   menuOpen.value = null
 }
 
+const getNoteTypeIcon = (type) => {
+  const icons = {
+    text: "📝",
+    markdown: "📄",
+    code: "💻",
+    "rich-text": "✏️",
+    image: "🖼️",
+    "smart-layer": "🤖",
+    todo: "✅",
+  }
+  return icons[type] || "📋"
+}
+
 const handleEditorUpdate = (event) => {
   draftNote.value.content = event.target.value
 }
@@ -262,22 +274,13 @@ const onKeydown = (event) => {
 const send = () => {
   if (!isTyping.value) return
 
-  // Emit the message
-  const message = {
-    id: Date.now(),
-    content: draftNote.value.content,
-    type: selectedType.value,
-    timestamp: Date.now(),
-    sender: 'user'
-  }
+  // Emit with text and type (matching NoteShell handleAdd signature)
+  emit('submit', draftNote.value.content, selectedType.value)
 
   // Reset the input
   draftNote.value.content = ''
   menuOpen.value = null
   showHashtagHelper.value = false
-
-  // Emit the message event
-  emit('send', message)
 }
 
 // Watchers
@@ -288,9 +291,6 @@ watch(() => draftNote.value.content, (newContent) => {
   // Show hashtag helper when content contains #
   showHashtagHelper.value = newContent.includes('#')
 })
-
-// Emit events
-const emit = defineEmits(['send'])
 </script>
 
 <style scoped>

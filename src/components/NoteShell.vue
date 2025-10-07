@@ -18,9 +18,10 @@ import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
 import { storeToRefs } from 'pinia';
 
-import Composer from './Composer.vue';
+import QuickComposer from './QuickComposer.vue';
 import NoteCard from './NoteCard.vue';
 import NoteTypeTransformDialog from './NoteTypeTransformDialog.vue';
+import KeyboardShortcutsPanel from './KeyboardShortcutsPanel.vue';
 import { Button, Badge, Input, Select, Switch, Separator, Card } from './ui';
 import { useNotesStore } from '../stores/notes';
 import { useSettingsStore } from '../stores/settings';
@@ -29,7 +30,7 @@ import { usePlatform } from '../composables/usePlatform';
 import { initializeModules } from '../core/initModules';
 import { moduleRegistry } from '../core/ModuleRegistry';
 import { useAuthStore } from '@/stores/auth';
-import type { NoteType } from '@/types/note';
+import type { NoteType, NoteColor } from '@/types/note';
 
 const emit = defineEmits<{
   (e: 'open-server-selector'): void;
@@ -50,6 +51,7 @@ const containerRef = ref<HTMLElement | null>(null);
 const composerOpen = ref(true);
 const composerFocusKey = ref(1);
 const showSettings = ref(false);
+const showShortcutsPanel = ref(false);
 const modulesInitialized = ref(false);
 const showTransformDialog = ref(false);
 const transformingNoteId = ref<string | null>(null);
@@ -114,7 +116,18 @@ useHead(() => ({
 onMounted(async () => {
   await initializeModules();
   modulesInitialized.value = true;
+
+  // Global keyboard shortcuts
+  document.addEventListener('keydown', handleGlobalKeydown);
 });
+
+function handleGlobalKeydown(e: KeyboardEvent) {
+  // Cmd+/ or Ctrl+/ - Show keyboard shortcuts panel
+  if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+    e.preventDefault();
+    showShortcutsPanel.value = !showShortcutsPanel.value;
+  }
+}
 
 watch(
   () => store.filteredNotes.length,
@@ -133,8 +146,14 @@ function scrollToLatest() {
   }
 }
 
-async function handleAdd(text: string, type: NoteType = 'text') {
-  if (!text.trim()) return;
+async function handleAdd(text: string, type: NoteType = 'text', color?: NoteColor) {
+  console.log('[handleAdd] Called with:', { text, type, color });
+  if (!text.trim()) {
+    console.warn('[handleAdd] Empty text, aborting');
+    return;
+  }
+
+  try {
   let noteData: Record<string, any>;
   switch (type) {
     case 'text':
@@ -170,12 +189,23 @@ async function handleAdd(text: string, type: NoteType = 'text') {
     default:
       noteData = { content: text.trim() };
   }
-  await store.create(type, noteData);
+
+  // Create note with optional color
+  const noteId = await store.create(type, noteData);
+
+  if (color && noteId) {
+    await store.update(noteId, { color });
+  }
+
   // Ensure the new note is visible even if a search filter was active
-  if (searchQuery.value) {
+  if (store.searchQuery) {
+    store.searchQuery = '';
     searchQuery.value = '';
   }
   nextTick(() => scrollToLatest());
+  } catch (error) {
+    console.error('[handleAdd] Error:', error);
+  }
 }
 
 async function handleUpdate(noteId: string, updates: any) {
@@ -450,9 +480,8 @@ async function handleImport() {
     <!-- Composer (Fixed bottom, centered content) -->
     <div v-if="composerOpen" class="shrink-0 border-t-2 sm:border-t-3 border-base-black dark:border-white bg-bg-secondary dark:bg-dark-bg-secondary">
       <div class="w-full max-w-5xl mx-auto">
-        <Composer
+        <QuickComposer
           :available-types="availableNoteTypes"
-          :focus-key="composerFocusKey"
           @submit="handleAdd"
         />
       </div>
@@ -465,6 +494,12 @@ async function handleImport() {
       :available-types="availableNoteTypes"
       @transform="transformNote"
       @close="showTransformDialog = false; transformingNoteId = null"
+    />
+
+    <!-- Keyboard Shortcuts Panel -->
+    <KeyboardShortcutsPanel
+      :show="showShortcutsPanel"
+      @close="showShortcutsPanel = false"
     />
   </div>
 </template>
