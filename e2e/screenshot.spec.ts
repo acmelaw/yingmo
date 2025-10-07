@@ -1,4 +1,9 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
+import {
+  setupAppForScreenshot,
+  captureOptimizedScreenshot,
+  createNote,
+} from "./utils/screenshot-helper";
 
 /**
  * Screenshot Generator Test
@@ -9,68 +14,31 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Hero Screenshot Generation", () => {
   test("capture hero screenshot for README", async ({ page }) => {
-    // Navigate to the app
     await page.goto("/");
+    await setupAppForScreenshot(page);
 
-    // Wait for app to load
-    await expect(
-      page.getByRole("heading", { name: /vue notes/i }).first()
-    ).toBeVisible();
-
-    // Close server selector if it appears
-    const continueOfflineButton = page.getByRole("button", {
-      name: "Continue offline",
-    });
-    if (
-      await continueOfflineButton
-        .isVisible({ timeout: 2000 })
-        .catch(() => false)
-    ) {
-      await continueOfflineButton.click({ force: true });
-      await page.waitForTimeout(500);
-    }
-
-    // Create a few sample notes to showcase the app
-    const input = page.getByPlaceholder("Write your note...");
-
-    // Create a markdown note
-    await input.fill("/markdown");
-    await page.keyboard.press("Enter");
-    await page.waitForTimeout(300);
-    await input.fill(
-      "# Welcome to Yingmo\n\nA modular notes app for **parallel development**"
+    // Create sample notes to showcase the app
+    await createNote(
+      page,
+      "# Welcome to Yingmo\n\nA modular notes app for **parallel development**",
+      "/markdown"
     );
-    const sendButton = page.getByTitle("Send message");
-    await sendButton.click();
-    await page.waitForTimeout(500);
 
-    // Create a code note
-    await input.fill("/code");
-    await page.keyboard.press("Enter");
-    await page.waitForTimeout(300);
-    await input.fill('console.log("Hello, World!");');
-    await sendButton.click();
-    await page.waitForTimeout(500);
+    await createNote(page, 'console.log("Hello, World!");', "/code");
 
-    // Create a todo note
-    await input.fill("/todo");
-    await page.keyboard.press("Enter");
-    await page.waitForTimeout(300);
-    await input.fill(
-      "Setup CI pipeline\nAdd screenshot generation\nUpdate README"
+    await createNote(
+      page,
+      "Setup CI pipeline\nAdd screenshot generation\nUpdate README",
+      "/todo"
     );
-    await sendButton.click();
-    await page.waitForTimeout(500);
 
     // Wait for all notes to render
     await page.waitForTimeout(1000);
 
-    // Capture the hero screenshot
-    await page.screenshot({
+    // Capture optimized hero screenshot
+    await captureOptimizedScreenshot(page, {
       path: "hero-screenshot.png",
-      fullPage: false,
+      type: "png",
     });
-
-    console.log("Hero screenshot captured successfully!");
   });
 });
