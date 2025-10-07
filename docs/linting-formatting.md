@@ -58,17 +58,35 @@ The repository includes VS Code settings for automatic formatting:
 **ci.yml** - Runs on push/PR to main:
 
 - Install dependencies
-- Type check (informational)
-- Build (informational)
+- Type check
+- Build
 - Run unit tests
 - Run E2E tests
+- **Generate hero screenshot** - Automatically captures app state
+- Upload screenshot artifact
+- Commit screenshot to repo (on main branch only)
 
 **lint.yml** - Runs on PRs:
 
-- Lint check (informational)
-- Format check (informational)
+- Lint check
+- Format check
 
-Current configuration uses `continue-on-error` for type check and linting to track issues without blocking development while the codebase is gradually improved.
+### Automated Screenshot Generation
+
+The CI pipeline automatically generates a hero screenshot of the application:
+
+- **Location**: `hero-screenshot.png` in the root directory
+- **Display**: Embedded in README.md to showcase the app
+- **Trigger**: Runs on every CI build, commits to main branch
+- **Purpose**: Visual verification that the build works and displays current features
+- **Implementation**: E2E test in `e2e/screenshot.spec.ts` captures the app with sample notes
+
+This enables:
+
+- Quick visual verification of the build status
+- Automatic documentation updates showing current UI state
+- Coding agents can independently verify the app is working
+- Continuous visual regression testing
 
 ## Current State
 

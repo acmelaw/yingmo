@@ -2,6 +2,9 @@
 
 A pluggable, modular notes application designed for **parallel development by multiple contributors**. The architecture emphasizes extensibility, separation of concerns, and minimal code changes to enable simultaneous work across the codebase.
 
+![Hero Screenshot](hero-screenshot.png)
+_Auto-generated screenshot from CI showing the current state of the application_
+
 ## Core Philosophy
 
 **Modularity First**: Every feature is a self-contained module that registers itself with the central registry. This allows multiple contributors to work on different modules simultaneously without conflicts.
