@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { watch, computed, onBeforeUnmount } from 'vue';
-import { useEditor, EditorContent } from '@tiptap/vue-3';
-import StarterKit from '@tiptap/starter-kit';
-import Collaboration from '@tiptap/extension-collaboration';
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
-import Placeholder from '@tiptap/extension-placeholder';
-import TaskList from '@tiptap/extension-task-list';
-import TaskItem from '@tiptap/extension-task-item';
-import Link from '@tiptap/extension-link';
-import Highlight from '@tiptap/extension-highlight';
-import * as Y from 'yjs';
+import { watch, computed, onBeforeUnmount } from "vue";
+import { useEditor, EditorContent } from "@tiptap/vue-3";
+import StarterKit from "@tiptap/starter-kit";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
+import Placeholder from "@tiptap/extension-placeholder";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
+import Link from "@tiptap/extension-link";
+import Highlight from "@tiptap/extension-highlight";
+import * as Y from "yjs";
 
 interface Props {
   ydoc: Y.Doc;
@@ -22,61 +22,61 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  fieldName: 'content',
-  placeholder: 'Start writing...',
+  fieldName: "content",
+  placeholder: "Start writing...",
   editable: true,
-  username: 'Anonymous',
-  userColor: '#ff6b6b',
-  autoFocus: false
+  username: "Anonymous",
+  userColor: "#ff6b6b",
+  autoFocus: false,
 });
 
 const emit = defineEmits<{
-  (e: 'update', content: string): void;
-  (e: 'ready'): void;
+  (e: "update", content: string): void;
+  (e: "ready"): void;
 }>();
 
 const editor = useEditor({
   extensions: [
     StarterKit.configure({
-      history: false
+      history: false,
     }),
     Collaboration.configure({
       document: props.ydoc,
-      field: props.fieldName
+      field: props.fieldName,
     }),
     CollaborationCursor.configure({
       provider: null,
       user: {
         name: props.username,
-        color: props.userColor
-      }
+        color: props.userColor,
+      },
     }),
     Placeholder.configure({
-      placeholder: props.placeholder
+      placeholder: props.placeholder,
     }),
     TaskList,
     TaskItem.configure({
-      nested: true
+      nested: true,
     }),
     Link.configure({
-      openOnClick: false
+      openOnClick: false,
     }),
-    Highlight
+    Highlight,
   ],
   editable: props.editable,
   autofocus: props.autoFocus,
   editorProps: {
     attributes: {
       class:
-        'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[200px] px-4 py-3'
-    }
+        "prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[200px] px-4 py-3",
+    },
   },
   onUpdate: ({ editor }) => {
-    emit('update', editor.getHTML());
+    emit("update", editor.getHTML());
   },
   onCreate: () => {
-    emit('ready');
-  }
+    emit("ready");
+  },
 });
 
 watch(
@@ -86,12 +86,9 @@ watch(
   }
 );
 
-watch(
-  [() => props.username, () => props.userColor],
-  ([name, color]) => {
-    editor.value?.chain().updateUser({ name, color }).run();
-  }
-);
+watch([() => props.username, () => props.userColor], ([name, color]) => {
+  editor.value?.chain().updateUser({ name, color }).run();
+});
 
 const canUndo = computed(() => editor.value?.can().undo() ?? false);
 const canRedo = computed(() => editor.value?.can().redo() ?? false);
@@ -100,10 +97,14 @@ const toggleBold = () => editor.value?.chain().focus().toggleBold().run();
 const toggleItalic = () => editor.value?.chain().focus().toggleItalic().run();
 const toggleStrike = () => editor.value?.chain().focus().toggleStrike().run();
 const toggleCode = () => editor.value?.chain().focus().toggleCode().run();
-const toggleHighlight = () => editor.value?.chain().focus().toggleHighlight().run();
-const toggleTaskList = () => editor.value?.chain().focus().toggleTaskList().run();
-const toggleBulletList = () => editor.value?.chain().focus().toggleBulletList().run();
-const toggleOrderedList = () => editor.value?.chain().focus().toggleOrderedList().run();
+const toggleHighlight = () =>
+  editor.value?.chain().focus().toggleHighlight().run();
+const toggleTaskList = () =>
+  editor.value?.chain().focus().toggleTaskList().run();
+const toggleBulletList = () =>
+  editor.value?.chain().focus().toggleBulletList().run();
+const toggleOrderedList = () =>
+  editor.value?.chain().focus().toggleOrderedList().run();
 
 const setHeading = (level: 1 | 2 | 3) => {
   editor.value?.chain().focus().toggleHeading({ level }).run();
@@ -124,43 +125,58 @@ defineExpose({
   toggleStrike,
   toggleCode,
   toggleHighlight,
-  setHeading
+  setHeading,
 });
 </script>
 
 <template>
   <div class="w-full">
-    <div v-if="editable" class="mb-2 flex flex-wrap items-center gap-1 p-2 border-2 border-brutal-black bg-brutal-white">
+    <div
+      v-if="editable"
+      class="mb-2 flex flex-wrap items-center gap-1 p-2 border-2 border-brutal-black bg-brutal-white"
+    >
       <div class="flex gap-1">
         <button
-          @click="toggleBold"
-          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('bold') }"
+          :class="{
+            'bg-brutal-pink text-brutal-white border-brutal-pink':
+              isActive('bold'),
+          }"
           class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Bold (Cmd+B)"
+          @click="toggleBold"
         >
           <strong>B</strong>
         </button>
         <button
-          @click="toggleItalic"
-          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('italic') }"
+          :class="{
+            'bg-brutal-pink text-brutal-white border-brutal-pink':
+              isActive('italic'),
+          }"
           class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Italic (Cmd+I)"
+          @click="toggleItalic"
         >
           <em>I</em>
         </button>
         <button
-          @click="toggleStrike"
-          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('strike') }"
+          :class="{
+            'bg-brutal-pink text-brutal-white border-brutal-pink':
+              isActive('strike'),
+          }"
           class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Strikethrough"
+          @click="toggleStrike"
         >
           <s>S</s>
         </button>
         <button
-          @click="toggleCode"
-          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('code') }"
+          :class="{
+            'bg-brutal-pink text-brutal-white border-brutal-pink':
+              isActive('code'),
+          }"
           class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Code"
+          @click="toggleCode"
         >
           &lt;/&gt;
         </button>
@@ -170,26 +186,41 @@ defineExpose({
 
       <div class="flex gap-1">
         <button
-          @click="setHeading(1)"
-          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('heading', { level: 1 }) }"
+          :class="{
+            'bg-brutal-pink text-brutal-white border-brutal-pink': isActive(
+              'heading',
+              { level: 1 }
+            ),
+          }"
           class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Heading 1"
+          @click="setHeading(1)"
         >
           H1
         </button>
         <button
-          @click="setHeading(2)"
-          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('heading', { level: 2 }) }"
+          :class="{
+            'bg-brutal-pink text-brutal-white border-brutal-pink': isActive(
+              'heading',
+              { level: 2 }
+            ),
+          }"
           class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Heading 2"
+          @click="setHeading(2)"
         >
           H2
         </button>
         <button
-          @click="setHeading(3)"
-          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('heading', { level: 3 }) }"
+          :class="{
+            'bg-brutal-pink text-brutal-white border-brutal-pink': isActive(
+              'heading',
+              { level: 3 }
+            ),
+          }"
           class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Heading 3"
+          @click="setHeading(3)"
         >
           H3
         </button>
@@ -199,26 +230,35 @@ defineExpose({
 
       <div class="flex gap-1">
         <button
-          @click="toggleBulletList"
-          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('bulletList') }"
+          :class="{
+            'bg-brutal-pink text-brutal-white border-brutal-pink':
+              isActive('bulletList'),
+          }"
           class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Bullet List"
+          @click="toggleBulletList"
         >
           •
         </button>
         <button
-          @click="toggleOrderedList"
-          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('orderedList') }"
+          :class="{
+            'bg-brutal-pink text-brutal-white border-brutal-pink':
+              isActive('orderedList'),
+          }"
           class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Numbered List"
+          @click="toggleOrderedList"
         >
           1.
         </button>
         <button
-          @click="toggleTaskList"
-          :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('taskList') }"
+          :class="{
+            'bg-brutal-pink text-brutal-white border-brutal-pink':
+              isActive('taskList'),
+          }"
           class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
           title="Task List"
+          @click="toggleTaskList"
         >
           ☑
         </button>
@@ -227,10 +267,13 @@ defineExpose({
       <div class="w-1px h-6 bg-brutal-black op-20 mx-1"></div>
 
       <button
-        @click="toggleHighlight"
-        :class="{ 'bg-brutal-pink text-brutal-white border-brutal-pink': isActive('highlight') }"
+        :class="{
+          'bg-brutal-pink text-brutal-white border-brutal-pink':
+            isActive('highlight'),
+        }"
         class="min-w-8 h-8 px-2 border-1 border-brutal-black bg-transparent cursor-pointer text-sm font-bold transition-all duration-150 hover:bg-black/5"
         title="Highlight"
+        @click="toggleHighlight"
       >
         🖍️
       </button>
@@ -282,23 +325,23 @@ defineExpose({
   margin: 0.5em 0;
 }
 
-.ProseMirror ul[data-type='taskList'] {
+.ProseMirror ul[data-type="taskList"] {
   list-style: none;
   padding-left: 0;
 }
 
-.ProseMirror ul[data-type='taskList'] li {
+.ProseMirror ul[data-type="taskList"] li {
   display: flex;
   align-items: flex-start;
   margin: 0.25em 0;
 }
 
-.ProseMirror ul[data-type='taskList'] li > label {
+.ProseMirror ul[data-type="taskList"] li > label {
   margin-right: 0.5em;
   user-select: none;
 }
 
-.ProseMirror ul[data-type='taskList'] li > div {
+.ProseMirror ul[data-type="taskList"] li > div {
   flex: 1;
 }
 

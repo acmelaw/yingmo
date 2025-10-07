@@ -9,7 +9,11 @@
       <!-- Checkbox -->
       <button
         class="shrink-0 w-5 h-5 border-2 border-base-black dark:border-white rounded flex items-center justify-center transition-all duration-150"
-        :class="item.done ? 'bg-accent-green' : 'bg-base-white dark:bg-dark-bg-tertiary'"
+        :class="
+          item.done
+            ? 'bg-accent-green'
+            : 'bg-base-white dark:bg-dark-bg-tertiary'
+        "
         @click.stop="toggleItem(item.id)"
       >
         <span v-if="item.done" class="text-xs">✓</span>
@@ -32,24 +36,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { TodoNote, TodoItem } from '@/types/note';
+import { computed } from "vue";
+import type { TodoNote, TodoItem } from "@/types/note";
 
 const props = defineProps<{
   note: TodoNote;
 }>();
 
 const emit = defineEmits<{
-  (e: 'update', updates: Partial<TodoNote>): void;
+  (e: "update", updates: Partial<TodoNote>): void;
 }>();
 
 const items = computed(() => props.note.items || []);
 
 function toggleItem(id: string) {
-  const updatedItems = items.value.map(item =>
+  const updatedItems = items.value.map((item) =>
     item.id === id ? { ...item, done: !item.done } : item
   );
-  emit('update', { items: updatedItems } as any);
+  emit("update", { items: updatedItems } as any);
 }
 </script>
 

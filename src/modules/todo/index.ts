@@ -14,24 +14,24 @@ function createId(): string {
 }
 
 function parseTextToTodos(text: string): TodoItem[] {
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   return lines
-    .filter(line => line.trim())
-    .map(line => {
+    .filter((line) => line.trim())
+    .map((line) => {
       // Parse "[ ] task" or "- [ ] task" or "[x] task" format
       const match = line.match(/^[-\s]*\[([x\s])\]\s*(.+)$/i);
       if (match) {
         return {
           id: createId(),
           text: match[2].trim(),
-          done: match[1].toLowerCase() === 'x'
+          done: match[1].toLowerCase() === "x",
         };
       }
       // Plain text becomes unchecked todo
       return {
         id: createId(),
         text: line.trim(),
-        done: false
+        done: false,
       };
     });
 }
@@ -61,7 +61,7 @@ const todoNoteHandler: NoteTypeHandler = {
 
     // If text/content updated, reparse
     if (updates.content || (updates as any).text) {
-      const text = ((updates.content ?? (updates as any).text) as string);
+      const text = (updates.content ?? (updates as any).text) as string;
       const items = parseTextToTodos(text);
       return {
         ...todoNote,
@@ -77,7 +77,9 @@ const todoNoteHandler: NoteTypeHandler = {
     // If items updated directly (toggle done)
     if ((updates as any).items) {
       const items = (updates as any).items as TodoItem[];
-      const text = items.map(i => `[${i.done ? 'x' : ' '}] ${i.text}`).join('\n');
+      const text = items
+        .map((i) => `[${i.done ? "x" : " "}] ${i.text}`)
+        .join("\n");
       return {
         ...todoNote,
         ...updates,

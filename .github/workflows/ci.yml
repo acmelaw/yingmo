@@ -31,11 +31,9 @@ jobs:
 
       - name: Run TypeScript type check
         run: npx vue-tsc --noEmit
-        continue-on-error: true
 
       - name: Build
         run: npm run build
-        continue-on-error: true
 
       - name: Run unit tests
         run: npm test

@@ -11,7 +11,7 @@ import type { Note, NoteType } from "./note";
 export interface ModuleParameter {
   id: string;
   label: string;
-  type: 'number' | 'string' | 'select' | 'boolean' | 'color';
+  type: "number" | "string" | "select" | "boolean" | "color";
   defaultValue?: any;
   options?: Array<{ value: any; label: string }>;
   min?: number;

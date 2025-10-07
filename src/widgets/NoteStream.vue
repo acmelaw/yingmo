@@ -28,7 +28,16 @@ const containerRef = ref<HTMLElement | null>(null);
 const sortOrder = ref<"desc" | "asc">("desc");
 const sortBy = ref<"updated" | "created" | "text">("updated");
 
-const { notes, setFilter, clearFilters, setSort, create, sync, stats, isSyncing } = useNotes({
+const {
+  notes,
+  setFilter,
+  clearFilters,
+  setSort,
+  create,
+  sync,
+  stats,
+  isSyncing,
+} = useNotes({
   autoSync: false, // Manual sync control
 });
 
@@ -57,17 +66,17 @@ watch(
 );
 
 // Apply sort reactively
-watch(
-  [sortBy, sortOrder],
-  () => setSort(sortBy.value, sortOrder.value),
-  { immediate: true }
-);
+watch([sortBy, sortOrder], () => setSort(sortBy.value, sortOrder.value), {
+  immediate: true,
+});
 
 const hasNotes = computed(() => notes.value.length > 0);
 const isEmpty = computed(() => !hasNotes.value);
 
 const sortIcon = computed(() => (sortOrder.value === "desc" ? "⬇️" : "⬆️"));
-const sortLabel = computed(() => (sortOrder.value === "desc" ? "Newest first" : "Oldest first"));
+const sortLabel = computed(() =>
+  sortOrder.value === "desc" ? "Newest first" : "Oldest first"
+);
 
 function toggleSortOrder() {
   sortOrder.value = sortOrder.value === "desc" ? "asc" : "desc";
@@ -151,15 +160,20 @@ async function handleArchive(id: string) {
 function handleTransform(id: string) {
   emit("request-transform", id);
 }
-
 </script>
 
 <template>
-  <section class="flex-1 flex flex-col overflow-hidden bg-bg-primary dark:bg-dark-bg-primary">
+  <section
+    class="flex-1 flex flex-col overflow-hidden bg-bg-primary dark:bg-dark-bg-primary"
+  >
     <!-- Stream Header -->
-    <header class="shrink-0 px-4 py-3 flex items-center justify-between gap-3 border-b-3 border-base-black dark:border-white bg-bg-secondary dark:bg-dark-bg-secondary shadow-hard-sm">
+    <header
+      class="shrink-0 px-4 py-3 flex items-center justify-between gap-3 border-b-3 border-base-black dark:border-white bg-bg-secondary dark:bg-dark-bg-secondary shadow-hard-sm"
+    >
       <div class="flex-1 min-w-0">
-        <h1 class="text-base sm:text-lg font-black uppercase tracking-wide truncate">
+        <h1
+          class="text-base sm:text-lg font-black uppercase tracking-wide truncate"
+        >
           Notes
         </h1>
         <p class="text-2xs sm:text-xs font-bold opacity-60 truncate">
@@ -196,7 +210,10 @@ function handleTransform(id: string) {
       class="flex-1 overflow-y-auto overscroll-contain px-3 sm:px-4 md:px-6 py-4 space-y-2 sm:space-y-3"
     >
       <!-- Empty State -->
-      <div v-if="isEmpty" class="h-full flex items-center justify-center text-center">
+      <div
+        v-if="isEmpty"
+        class="h-full flex items-center justify-center text-center"
+      >
         <div class="max-w-sm space-y-4 animate-slide-up-fade px-4">
           <div class="text-6xl sm:text-7xl">🗒️</div>
           <div class="space-y-2">
@@ -230,7 +247,9 @@ function handleTransform(id: string) {
     </div>
 
     <!-- Composer Footer -->
-    <footer class="shrink-0 p-3 sm:p-4 bg-bg-secondary dark:bg-dark-bg-secondary border-t-3 border-base-black dark:border-white shadow-hard">
+    <footer
+      class="shrink-0 p-3 sm:p-4 bg-bg-secondary dark:bg-dark-bg-secondary border-t-3 border-base-black dark:border-white shadow-hard"
+    >
       <Composer
         :available-types="props.availableTypes"
         @submit="handleCreate"

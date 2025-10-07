@@ -1,7 +1,11 @@
 <template>
   <div class="code-editor">
     <div class="editor-header">
-      <select v-model="localLanguage" @change="handleLanguageChange" class="language-select">
+      <select
+        v-model="localLanguage"
+        class="language-select"
+        @change="handleLanguageChange"
+      >
         <option value="javascript">JavaScript</option>
         <option value="typescript">TypeScript</option>
         <option value="python">Python</option>
@@ -22,18 +26,18 @@
 
       <input
         v-model="localFilename"
-        @input="handleFilenameChange"
         placeholder="filename (optional)"
         class="filename-input"
+        @input="handleFilenameChange"
       />
     </div>
 
     <textarea
       v-model="localCode"
-      @input="handleInput"
       class="code-input"
       placeholder="Paste or write your code here..."
       spellcheck="false"
+      @input="handleInput"
     ></textarea>
 
     <div class="editor-footer">
@@ -57,8 +61,12 @@ const emit = defineEmits<{
 }>();
 
 const localCode = ref(getNoteContent(props.note));
-const localLanguage = ref<string>(getNoteMeta<string>(props.note, 'language', 'javascript') || 'javascript');
-const localFilename = ref<string>(getNoteMeta<string>(props.note, 'filename', '') || '');
+const localLanguage = ref<string>(
+  getNoteMeta<string>(props.note, "language", "javascript") || "javascript"
+);
+const localFilename = ref<string>(
+  getNoteMeta<string>(props.note, "filename", "") || ""
+);
 
 watch(
   () => getNoteContent(props.note),
@@ -68,16 +76,16 @@ watch(
 );
 
 watch(
-  () => getNoteMeta<string>(props.note, 'language'),
+  () => getNoteMeta<string>(props.note, "language"),
   (newLanguage) => {
-    if (typeof newLanguage === 'string' && newLanguage.length > 0) {
+    if (typeof newLanguage === "string" && newLanguage.length > 0) {
       localLanguage.value = newLanguage;
     }
   }
 );
 
 watch(
-  () => getNoteMeta<string>(props.note, 'filename'),
+  () => getNoteMeta<string>(props.note, "filename"),
   (newFilename) => {
     localFilename.value = newFilename || "";
   }
@@ -91,7 +99,7 @@ function updateLanguage() {
   emit("update", {
     metadata: {
       ...props.note.metadata,
-      language: localLanguage.value || 'javascript',
+      language: localLanguage.value || "javascript",
     },
   });
 }
@@ -100,13 +108,13 @@ function updateFilename() {
   emit("update", {
     metadata: {
       ...props.note.metadata,
-      filename: localFilename.value
-    }
+      filename: localFilename.value,
+    },
   });
 }
 
 const lineCount = computed(() => {
-  return localCode.value.split('\n').length;
+  return localCode.value.split("\n").length;
 });
 
 const handleInput = () => {
@@ -164,8 +172,9 @@ const handleFilenameChange = () => {
   width: 100%;
   padding: 12px;
   border: 2px solid #000;
-  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
-    "Courier New", monospace;
+  font-family:
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New",
+    monospace;
   font-size: 14px;
   line-height: 1.5;
   resize: vertical;

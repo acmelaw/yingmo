@@ -20,9 +20,9 @@
             </p>
           </div>
           <button
-            @click="$emit('close')"
             class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             aria-label="Close shortcuts panel"
+            @click="$emit('close')"
           >
             <span class="text-2xl">×</span>
           </button>
@@ -32,27 +32,17 @@
         <div class="space-y-6">
           <!-- Navigation -->
           <section>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"
+            >
               <span>🧭</span>
               <span>Navigation</span>
             </h3>
             <div class="space-y-2">
-              <ShortcutRow
-                keys="Cmd+K"
-                description="Search notes"
-              />
-              <ShortcutRow
-                keys="Cmd+1"
-                description="Show all notes"
-              />
-              <ShortcutRow
-                keys="Cmd+2"
-                description="Show pinned notes"
-              />
-              <ShortcutRow
-                keys="Cmd+3"
-                description="Show archived notes"
-              />
+              <ShortcutRow keys="Cmd+K" description="Search notes" />
+              <ShortcutRow keys="Cmd+1" description="Show all notes" />
+              <ShortcutRow keys="Cmd+2" description="Show pinned notes" />
+              <ShortcutRow keys="Cmd+3" description="Show archived notes" />
               <ShortcutRow
                 keys="Esc"
                 description="Close search / Exit edit mode"
@@ -62,7 +52,9 @@
 
           <!-- Note Actions -->
           <section>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"
+            >
               <span>📝</span>
               <span>Note Actions</span>
             </h3>
@@ -75,24 +67,17 @@
                 keys="Enter"
                 description="Submit note (in composer)"
               />
-              <ShortcutRow
-                keys="P"
-                description="Pin/Unpin note"
-              />
-              <ShortcutRow
-                keys="A"
-                description="Archive note"
-              />
-              <ShortcutRow
-                keys="D"
-                description="Delete note"
-              />
+              <ShortcutRow keys="P" description="Pin/Unpin note" />
+              <ShortcutRow keys="A" description="Archive note" />
+              <ShortcutRow keys="D" description="Delete note" />
             </div>
           </section>
 
           <!-- Bulk Operations -->
           <section>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"
+            >
               <span>🎯</span>
               <span>Bulk Operations</span>
             </h3>
@@ -114,7 +99,9 @@
 
           <!-- Slash Commands -->
           <section>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"
+            >
               <span>⚡</span>
               <span>Slash Commands</span>
             </h3>
@@ -130,7 +117,9 @@
 
           <!-- Help -->
           <section>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2"
+            >
               <span>❓</span>
               <span>Help</span>
             </h3>
@@ -155,17 +144,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
-import ShortcutRow from './ShortcutRow.vue'
-import { moduleRegistry } from '@/core/ModuleRegistry'
+import { computed, onMounted, onUnmounted } from "vue";
+import ShortcutRow from "./ShortcutRow.vue";
+import { moduleRegistry } from "@/core/ModuleRegistry";
 
 defineProps<{
-  show: boolean
-}>()
+  show: boolean;
+}>();
 
 const emit = defineEmits<{
-  close: []
-}>()
+  close: [];
+}>();
 
 // Get slash commands from module registry
 const slashCommands = computed(() => {
@@ -173,23 +162,23 @@ const slashCommands = computed(() => {
     command: command.command,
     description: command.description,
     icon: command.icon,
-  }))
-})
+  }));
+});
 
 // Close on Escape key
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') {
-    emit('close')
+  if (e.key === "Escape") {
+    emit("close");
   }
-}
+};
 
 onMounted(() => {
-  document.addEventListener('keydown', handleKeydown)
-})
+  document.addEventListener("keydown", handleKeydown);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown)
-})
+  document.removeEventListener("keydown", handleKeydown);
+});
 </script>
 
 <style scoped>

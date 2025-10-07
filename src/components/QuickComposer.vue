@@ -52,7 +52,7 @@ const slashCommandMap = computed(() => {
     const type = module.supportedTypes[0];
     if (type) {
       map[command.command.toLowerCase()] = type;
-      command.aliases?.forEach(alias => {
+      command.aliases?.forEach((alias) => {
         map[alias.toLowerCase()] = type;
       });
     }
@@ -64,7 +64,7 @@ const slashCommandMap = computed(() => {
 // Detect slash commands using the parser
 const detectedSlashCommand = computed(() => {
   const trimmed = input.value.trim();
-  if (!trimmed.startsWith('/')) return null;
+  if (!trimmed.startsWith("/")) return null;
 
   const parsed = parseSlashCommand(trimmed);
   if (!parsed) return null;
@@ -74,7 +74,7 @@ const detectedSlashCommand = computed(() => {
 
   return {
     command: parsed.rawCommand || parsed.command,
-    type: slashCmd.module.supportedTypes[0] || 'text'
+    type: slashCmd.module.supportedTypes[0] || "text",
   };
 });
 
@@ -100,14 +100,19 @@ function getTypeIcon(type: NoteType): string {
 
 // === Methods ===
 function send() {
-  let text = input.value.trim();
+  const text = input.value.trim();
   if (!text) return;
 
   // DON'T strip slash command - handleAdd needs the full text with k-v parameters
   // The parser in handleAdd will extract command, parameters, and content
   // Type is always "text" - handleAdd will determine actual type from slash command
 
-  emit("submit", text, "text", selectedColor.value !== 'default' ? selectedColor.value : undefined);
+  emit(
+    "submit",
+    text,
+    "text",
+    selectedColor.value !== "default" ? selectedColor.value : undefined
+  );
 
   // Reset
   input.value = "";
@@ -146,7 +151,7 @@ watch(input, autoResize);
 defineExpose({
   focus: () => {
     inputEl.value?.focus();
-  }
+  },
 });
 
 // === Emoji support (minimal) ===
@@ -169,7 +174,7 @@ function insertEmoji(emoji: string) {
 </script>
 
 <template>
-    <div class="flex items-end gap-1.5 sm:gap-2 w-full max-w-4xl">
+  <div class="flex items-end gap-1.5 sm:gap-2 w-full max-w-4xl">
     <!-- REMOVED: Type selector - slash commands now auto-determine type -->
 
     <!-- Color Picker -->
@@ -251,7 +256,10 @@ function insertEmoji(emoji: string) {
           class="absolute -top-7 left-0 flex items-center gap-1.5 px-2 py-1 bg-accent-cyan text-base-black text-2xs font-black border-2 border-base-black rounded shadow-hard-sm"
         >
           <span>⚡</span>
-          <span>{{ getTypeIcon(detectedSlashCommand.type) }} {{ detectedSlashCommand.type }}</span>
+          <span
+            >{{ getTypeIcon(detectedSlashCommand.type) }}
+            {{ detectedSlashCommand.type }}</span
+          >
         </div>
       </Transition>
 
@@ -267,7 +275,11 @@ function insertEmoji(emoji: string) {
           class="absolute -top-7 left-0 flex items-center gap-1.5 px-2 py-1 bg-accent-pink text-base-white text-2xs font-black border-2 border-base-black rounded shadow-hard-sm"
         >
           <span>🏷️</span>
-          <span>{{ detectedHashtags.length }} tag{{ detectedHashtags.length > 1 ? 's' : '' }}</span>
+          <span
+            >{{ detectedHashtags.length }} tag{{
+              detectedHashtags.length > 1 ? "s" : ""
+            }}</span
+          >
         </div>
       </Transition>
 

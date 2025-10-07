@@ -4,9 +4,9 @@
  * Svelte stores + React Query inspired
  */
 
-import { computed, ref, watch, type ComputedRef } from 'vue';
-import type { Note, NoteType } from '@/types/note';
-import { useNotesStore } from '@/stores/notes';
+import { computed, ref, watch, type ComputedRef } from "vue";
+import type { Note, NoteType } from "@/types/note";
+import { useNotesStore } from "@/stores/notes";
 
 export interface UseNotesFilters {
   /**
@@ -46,8 +46,8 @@ export interface UseNotesFilters {
 }
 
 export interface UseNotesSort {
-  by: 'created' | 'updated' | 'text';
-  order: 'asc' | 'desc';
+  by: "created" | "updated" | "text";
+  order: "asc" | "desc";
 }
 
 export interface UseNotesOptions {
@@ -77,7 +77,9 @@ export function useNotes(options: UseNotesOptions = {}) {
 
   // Reactive filters
   const filters = ref<UseNotesFilters>(options.filters ?? {});
-  const sort = ref<UseNotesSort>(options.sort ?? { by: 'updated', order: 'desc' });
+  const sort = ref<UseNotesSort>(
+    options.sort ?? { by: "updated", order: "desc" }
+  );
   const limit = ref(options.limit);
 
   /**
@@ -91,24 +93,24 @@ export function useNotes(options: UseNotesOptions = {}) {
     const onlyArchived = filters.value.onlyArchived ?? false;
 
     if (onlyArchived) {
-      result = result.filter(n => n.archived);
+      result = result.filter((n) => n.archived);
     } else if (!includeArchived) {
-      result = result.filter(n => !n.archived);
+      result = result.filter((n) => !n.archived);
     }
 
     // Filter: pinned
     if (filters.value.onlyPinned) {
-      result = result.filter(n => n.pinned);
+      result = result.filter((n) => n.pinned);
     }
 
     // Filter: search
     if (filters.value.search) {
       const query = filters.value.search.toLowerCase();
-      result = result.filter(n => {
-        const content = n.content?.toLowerCase() ?? '';
-        const title = n.title?.toLowerCase() ?? '';
-        const category = n.category?.toLowerCase() ?? '';
-        const tags = n.tags?.map(t => t.toLowerCase()).join(' ') ?? '';
+      result = result.filter((n) => {
+        const content = n.content?.toLowerCase() ?? "";
+        const title = n.title?.toLowerCase() ?? "";
+        const category = n.category?.toLowerCase() ?? "";
+        const tags = n.tags?.map((t) => t.toLowerCase()).join(" ") ?? "";
 
         return (
           content.includes(query) ||
@@ -121,20 +123,20 @@ export function useNotes(options: UseNotesOptions = {}) {
 
     // Filter: tags (AND logic)
     if (filters.value.tags && filters.value.tags.length > 0) {
-      result = result.filter(n => {
+      result = result.filter((n) => {
         const noteTags = new Set(n.tags ?? []);
-        return filters.value.tags!.every(tag => noteTags.has(tag));
+        return filters.value.tags!.every((tag) => noteTags.has(tag));
       });
     }
 
     // Filter: category
     if (filters.value.category !== undefined) {
-      result = result.filter(n => n.category === filters.value.category);
+      result = result.filter((n) => n.category === filters.value.category);
     }
 
     // Filter: type
     if (filters.value.type) {
-      result = result.filter(n => n.type === filters.value.type);
+      result = result.filter((n) => n.type === filters.value.type);
     }
 
     // Sort
@@ -143,24 +145,24 @@ export function useNotes(options: UseNotesOptions = {}) {
       let bVal: any;
 
       switch (sort.value.by) {
-        case 'created':
+        case "created":
           aVal = a.created;
           bVal = b.created;
           break;
-        case 'updated':
+        case "updated":
           aVal = a.updated;
           bVal = b.updated;
           break;
-        case 'text':
-          aVal = a.content?.toLowerCase() ?? '';
-          bVal = b.content?.toLowerCase() ?? '';
+        case "text":
+          aVal = a.content?.toLowerCase() ?? "";
+          bVal = b.content?.toLowerCase() ?? "";
           break;
         default:
           return 0;
       }
 
       const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-      return sort.value.order === 'asc' ? comparison : -comparison;
+      return sort.value.order === "asc" ? comparison : -comparison;
     });
 
     // Limit
@@ -176,9 +178,9 @@ export function useNotes(options: UseNotesOptions = {}) {
    */
   const stats = computed(() => ({
     total: store.notes.length,
-    active: store.notes.filter(n => !n.archived).length,
-    archived: store.notes.filter(n => n.archived).length,
-    pinned: store.notes.filter(n => n.pinned).length,
+    active: store.notes.filter((n) => !n.archived).length,
+    archived: store.notes.filter((n) => n.archived).length,
+    pinned: store.notes.filter((n) => n.pinned).length,
     visible: notes.value.length,
   }));
 
@@ -187,8 +189,8 @@ export function useNotes(options: UseNotesOptions = {}) {
    */
   const allTags = computed(() => {
     const tags = new Set<string>();
-    store.notes.forEach(note => {
-      note.tags?.forEach(tag => tags.add(tag));
+    store.notes.forEach((note) => {
+      note.tags?.forEach((tag) => tags.add(tag));
     });
     return Array.from(tags).sort();
   });
@@ -198,7 +200,7 @@ export function useNotes(options: UseNotesOptions = {}) {
    */
   const allCategories = computed(() => {
     const categories = new Set<string>();
-    store.notes.forEach(note => {
+    store.notes.forEach((note) => {
       if (note.category) categories.add(note.category);
     });
     return Array.from(categories).sort();
@@ -219,21 +221,21 @@ export function useNotes(options: UseNotesOptions = {}) {
    * Bulk delete notes
    */
   async function bulkDelete(noteIds: string[]): Promise<void> {
-    await Promise.all(noteIds.map(id => store.remove(id)));
+    await Promise.all(noteIds.map((id) => store.remove(id)));
   }
 
   /**
    * Bulk archive notes
    */
   async function bulkArchive(noteIds: string[]): Promise<void> {
-    await Promise.all(noteIds.map(id => store.archive(id)));
+    await Promise.all(noteIds.map((id) => store.archive(id)));
   }
 
   /**
    * Bulk unarchive notes
    */
   async function bulkUnarchive(noteIds: string[]): Promise<void> {
-    await Promise.all(noteIds.map(id => store.unarchive(id)));
+    await Promise.all(noteIds.map((id) => store.unarchive(id)));
   }
 
   /**
@@ -256,7 +258,7 @@ export function useNotes(options: UseNotesOptions = {}) {
   /**
    * Set sort
    */
-  function setSort(by: UseNotesSort['by'], order: UseNotesSort['order']): void {
+  function setSort(by: UseNotesSort["by"], order: UseNotesSort["order"]): void {
     sort.value = { by, order };
   }
 

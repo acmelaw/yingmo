@@ -20,9 +20,11 @@ src/stores/notes/
 ## Module Responsibilities
 
 ### `utils.ts`
+
 **Purpose**: General-purpose utility functions
 
 **Exports**:
+
 - `clone<T>(value: T)` - Deep clone using structuredClone or JSON fallback
 - `createId()` - Generate unique IDs
 - `ensureFutureTimestamp(prev: number)` - Ensure timestamps are monotonically increasing
@@ -33,9 +35,11 @@ src/stores/notes/
 ---
 
 ### `tags.ts`
+
 **Purpose**: Tag extraction and filtering logic
 
 **Exports**:
+
 - `extractHashtags(text: string)` - Extract #hashtags from text with Unicode support
 - `mergeTags(text, explicitTags, autoExtract)` - Combine extracted and manual tags
 - `stripHashtags(text)` - Remove hashtags from text
@@ -44,6 +48,7 @@ src/stores/notes/
 - `filterByTags(notes, selectedTags)` - Filter notes by tags (AND logic)
 
 **Key Features**:
+
 - ✅ Unicode support (#café, #日本語)
 - ✅ Case-insensitive deduplication
 - ✅ Pure functions (no side effects)
@@ -54,11 +59,13 @@ src/stores/notes/
 ---
 
 ### `sync.ts`
+
 **Purpose**: Server synchronization and offline queue management
 
 **Class**: `SyncManager`
 
 **Methods**:
+
 - `addToPendingQueue(noteId)` - Add note to sync queue
 - `removeFromPendingQueue(noteId)` - Remove from queue
 - `getPendingNotes()` - Get all pending note IDs
@@ -70,6 +77,7 @@ src/stores/notes/
 - `getState()` / `setState()` - Serialize/deserialize queue
 
 **Key Features**:
+
 - ✅ Offline-first architecture
 - ✅ Conflict resolution (local vs remote timestamps)
 - ✅ Error handling and retry logic
@@ -81,11 +89,13 @@ src/stores/notes/
 ---
 
 ### `categories.ts`
+
 **Purpose**: Category tracking and indexing
 
 **Class**: `CategoryManager`
 
 **Methods**:
+
 - `rebuild(notes)` - Rebuild index from scratch
 - `track(category)` - Increment category count
 - `untrack(category)` - Decrement category count
@@ -94,6 +104,7 @@ src/stores/notes/
 - `clear()` - Reset state
 
 **Key Features**:
+
 - ✅ Reference counting for automatic cleanup
 - ✅ Sorted category list
 - ✅ O(1) lookups via Map
@@ -104,14 +115,17 @@ src/stores/notes/
 ---
 
 ### `storage.ts`
+
 **Purpose**: Persistence layer abstraction
 
 **Exports**:
+
 - `createStorageRef<T>(options)` - Create localStorage or in-memory ref
 - `STORAGE_KEYS` - Centralized storage key constants
 - `CURRENT_VERSION` - Data version for migrations
 
 **Key Features**:
+
 - ✅ Test mode detection (in-memory storage for tests)
 - ✅ Automatic deep cloning in test mode
 - ✅ Type-safe storage keys
@@ -149,6 +163,7 @@ The main store file is a **thin orchestration layer** that:
 ## Usage
 
 ### Unit Tests
+
 Each module can be tested independently:
 
 ```typescript
@@ -170,11 +185,13 @@ test("SyncManager queues notes when offline", () => {
 ```
 
 ### Integration Tests
+
 Test the full store with all modules:
 
 ## Best Practices Applied
 
 ### 1. **Pure Functions**
+
 ```typescript
 // ✅ Good: Pure, testable
 export function extractHashtags(text: string): string[] {
@@ -189,6 +206,7 @@ export function extractHashtags(text: string) {
 ```
 
 ### 2. **Dependency Injection**
+
 ```typescript
 // ✅ Good: Dependencies injected
 class SyncManager {
@@ -202,6 +220,7 @@ class SyncManager {
 ```
 
 ### 3. **Single Responsibility**
+
 ```typescript
 // ✅ Good: One responsibility per module
 import { extractHashtags } from "./tags";
@@ -214,24 +233,32 @@ export const useNotesStore = defineStore("notes", () => {
 ```
 
 ### 4. **Type Safety**
+
 ```typescript
 // ✅ Good: Explicit types
 export function mergeTags(
   text: string,
   explicitTags?: string[],
   autoExtract = true
-): string[] { /* ... */ }
+): string[] {
+  /* ... */
+}
 
 // ❌ Bad: Implicit any
-export function mergeTags(text, tags, auto) { /* ... */ }
+export function mergeTags(text, tags, auto) {
+  /* ... */
+}
 ```
 
 ### 5. **Encapsulation**
+
 ```typescript
 // ✅ Good: Private state, public API
 class CategoryManager {
   private categoryCounts = new Map();
-  public getAll() { return this.categories; }
+  public getAll() {
+    return this.categories;
+  }
 }
 
 // ❌ Bad: Exposed internal state
@@ -242,6 +269,7 @@ export { categoryCounts }; // Anyone can modify
 ## Performance Optimizations
 
 ### Efficient Data Structures
+
 ```typescript
 // O(1) lookups with Set
 class CategoryManager {
@@ -259,6 +287,7 @@ class CategoryManager {
 ## Future Enhancements
 
 ### 1. Add y-indexeddb Integration
+
 ```typescript
 // storage.ts
 export class IndexedDBStorage {
@@ -269,6 +298,7 @@ export class IndexedDBStorage {
 ```
 
 ### 2. Add Conflict Resolution Strategies
+
 ```typescript
 // sync.ts
 export enum ConflictStrategy {
@@ -280,6 +310,7 @@ export enum ConflictStrategy {
 ```
 
 ### 3. Add Background Sync
+
 ```typescript
 // sync.ts
 export class BackgroundSyncManager extends SyncManager {
@@ -292,6 +323,7 @@ export class BackgroundSyncManager extends SyncManager {
 ## API
 
 ### Store API
+
 ```typescript
 const store = useNotesStore();
 // Clear public API
@@ -306,6 +338,7 @@ const tags = extractHashtags(text);
 ## Documentation
 
 Each module includes:
+
 - ✅ JSDoc comments for all public APIs
 - ✅ Type definitions for all parameters
 - ✅ Usage examples in this README
@@ -321,6 +354,7 @@ This modular architecture transforms the notes store into a maintainable, testab
 - **Modern TypeScript**: Strict types, interfaces, generics
 
 The result is code that is:
+
 - Easier to understand
 - Easier to test
 - Easier to maintain

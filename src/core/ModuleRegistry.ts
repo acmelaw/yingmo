@@ -21,7 +21,10 @@ class ModuleRegistry {
   private transforms = new Map<string, TransformDefinition>();
   private stores = new Map<string, any>();
   private services = new Map<string, any>();
-  private slashCommands = new Map<string, { command: SlashCommand; module: NoteModule }>();
+  private slashCommands = new Map<
+    string,
+    { command: SlashCommand; module: NoteModule }
+  >();
 
   /**
    * Register a new module
@@ -50,11 +53,14 @@ class ModuleRegistry {
 
     // Register slash commands
     if (module.slashCommands) {
-      module.slashCommands.forEach(command => {
-        this.slashCommands.set(command.command.toLowerCase(), { command, module });
+      module.slashCommands.forEach((command) => {
+        this.slashCommands.set(command.command.toLowerCase(), {
+          command,
+          module,
+        });
         // Register aliases
         if (command.aliases) {
-          command.aliases.forEach(alias => {
+          command.aliases.forEach((alias) => {
             this.slashCommands.set(alias.toLowerCase(), { command, module });
           });
         }
@@ -161,7 +167,10 @@ class ModuleRegistry {
    * Get all registered slash commands
    */
   getAllSlashCommands(): Array<{ command: SlashCommand; module: NoteModule }> {
-    const uniqueCommands = new Map<string, { command: SlashCommand; module: NoteModule }>();
+    const uniqueCommands = new Map<
+      string,
+      { command: SlashCommand; module: NoteModule }
+    >();
 
     // Get unique commands (primary commands only, not aliases)
     this.slashCommands.forEach((value, key) => {
@@ -176,7 +185,9 @@ class ModuleRegistry {
   /**
    * Get slash command by command string
    */
-  getSlashCommand(command: string): { command: SlashCommand; module: NoteModule } | undefined {
+  getSlashCommand(
+    command: string
+  ): { command: SlashCommand; module: NoteModule } | undefined {
     return this.slashCommands.get(command.toLowerCase());
   }
 
@@ -185,7 +196,7 @@ class ModuleRegistry {
    */
   getParametersForType(type: NoteType): any[] {
     const modules = this.getModulesForType(type);
-    return modules.flatMap(m => m.parameters || []);
+    return modules.flatMap((m) => m.parameters || []);
   }
 
   /**

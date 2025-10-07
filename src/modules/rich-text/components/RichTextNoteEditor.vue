@@ -1,20 +1,45 @@
 <template>
   <div class="rich-text-editor">
     <div v-if="editor" class="editor-toolbar">
-      <button @click="editor.chain().focus().toggleBold().run()" :class="{ active: editor.isActive('bold') }" class="toolbar-btn" title="Bold">
+      <button
+        :class="{ active: editor.isActive('bold') }"
+        class="toolbar-btn"
+        title="Bold"
+        @click="editor.chain().focus().toggleBold().run()"
+      >
         <strong>B</strong>
       </button>
-      <button @click="editor.chain().focus().toggleItalic().run()" :class="{ active: editor.isActive('italic') }" class="toolbar-btn" title="Italic">
+      <button
+        :class="{ active: editor.isActive('italic') }"
+        class="toolbar-btn"
+        title="Italic"
+        @click="editor.chain().focus().toggleItalic().run()"
+      >
         <em>I</em>
       </button>
-      <button @click="editor.chain().focus().toggleStrike().run()" :class="{ active: editor.isActive('strike') }" class="toolbar-btn" title="Strikethrough">
+      <button
+        :class="{ active: editor.isActive('strike') }"
+        class="toolbar-btn"
+        title="Strikethrough"
+        @click="editor.chain().focus().toggleStrike().run()"
+      >
         <s>S</s>
       </button>
       <div class="toolbar-divider"></div>
-      <button @click="editor.chain().focus().toggleBulletList().run()" :class="{ active: editor.isActive('bulletList') }" class="toolbar-btn" title="Bullet List">
+      <button
+        :class="{ active: editor.isActive('bulletList') }"
+        class="toolbar-btn"
+        title="Bullet List"
+        @click="editor.chain().focus().toggleBulletList().run()"
+      >
         •
       </button>
-      <button @click="editor.chain().focus().toggleOrderedList().run()" :class="{ active: editor.isActive('orderedList') }" class="toolbar-btn" title="Numbered List">
+      <button
+        :class="{ active: editor.isActive('orderedList') }"
+        class="toolbar-btn"
+        title="Numbered List"
+        @click="editor.chain().focus().toggleOrderedList().run()"
+      >
         #
       </button>
     </div>
@@ -48,18 +73,21 @@ const editor = useEditor({
       content: html,
       metadata: {
         ...props.note.metadata,
-        format: 'html',
-        tiptapContent: json
-      }
+        format: "html",
+        tiptapContent: json,
+      },
     });
   },
 });
 
-watch(() => getNoteContent(props.note), (newContent) => {
-  if (editor.value && editor.value.getHTML() !== newContent) {
-    editor.value.commands.setContent(newContent);
+watch(
+  () => getNoteContent(props.note),
+  (newContent) => {
+    if (editor.value && editor.value.getHTML() !== newContent) {
+      editor.value.commands.setContent(newContent);
+    }
   }
-});
+);
 
 onBeforeUnmount(() => {
   editor.value?.destroy();
@@ -164,4 +192,3 @@ onBeforeUnmount(() => {
   margin: 4px 0;
 }
 </style>
-

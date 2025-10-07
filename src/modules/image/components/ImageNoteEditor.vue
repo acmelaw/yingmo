@@ -5,16 +5,16 @@
         ref="fileInputRef"
         type="file"
         accept="image/*"
-        @change="handleFileSelect"
         class="file-input"
         hidden
+        @change="handleFileSelect"
       />
 
       <div
+        class="drop-zone"
         @click="triggerFileInput"
         @dragover.prevent
         @drop.prevent="handleDrop"
-        class="drop-zone"
       >
         <div class="upload-icon">📷</div>
         <p class="upload-text">Click to upload or drag and drop</p>
@@ -28,14 +28,12 @@
       <div class="image-controls">
         <input
           v-model="localAlt"
-          @input="handleAltChange"
           placeholder="Image description (optional)"
           class="alt-input"
+          @input="handleAltChange"
         />
 
-        <button @click="removeImage" class="remove-btn">
-          Remove Image
-        </button>
+        <button class="remove-btn" @click="removeImage">Remove Image</button>
       </div>
     </div>
   </div>
@@ -55,9 +53,9 @@ const emit = defineEmits<{
 }>();
 
 const localUrl = ref(getNoteContent(props.note));
-const localAlt = ref(getNoteMeta<string>(props.note, 'alt', ''));
-const localWidth = ref(getNoteMeta<number>(props.note, 'width'));
-const localHeight = ref(getNoteMeta<number>(props.note, 'height'));
+const localAlt = ref(getNoteMeta<string>(props.note, "alt", ""));
+const localWidth = ref(getNoteMeta<number>(props.note, "width"));
+const localHeight = ref(getNoteMeta<number>(props.note, "height"));
 
 watch(
   () => getNoteContent(props.note),
@@ -67,7 +65,7 @@ watch(
 );
 
 watch(
-  () => getNoteMeta<string>(props.note, 'alt'),
+  () => getNoteMeta<string>(props.note, "alt"),
   (newAlt) => {
     localAlt.value = newAlt || "";
   }
@@ -77,8 +75,8 @@ function updateAlt() {
   emit("update", {
     metadata: {
       ...props.note.metadata,
-      alt: localAlt.value
-    }
+      alt: localAlt.value,
+    },
   });
 }
 
@@ -97,7 +95,7 @@ async function handleFileUpload(event: Event) {
         blob: file,
         width: img.width,
         height: img.height,
-      }
+      },
     });
   };
   img.src = url;
@@ -118,7 +116,7 @@ function handleDrop(event: DragEvent) {
   const file = event.dataTransfer?.files[0];
   if (file) {
     const fakeEvent = {
-      target: { files: [file] }
+      target: { files: [file] },
     } as any;
     handleFileUpload(fakeEvent);
   }
@@ -136,7 +134,7 @@ function removeImage() {
       blob: undefined,
       width: undefined,
       height: undefined,
-    }
+    },
   });
 }
 </script>

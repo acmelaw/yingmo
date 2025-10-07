@@ -1,12 +1,16 @@
-/**
- * Chord Sheet Viewer - displays chord sheets with transposition
- */
+/** * Chord Sheet Viewer - displays chord sheets with transposition */
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { ChordSheetNote } from '@/types/note';
-import { transposeChordSheet, extractChords, isPlainTextFormat, bracketToPlainText, plainTextToBracket } from '../utils/chordTransposer';
-import { parseSlashCommand } from '@/core/SlashCommandParser';
-import Button from '@/components/ui/Button.vue';
+import { computed } from "vue";
+import type { ChordSheetNote } from "@/types/note";
+import {
+  transposeChordSheet,
+  extractChords,
+  isPlainTextFormat,
+  bracketToPlainText,
+  plainTextToBracket,
+} from "../utils/chordTransposer";
+import { parseSlashCommand } from "@/core/SlashCommandParser";
+import Button from "@/components/ui/Button.vue";
 
 interface Props {
   note: ChordSheetNote;
@@ -20,22 +24,30 @@ const emit = defineEmits<{
 // Parse slash command from content to extract parameters and actual content
 const parsedContent = computed(() => {
   const parsed = parseSlashCommand(props.note.content);
-  if (parsed && (parsed.command === '/chords' || parsed.command === '/chord' || parsed.command === '/guitar')) {
+  if (
+    parsed &&
+    (parsed.command === "/chords" ||
+      parsed.command === "/chord" ||
+      parsed.command === "/guitar")
+  ) {
     return {
       parameters: parsed.parameters,
-      content: parsed.content
+      content: parsed.content,
     };
   }
   // No slash command, use content as-is
   return {
     parameters: {},
-    content: props.note.content
+    content: props.note.content,
   };
 });
 
 // Transpose from slash command parameters or metadata (fallback)
-const transpose = computed(() =>
-  parsedContent.value.parameters.transpose ?? props.note.metadata?.transpose ?? 0
+const transpose = computed(
+  () =>
+    parsedContent.value.parameters.transpose ??
+    props.note.metadata?.transpose ??
+    0
 );
 
 // Other parameters from slash command
@@ -55,17 +67,19 @@ const isPlainText = computed(() => isPlainTextFormat(displayContent.value));
 
 // Type definitions for parsed lines
 type PlainTextLine = {
-  type: 'chords' | 'lyrics' | 'plain';
+  type: "chords" | "lyrics" | "plain";
   content: string;
 };
 
-type BracketLine = {
-  hasChords: true;
-  parts: Array<{ type: 'chord' | 'text'; content: string }>;
-} | {
-  hasChords: false;
-  content: string;
-};
+type BracketLine =
+  | {
+      hasChords: true;
+      parts: Array<{ type: "chord" | "text"; content: string }>;
+    }
+  | {
+      hasChords: false;
+      content: string;
+    };
 
 // Toggle between plain text and bracket format
 function toggleFormat() {
@@ -74,35 +88,40 @@ function toggleFormat() {
     ? plainTextToBracket(currentContent)
     : bracketToPlainText(currentContent);
 
-  emit('update', { content: newContent });
+  emit("update", { content: newContent });
 }
 
 // Parse content into lines with chords and lyrics
 const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
   const content = displayContent.value;
-  const lines = content.split('\n');
+  const lines = content.split("\n");
 
   // If plain text format, just return lines as-is for monospace display
   if (isPlainText.value) {
-    return lines.map(line => {
-      const isChordLine = !line.trim().startsWith('#') && /[A-G][#b]?/.test(line);
-      const isLyricLine = line.trim().startsWith('#');
+    return lines.map((line) => {
+      const isChordLine =
+        !line.trim().startsWith("#") && /[A-G][#b]?/.test(line);
+      const isLyricLine = line.trim().startsWith("#");
 
       return {
-        type: isChordLine ? 'chords' as const : isLyricLine ? 'lyrics' as const : 'plain' as const,
-        content: isLyricLine ? line.replace(/^#\s*/, '') : line
+        type: isChordLine
+          ? ("chords" as const)
+          : isLyricLine
+            ? ("lyrics" as const)
+            : ("plain" as const),
+        content: isLyricLine ? line.replace(/^#\s*/, "") : line,
       };
     });
   }
 
   // Bracket format - parse into chord/text parts
-  return lines.map(line => {
+  return lines.map((line) => {
     // Check if line contains chords
     const hasChords = /\[([A-G][#b]?[^\]]*)\]/.test(line);
 
     if (hasChords) {
       // Split line into chord and lyric parts
-      const parts: Array<{ type: 'chord' | 'text', content: string }> = [];
+      const parts: Array<{ type: "chord" | "text"; content: string }> = [];
       let lastIndex = 0;
 
       const regex = /\[([A-G][#b]?[^\]]*)\]/g;
@@ -112,15 +131,15 @@ const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
         // Add text before chord
         if (match.index > lastIndex) {
           parts.push({
-            type: 'text',
-            content: line.substring(lastIndex, match.index)
+            type: "text",
+            content: line.substring(lastIndex, match.index),
           });
         }
 
         // Add chord
         parts.push({
-          type: 'chord',
-          content: match[1]
+          type: "chord",
+          content: match[1],
         });
 
         lastIndex = regex.lastIndex;
@@ -129,8 +148,8 @@ const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
       // Add remaining text
       if (lastIndex < line.length) {
         parts.push({
-          type: 'text',
-          content: line.substring(lastIndex)
+          type: "text",
+          content: line.substring(lastIndex),
         });
       }
 
@@ -145,7 +164,10 @@ const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
 <template>
   <div class="chord-sheet-viewer">
     <!-- Song metadata from slash command parameters -->
-    <div v-if="title || artist" class="mb-4 pb-3 border-b-2 border-base-black dark:border-white">
+    <div
+      v-if="title || artist"
+      class="mb-4 pb-3 border-b-2 border-base-black dark:border-white"
+    >
       <h2 v-if="title" class="text-xl font-black mb-1">
         {{ title }}
       </h2>
@@ -156,20 +178,21 @@ const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
 
     <!-- Transpose indicator and format toggle -->
     <div class="mb-3 flex items-center gap-2 flex-wrap">
-      <div v-if="transpose !== 0" class="px-3 py-1.5 bg-accent-cyan border-2 border-base-black dark:border-white inline-block font-black text-xs rounded">
-        ⚡ Transposed {{ transpose > 0 ? '+' : '' }}{{ transpose }} semitones
-        <span v-if="key">
-          (Key: {{ key }})
-        </span>
+      <div
+        v-if="transpose !== 0"
+        class="px-3 py-1.5 bg-accent-cyan border-2 border-base-black dark:border-white inline-block font-black text-xs rounded"
+      >
+        ⚡ Transposed {{ transpose > 0 ? "+" : "" }}{{ transpose }} semitones
+        <span v-if="key"> (Key: {{ key }}) </span>
       </div>
 
       <Button
-        @click="toggleFormat"
         size="sm"
         variant="secondary"
         class="font-black text-xs"
+        @click="toggleFormat"
       >
-        {{ isPlainText ? '📝 Switch to Inline' : '📄 Switch to Tab Format' }}
+        {{ isPlainText ? "📝 Switch to Inline" : "📄 Switch to Tab Format" }}
       </Button>
     </div>
 
@@ -188,17 +211,18 @@ const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
     <div class="chord-sheet-content font-mono text-sm leading-relaxed">
       <!-- Plain text tab format -->
       <template v-if="isPlainText">
-        <div v-for="(line, index) in parsedLines as PlainTextLine[]" :key="index" class="mb-1">
+        <div
+          v-for="(line, index) in parsedLines as PlainTextLine[]"
+          :key="index"
+          class="mb-1"
+        >
           <div
             v-if="line.type === 'chords'"
             class="text-accent-blue font-black"
           >
             {{ line.content }}
           </div>
-          <div
-            v-else-if="line.type === 'lyrics'"
-            class="ml-0 opacity-90"
-          >
+          <div v-else-if="line.type === 'lyrics'" class="ml-0 opacity-90">
             {{ line.content }}
           </div>
           <div v-else>
@@ -209,7 +233,11 @@ const parsedLines = computed((): PlainTextLine[] | BracketLine[] => {
 
       <!-- Bracket format with inline chords -->
       <template v-else>
-        <div v-for="(line, index) in parsedLines as BracketLine[]" :key="index" class="mb-2">
+        <div
+          v-for="(line, index) in parsedLines as BracketLine[]"
+          :key="index"
+          class="mb-2"
+        >
           <div v-if="line.hasChords" class="chord-line">
             <span v-for="(part, pIndex) in line.parts" :key="pIndex">
               <span

@@ -1,40 +1,34 @@
-/**
- * Neo-Brutalist WhatsApp-Style Messenger Shell
- * Improved UX with proper centering and shadcn-style components
- *
- * USER FLOW:
- * 1. User lands on chat interface (centered, max-width for readability)
- * 2. Header shows app name + quick actions (settings, sync status)
- * 3. Search bar for filtering notes
- * 4. Messages scroll area (vertically centered when empty)
- * 5. Composer fixed at bottom (always accessible)
- * 6. Settings panel slides down from top
- * 7. Transform dialog overlays center screen
- */
+/** * Neo-Brutalist WhatsApp-Style Messenger Shell * Improved UX with proper
+centering and shadcn-style components * * USER FLOW: * 1. User lands on chat
+interface (centered, max-width for readability) * 2. Header shows app name +
+quick actions (settings, sync status) * 3. Search bar for filtering notes * 4.
+Messages scroll area (vertically centered when empty) * 5. Composer fixed at
+bottom (always accessible) * 6. Settings panel slides down from top * 7.
+Transform dialog overlays center screen */
 
 <script setup lang="ts">
-import { computed, nextTick, ref, onMounted, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useHead } from '@unhead/vue';
-import { storeToRefs } from 'pinia';
+import { computed, nextTick, ref, onMounted, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { useHead } from "@unhead/vue";
+import { storeToRefs } from "pinia";
 
-import QuickComposer from './QuickComposer.vue';
-import NoteCard from './NoteCard.vue';
-import NoteTypeTransformDialog from './NoteTypeTransformDialog.vue';
-import KeyboardShortcutsPanel from './KeyboardShortcutsPanel.vue';
-import { Button, Badge, Input, Select, Switch, Separator, Card } from './ui';
-import { useNotesStore } from '../stores/notes';
-import { useSettingsStore } from '../stores/settings';
-import { useDataExport } from '../composables/useDataExport';
-import { usePlatform } from '../composables/usePlatform';
-import { initializeModules } from '../core/initModules';
-import { moduleRegistry } from '../core/ModuleRegistry';
-import { parseSlashCommand } from '@/core/SlashCommandParser';
-import { useAuthStore } from '@/stores/auth';
-import type { NoteType, NoteColor } from '@/types/note';
+import QuickComposer from "./QuickComposer.vue";
+import NoteCard from "./NoteCard.vue";
+import NoteTypeTransformDialog from "./NoteTypeTransformDialog.vue";
+import KeyboardShortcutsPanel from "./KeyboardShortcutsPanel.vue";
+import { Button, Badge, Input, Select, Switch, Separator, Card } from "./ui";
+import { useNotesStore } from "../stores/notes";
+import { useSettingsStore } from "../stores/settings";
+import { useDataExport } from "../composables/useDataExport";
+import { usePlatform } from "../composables/usePlatform";
+import { initializeModules } from "../core/initModules";
+import { moduleRegistry } from "../core/ModuleRegistry";
+import { parseSlashCommand } from "@/core/SlashCommandParser";
+import { useAuthStore } from "@/stores/auth";
+import type { NoteType, NoteColor } from "@/types/note";
 
 const emit = defineEmits<{
-  (e: 'open-server-selector'): void;
+  (e: "open-server-selector"): void;
 }>();
 
 const { t } = useI18n();
@@ -45,7 +39,8 @@ const { exportToJSON, exportToText, importFromFile } = useDataExport();
 const { platformName } = usePlatform();
 
 const notes = computed(() => store.filteredNotes);
-const { hasRemoteSession, shouldSync, syncing, lastSyncedAt, syncError } = storeToRefs(store);
+const { hasRemoteSession, shouldSync, syncing, lastSyncedAt, syncError } =
+  storeToRefs(store);
 const { syncEnabled, currentServer } = storeToRefs(settingsStore);
 
 const containerRef = ref<HTMLElement | null>(null);
@@ -56,23 +51,28 @@ const showShortcutsPanel = ref(false);
 const modulesInitialized = ref(false);
 const showTransformDialog = ref(false);
 const transformingNoteId = ref<string | null>(null);
-const searchQuery = ref('');
+const searchQuery = ref("");
 
-const appTitle = computed(() => t('appName') || 'Notes');
+const appTitle = computed(() => t("appName") || "Notes");
 const empty = computed(() => notes.value.length === 0);
 
 const remoteStatus = computed(() => {
-  if (!syncEnabled.value) return { text: 'Offline', color: 'opacity-50' };
-  if (!hasRemoteSession.value) return { text: 'Not connected', color: 'opacity-50' };
-  if (syncing.value) return { text: 'Syncing...', color: 'text-accent-cyan' };
-  if (syncError.value) return { text: 'Error', color: 'text-semantic-error' };
-  if (lastSyncedAt.value) return { text: `Synced ${formatRelativeTime(lastSyncedAt.value)}`, color: 'text-semantic-success' };
-  return { text: 'Ready', color: 'text-semantic-success' };
+  if (!syncEnabled.value) return { text: "Offline", color: "opacity-50" };
+  if (!hasRemoteSession.value)
+    return { text: "Not connected", color: "opacity-50" };
+  if (syncing.value) return { text: "Syncing...", color: "text-accent-cyan" };
+  if (syncError.value) return { text: "Error", color: "text-semantic-error" };
+  if (lastSyncedAt.value)
+    return {
+      text: `Synced ${formatRelativeTime(lastSyncedAt.value)}`,
+      color: "text-semantic-success",
+    };
+  return { text: "Ready", color: "text-semantic-success" };
 });
 
 function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
-  if (diff < 5_000) return 'now';
+  if (diff < 5_000) return "now";
   const seconds = Math.floor(diff / 1_000);
   if (seconds < 60) return `${seconds}s ago`;
   const minutes = Math.floor(seconds / 60);
@@ -87,31 +87,36 @@ const availableNoteTypes = computed<NoteType[]>(() => {
   const modules = moduleRegistry.getAllModules();
   const types: NoteType[] = [];
   modules
-    .filter(m => m.capabilities?.canCreate)
-    .forEach(m => types.push(...(m.supportedTypes as NoteType[])));
+    .filter((m) => m.capabilities?.canCreate)
+    .forEach((m) => types.push(...(m.supportedTypes as NoteType[])));
   modules
-    .filter(m => m.capabilities?.canTransform && m.supportedTypes.length === 0)
-    .forEach(m => types.push(m.id as NoteType));
+    .filter(
+      (m) => m.capabilities?.canTransform && m.supportedTypes.length === 0
+    )
+    .forEach((m) => types.push(m.id as NoteType));
   return types;
 });
 
 const themeOptions = computed(() => [
-  { value: 'light', label: '☀️ Light' },
-  { value: 'dark', label: '🌙 Dark' },
-  { value: 'auto', label: '🔄 Auto' },
+  { value: "light", label: "☀️ Light" },
+  { value: "dark", label: "🌙 Dark" },
+  { value: "auto", label: "🔄 Auto" },
 ]);
 
 const fontSizeOptions = computed(() => [
-  { value: 'small', label: 'Small' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'large', label: 'Large' },
+  { value: "small", label: "Small" },
+  { value: "medium", label: "Medium" },
+  { value: "large", label: "Large" },
 ]);
 
 useHead(() => ({
   title: appTitle.value,
   meta: [
-    { name: 'theme-color', content: settingsStore.isDarkMode ? '#0B141A' : '#ECE5DD' }
-  ]
+    {
+      name: "theme-color",
+      content: settingsStore.isDarkMode ? "#0B141A" : "#ECE5DD",
+    },
+  ],
 }));
 
 onMounted(async () => {
@@ -119,12 +124,12 @@ onMounted(async () => {
   modulesInitialized.value = true;
 
   // Global keyboard shortcuts
-  document.addEventListener('keydown', handleGlobalKeydown);
+  document.addEventListener("keydown", handleGlobalKeydown);
 });
 
 function handleGlobalKeydown(e: KeyboardEvent) {
   // Cmd+/ or Ctrl+/ - Show keyboard shortcuts panel
-  if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+  if ((e.metaKey || e.ctrlKey) && e.key === "/") {
     e.preventDefault();
     showShortcutsPanel.value = !showShortcutsPanel.value;
   }
@@ -143,14 +148,21 @@ watch(searchQuery, (newQuery) => {
 
 function scrollToLatest() {
   if (containerRef.value) {
-    containerRef.value.scrollTo({ top: containerRef.value.scrollHeight, behavior: 'smooth' });
+    containerRef.value.scrollTo({
+      top: containerRef.value.scrollHeight,
+      behavior: "smooth",
+    });
   }
 }
 
-async function handleAdd(text: string, type: NoteType = 'text', color?: NoteColor) {
-  console.log('[handleAdd] Called with:', { text, type, color });
+async function handleAdd(
+  text: string,
+  type: NoteType = "text",
+  color?: NoteColor
+) {
+  console.log("[handleAdd] Called with:", { text, type, color });
   if (!text.trim()) {
-    console.warn('[handleAdd] Empty text, aborting');
+    console.warn("[handleAdd] Empty text, aborting");
     return;
   }
 
@@ -158,15 +170,17 @@ async function handleAdd(text: string, type: NoteType = 'text', color?: NoteColo
     // Parse slash command to detect preferred view type
     const parsed = parseSlashCommand(text);
 
-    let noteData: Record<string, any> = {};
+    const noteData: Record<string, any> = {};
     let preferredViewType = type; // Default to passed type (from button)
 
     if (parsed) {
-      console.log('[handleAdd] Detected slash command:', parsed);
+      console.log("[handleAdd] Detected slash command:", parsed);
 
       // Resolve preferred view type from slash command
       // Note: parseSlashCommand returns command WITHOUT /, but registry stores WITH /
-      const commandWithSlash = parsed.command.startsWith('/') ? parsed.command : `/${parsed.command}`;
+      const commandWithSlash = parsed.command.startsWith("/")
+        ? parsed.command
+        : `/${parsed.command}`;
       const slashCmd = moduleRegistry.getSlashCommand(commandWithSlash);
       if (slashCmd) {
         preferredViewType = slashCmd.module.supportedTypes[0]; // Slash command suggests view type
@@ -187,12 +201,12 @@ async function handleAdd(text: string, type: NoteType = 'text', color?: NoteColo
 
     // Ensure the new note is visible even if a search filter was active
     if (store.searchQuery) {
-      store.searchQuery = '';
-      searchQuery.value = '';
+      store.searchQuery = "";
+      searchQuery.value = "";
     }
     nextTick(() => scrollToLatest());
   } catch (error) {
-    console.error('[handleAdd] Error:', error);
+    console.error("[handleAdd] Error:", error);
   }
 }
 
@@ -215,16 +229,16 @@ function handleTransform(noteId: string) {
 
 async function transformNote(toType: NoteType | string) {
   if (!transformingNoteId.value) return;
-  const note = store.notes.find(n => n.id === transformingNoteId.value);
+  const note = store.notes.find((n) => n.id === transformingNoteId.value);
   if (!note) return;
   try {
     await store.update(transformingNoteId.value, {
-      viewAs: toType === note.type ? undefined : toType as any
+      viewAs: toType === note.type ? undefined : (toType as any),
     });
     showTransformDialog.value = false;
     transformingNoteId.value = null;
   } catch (error) {
-    console.error('Failed to transform note:', error);
+    console.error("Failed to transform note:", error);
   }
 }
 
@@ -233,12 +247,12 @@ async function manualSync() {
   try {
     await store.syncFromServer();
   } catch (error) {
-    console.error('Manual sync failed:', error);
+    console.error("Manual sync failed:", error);
   }
 }
 
 function openServerSelector() {
-  emit('open-server-selector');
+  emit("open-server-selector");
 }
 
 async function handleExportJSON() {
@@ -252,17 +266,22 @@ async function handleExportText() {
 async function handleImport() {
   const success = await importFromFile();
   if (success) {
-    alert('Import successful!');
+    alert("Import successful!");
   }
 }
 </script>
 
 <template>
   <!-- Loading Screen (Centered) -->
-  <div v-if="!modulesInitialized" class="flex items-center justify-center min-h-screen bg-bg-primary dark:bg-dark-bg-primary">
+  <div
+    v-if="!modulesInitialized"
+    class="flex items-center justify-center min-h-screen bg-bg-primary dark:bg-dark-bg-primary"
+  >
     <div class="text-center space-y-4">
       <div class="text-6xl animate-pulse">🔄</div>
-      <div class="text-lg sm:text-xl font-black uppercase tracking-wider">Loading modules...</div>
+      <div class="text-lg sm:text-xl font-black uppercase tracking-wider">
+        Loading modules...
+      </div>
     </div>
   </div>
 
@@ -270,13 +289,21 @@ async function handleImport() {
   <div v-else class="chat-container">
     <!-- Header (WhatsApp-style, properly centered content) -->
     <header class="chat-header">
-      <div class="w-full max-w-5xl mx-auto flex items-center justify-between gap-3">
+      <div
+        class="w-full max-w-5xl mx-auto flex items-center justify-between gap-3"
+      >
         <!-- Left: App Title + Stats -->
         <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-          <h1 class="text-lg sm:text-xl md:text-2xl font-black uppercase tracking-wider truncate">
+          <h1
+            class="text-lg sm:text-xl md:text-2xl font-black uppercase tracking-wider truncate"
+          >
             {{ appTitle }}
           </h1>
-          <Badge v-if="notes.length > 0" variant="default" class="hidden sm:inline-flex">
+          <Badge
+            v-if="notes.length > 0"
+            variant="default"
+            class="hidden sm:inline-flex"
+          >
             {{ notes.length }}
           </Badge>
         </div>
@@ -300,10 +327,10 @@ async function handleImport() {
           <Button
             variant="ghost"
             size="icon"
-            @click="showSettings = !showSettings"
             :title="showSettings ? 'Close settings' : 'Open settings'"
+            @click="showSettings = !showSettings"
           >
-            {{ showSettings ? '✕' : '⚙️' }}
+            {{ showSettings ? "✕" : "⚙️" }}
           </Button>
         </div>
       </div>
@@ -328,11 +355,14 @@ async function handleImport() {
             <div class="p-4 sm:p-6 space-y-4">
               <div class="flex items-center justify-between gap-4">
                 <div class="flex-1 min-w-0">
-                  <h3 class="font-black text-sm sm:text-base uppercase flex items-center gap-2">
+                  <h3
+                    class="font-black text-sm sm:text-base uppercase flex items-center gap-2"
+                  >
                     🌐 Server Sync
                   </h3>
                   <p class="text-2xs sm:text-xs mt-1 opacity-75 font-bold">
-                    {{ remoteStatus.text }}{{ currentServer ? ` • ${currentServer}` : '' }}
+                    {{ remoteStatus.text
+                    }}{{ currentServer ? ` • ${currentServer}` : "" }}
                   </p>
                 </div>
                 <Switch v-model="settingsStore.syncEnabled" />
@@ -341,8 +371,12 @@ async function handleImport() {
               <Separator />
 
               <div class="flex flex-wrap gap-2">
-                <Button variant="secondary" size="sm" @click="openServerSelector">
-                  {{ currentServer ? '📡 Change Server' : '🔌 Connect Server' }}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  @click="openServerSelector"
+                >
+                  {{ currentServer ? "📡 Change Server" : "🔌 Connect Server" }}
                 </Button>
                 <Button
                   v-if="shouldSync"
@@ -351,11 +385,14 @@ async function handleImport() {
                   :disabled="syncing"
                   @click="manualSync"
                 >
-                  {{ syncing ? '⏳ Syncing...' : '🔄 Sync Now' }}
+                  {{ syncing ? "⏳ Syncing..." : "🔄 Sync Now" }}
                 </Button>
               </div>
 
-              <p v-if="authStore.state.email" class="text-2xs sm:text-xs opacity-60 font-bold truncate">
+              <p
+                v-if="authStore.state.email"
+                class="text-2xs sm:text-xs opacity-60 font-bold truncate"
+              >
                 Logged in: {{ authStore.state.email }}
               </p>
             </div>
@@ -364,16 +401,30 @@ async function handleImport() {
           <!-- Appearance Section -->
           <Card>
             <div class="p-4 sm:p-6 space-y-4">
-              <h3 class="font-black text-sm sm:text-base uppercase">🎨 Appearance</h3>
+              <h3 class="font-black text-sm sm:text-base uppercase">
+                🎨 Appearance
+              </h3>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div class="space-y-2">
-                  <label class="block text-xs sm:text-sm font-black uppercase opacity-75">Theme</label>
-                  <Select v-model="settingsStore.theme" :options="themeOptions" />
+                  <label
+                    class="block text-xs sm:text-sm font-black uppercase opacity-75"
+                    >Theme</label
+                  >
+                  <Select
+                    v-model="settingsStore.theme"
+                    :options="themeOptions"
+                  />
                 </div>
                 <div class="space-y-2">
-                  <label class="block text-xs sm:text-sm font-black uppercase opacity-75">Font Size</label>
-                  <Select v-model="settingsStore.fontSize" :options="fontSizeOptions" />
+                  <label
+                    class="block text-xs sm:text-sm font-black uppercase opacity-75"
+                    >Font Size</label
+                  >
+                  <Select
+                    v-model="settingsStore.fontSize"
+                    :options="fontSizeOptions"
+                  />
                 </div>
               </div>
             </div>
@@ -382,9 +433,15 @@ async function handleImport() {
           <!-- Module Types -->
           <Card>
             <div class="p-4 sm:p-6 space-y-3">
-              <h3 class="font-black text-sm sm:text-base uppercase">📦 Available Types ({{ availableNoteTypes.length }})</h3>
+              <h3 class="font-black text-sm sm:text-base uppercase">
+                📦 Available Types ({{ availableNoteTypes.length }})
+              </h3>
               <div class="flex flex-wrap gap-1.5 sm:gap-2">
-                <Badge v-for="type in availableNoteTypes" :key="type" variant="type">
+                <Badge
+                  v-for="type in availableNoteTypes"
+                  :key="type"
+                  variant="type"
+                >
                   {{ type }}
                 </Badge>
               </div>
@@ -394,7 +451,9 @@ async function handleImport() {
           <!-- Data Management -->
           <Card>
             <div class="p-4 sm:p-6 space-y-3">
-              <h3 class="font-black text-sm sm:text-base uppercase">💾 Data Management</h3>
+              <h3 class="font-black text-sm sm:text-base uppercase">
+                💾 Data Management
+              </h3>
               <div class="flex flex-wrap gap-2">
                 <Button variant="secondary" size="sm" @click="handleExportJSON">
                   📥 Export JSON
@@ -407,7 +466,8 @@ async function handleImport() {
                 </Button>
               </div>
               <p class="text-2xs sm:text-xs opacity-60 font-bold">
-                Total: {{ store.totalNotes }} notes • Active: {{ store.activeNotes }}
+                Total: {{ store.totalNotes }} notes • Active:
+                {{ store.activeNotes }}
               </p>
             </div>
           </Card>
@@ -416,7 +476,9 @@ async function handleImport() {
     </Transition>
 
     <!-- Search Bar (Centered content) -->
-    <div class="bg-bg-secondary dark:bg-dark-bg-secondary border-b-2 border-base-black dark:border-white">
+    <div
+      class="bg-bg-secondary dark:bg-dark-bg-secondary border-b-2 border-base-black dark:border-white"
+    >
       <div class="w-full max-w-5xl mx-auto p-2 sm:p-3">
         <Input
           v-model="searchQuery"
@@ -428,13 +490,18 @@ async function handleImport() {
     </div>
 
     <!-- Messages Area (Centered, properly aligned when empty) -->
-    <main ref="containerRef" class="flex-1 overflow-y-auto bg-bg-primary dark:bg-dark-bg-primary">
+    <main
+      ref="containerRef"
+      class="flex-1 overflow-y-auto bg-bg-primary dark:bg-dark-bg-primary"
+    >
       <div class="w-full max-w-5xl mx-auto p-3 sm:p-4 md:p-6">
         <!-- Empty State (Vertically & Horizontally Centered) -->
         <div v-if="empty" class="flex items-center justify-center min-h-[50vh]">
           <div class="text-center space-y-3 sm:space-y-4 p-6">
             <div class="text-5xl sm:text-6xl">💬</div>
-            <h2 class="text-base sm:text-lg md:text-xl font-black uppercase">{{ t('empty') || 'No notes yet' }}</h2>
+            <h2 class="text-base sm:text-lg md:text-xl font-black uppercase">
+              {{ t("empty") || "No notes yet" }}
+            </h2>
             <p class="text-xs sm:text-sm opacity-75 max-w-md mx-auto">
               Start typing in the message bar below to create your first note!
             </p>
@@ -466,7 +533,10 @@ async function handleImport() {
     </main>
 
     <!-- Composer (Fixed bottom, centered content) -->
-    <div v-if="composerOpen" class="shrink-0 border-t-2 sm:border-t-3 border-base-black dark:border-white bg-bg-secondary dark:bg-dark-bg-secondary">
+    <div
+      v-if="composerOpen"
+      class="shrink-0 border-t-2 sm:border-t-3 border-base-black dark:border-white bg-bg-secondary dark:bg-dark-bg-secondary"
+    >
       <div class="w-full max-w-5xl mx-auto">
         <QuickComposer
           :available-types="availableNoteTypes"
@@ -478,10 +548,15 @@ async function handleImport() {
     <!-- Transform Dialog (Centered overlay) -->
     <NoteTypeTransformDialog
       v-if="showTransformDialog && transformingNoteId"
-      :current-type="store.notes.find(n => n.id === transformingNoteId)?.type || 'text'"
+      :current-type="
+        store.notes.find((n) => n.id === transformingNoteId)?.type || 'text'
+      "
       :available-types="availableNoteTypes"
       @transform="transformNote"
-      @close="showTransformDialog = false; transformingNoteId = null"
+      @close="
+        showTransformDialog = false;
+        transformingNoteId = null;
+      "
     />
 
     <!-- Keyboard Shortcuts Panel -->

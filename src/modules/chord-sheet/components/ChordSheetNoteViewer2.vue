@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { detectFormat, transposeSheet, extractChords, extractMetadata, convertFormat, type ChordFormat } from '../formats';
-import type { ChordSheetNote } from '@/types/note';
+import { computed } from "vue";
+import {
+  detectFormat,
+  transposeSheet,
+  extractChords,
+  extractMetadata,
+  convertFormat,
+  type ChordFormat,
+} from "../formats";
+import type { ChordSheetNote } from "@/types/note";
 
 const props = defineProps<{
   note: ChordSheetNote;
@@ -26,19 +33,22 @@ const chordPalette = computed(() => extractChords(displayContent.value));
 
 // Cycle through formats
 function cycleFormat() {
-  const formats: ChordFormat[] = ['inline', 'tab', 'chordpro'];
+  const formats: ChordFormat[] = ["inline", "tab", "chordpro"];
   const currentIndex = formats.indexOf(currentFormat.value);
   const nextFormat = formats[(currentIndex + 1) % formats.length];
   const converted = convertFormat(props.note.content, nextFormat);
-  emit('update', { content: converted });
+  emit("update", { content: converted });
 }
 
 // Format labels
 const formatLabel = computed(() => {
   switch (currentFormat.value) {
-    case 'inline': return '📝 Inline';
-    case 'tab': return '📄 Tab';
-    case 'chordpro': return '🎸 ChordPro';
+    case "inline":
+      return "📝 Inline";
+    case "tab":
+      return "📄 Tab";
+    case "chordpro":
+      return "🎸 ChordPro";
   }
 });
 
@@ -47,54 +57,64 @@ const lines = computed((): any[] => {
   const content = displayContent.value;
   const format = currentFormat.value;
 
-  if (format === 'tab') {
+  if (format === "tab") {
     // Tab format: highlight chord lines
-    return content.split('\n').map(line => ({
-      type: line.includes('|') ? 'chords' : line.startsWith('#') ? 'lyrics' : 'plain',
-      content: line.replace(/^#\s*/, '')
+    return content.split("\n").map((line) => ({
+      type: line.includes("|")
+        ? "chords"
+        : line.startsWith("#")
+          ? "lyrics"
+          : "plain",
+      content: line.replace(/^#\s*/, ""),
     }));
-  } else if (format === 'chordpro') {
+  } else if (format === "chordpro") {
     // ChordPro: parse [C]lyrics
-    return content.split('\n').filter(l => !l.match(/^\{[^}]+\}/)).map(line => {
-      if (/\[([A-G][#b]?[^\]]*)\]/.test(line)) {
-        const parts: Array<{ type: 'chord' | 'text', content: string }> = [];
-        let lastIndex = 0;
+    return content
+      .split("\n")
+      .filter((l) => !l.match(/^\{[^}]+\}/))
+      .map((line) => {
+        if (/\[([A-G][#b]?[^\]]*)\]/.test(line)) {
+          const parts: Array<{ type: "chord" | "text"; content: string }> = [];
+          let lastIndex = 0;
 
-        line.replace(/\[([A-G][#b]?[^\]]*)\]/g, (match, chord, index) => {
-          if (index > lastIndex) {
-            parts.push({ type: 'text', content: line.slice(lastIndex, index) });
+          line.replace(/\[([A-G][#b]?[^\]]*)\]/g, (match, chord, index) => {
+            if (index > lastIndex) {
+              parts.push({
+                type: "text",
+                content: line.slice(lastIndex, index),
+              });
+            }
+            parts.push({ type: "chord", content: chord });
+            lastIndex = index + match.length;
+            return match;
+          });
+
+          if (lastIndex < line.length) {
+            parts.push({ type: "text", content: line.slice(lastIndex) });
           }
-          parts.push({ type: 'chord', content: chord });
-          lastIndex = index + match.length;
-          return match;
-        });
 
-        if (lastIndex < line.length) {
-          parts.push({ type: 'text', content: line.slice(lastIndex) });
+          return { hasChords: true, parts };
         }
-
-        return { hasChords: true, parts };
-      }
-      return { hasChords: false, content: line };
-    });
+        return { hasChords: false, content: line };
+      });
   } else {
     // Inline format
-    return content.split('\n').map(line => {
+    return content.split("\n").map((line) => {
       if (/\[([A-G][#b]?[^\]]*)\]/.test(line)) {
-        const parts: Array<{ type: 'chord' | 'text', content: string }> = [];
+        const parts: Array<{ type: "chord" | "text"; content: string }> = [];
         let lastIndex = 0;
 
         line.replace(/\[([A-G][#b]?[^\]]*)\]/g, (match, chord, index) => {
           if (index > lastIndex) {
-            parts.push({ type: 'text', content: line.slice(lastIndex, index) });
+            parts.push({ type: "text", content: line.slice(lastIndex, index) });
           }
-          parts.push({ type: 'chord', content: chord });
+          parts.push({ type: "chord", content: chord });
           lastIndex = index + match.length;
           return match;
         });
 
         if (lastIndex < line.length) {
-          parts.push({ type: 'text', content: line.slice(lastIndex) });
+          parts.push({ type: "text", content: line.slice(lastIndex) });
         }
 
         return { hasChords: true, parts };
@@ -109,12 +129,15 @@ const lines = computed((): any[] => {
   <div class="chord-sheet-viewer">
     <!-- Format toggle and metadata -->
     <div class="flex items-center justify-between mb-4">
-      <Button @click="cycleFormat" variant="outline" size="sm">
+      <Button variant="outline" size="sm" @click="cycleFormat">
         {{ formatLabel }}
       </Button>
 
       <!-- Metadata display -->
-      <div v-if="Object.keys(metadata).length > 0" class="text-sm text-gray-600 dark:text-gray-400">
+      <div
+        v-if="Object.keys(metadata).length > 0"
+        class="text-sm text-gray-600 dark:text-gray-400"
+      >
         <span v-if="metadata.title">{{ metadata.title }}</span>
         <span v-if="metadata.artist"> - {{ metadata.artist }}</span>
         <span v-if="metadata.key"> ({{ metadata.key }})</span>
@@ -135,10 +158,16 @@ const lines = computed((): any[] => {
     <!-- Content display -->
     <div v-if="currentFormat === 'tab'" class="font-mono text-sm space-y-1">
       <div v-for="(line, i) in lines" :key="i">
-        <div v-if="line.type === 'chords'" class="text-blue-600 dark:text-blue-400 font-bold">
+        <div
+          v-if="line.type === 'chords'"
+          class="text-blue-600 dark:text-blue-400 font-bold"
+        >
           {{ line.content }}
         </div>
-        <div v-else-if="line.type === 'lyrics'" class="text-gray-800 dark:text-gray-200">
+        <div
+          v-else-if="line.type === 'lyrics'"
+          class="text-gray-800 dark:text-gray-200"
+        >
           {{ line.content }}
         </div>
         <div v-else class="text-gray-500 dark:text-gray-500">
@@ -152,8 +181,10 @@ const lines = computed((): any[] => {
       <div v-for="(line, i) in lines" :key="i" class="leading-relaxed">
         <template v-if="line.hasChords">
           <span v-for="(part, j) in line.parts" :key="j">
-            <span v-if="part.type === 'chord'"
-                  class="inline-block px-1.5 py-0.5 text-xs font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded mx-0.5">
+            <span
+              v-if="part.type === 'chord'"
+              class="inline-block px-1.5 py-0.5 text-xs font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded mx-0.5"
+            >
               {{ part.content }}
             </span>
             <span v-else>{{ part.content }}</span>

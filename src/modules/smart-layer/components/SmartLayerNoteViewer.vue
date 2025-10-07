@@ -12,16 +12,24 @@ defineEmits<{
 }>();
 
 // Unified: metadata contains the smart layer data
-const source = computed(() => getNoteMeta(props.note, 'source', { type: 'unknown', data: '' }));
-const layers = computed(() => getNoteMeta<any[]>(props.note, 'layers', []));
-const activeLayerId = computed(() => getNoteMeta<string>(props.note, 'activeLayerId'));
+const source = computed(() =>
+  getNoteMeta(props.note, "source", { type: "unknown", data: "" })
+);
+const layers = computed(() => getNoteMeta<any[]>(props.note, "layers", []));
+const activeLayerId = computed(() =>
+  getNoteMeta<string>(props.note, "activeLayerId")
+);
 
-const sourceType = computed(() => source.value?.type || 'unknown');
-const sourceData = computed(() => source.value?.data || getNoteContent(props.note));
+const sourceType = computed(() => source.value?.type || "unknown");
+const sourceData = computed(
+  () => source.value?.data || getNoteContent(props.note)
+);
 
 const activeLayer = computed(() => {
   const layerList = layers.value || [];
-  return layerList.find((l: any) => l.id === activeLayerId.value) || layerList[0];
+  return (
+    layerList.find((l: any) => l.id === activeLayerId.value) || layerList[0]
+  );
 });
 </script>
 
@@ -50,9 +58,9 @@ const activeLayer = computed(() => {
       <button
         v-for="layer in layers"
         :key="layer.id"
-        @click="$emit('setActiveLayer', layer.id)"
         :class="{ active: layer.id === activeLayerId }"
         class="layer-nav-btn"
+        @click="$emit('setActiveLayer', layer.id)"
       >
         {{ layer.name }}
       </button>

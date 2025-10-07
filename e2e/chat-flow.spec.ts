@@ -225,7 +225,9 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
     await expect(page.getByText("cherry cake")).toBeVisible();
   });
 
-  test("creating a note clears active search filter so it appears immediately", async ({ page }) => {
+  test("creating a note clears active search filter so it appears immediately", async ({
+    page,
+  }) => {
     const input = page.getByPlaceholder("Write your note...");
     const sendButton = page.getByTitle("Send message");
 

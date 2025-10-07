@@ -1,11 +1,9 @@
-/**
- * View As Selector - Inline type switcher for notes
- * Replaces transform dialog with immediate view switching
- */
+/** * View As Selector - Inline type switcher for notes * Replaces transform
+dialog with immediate view switching */
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { moduleRegistry } from '@/core/ModuleRegistry';
-import type { NoteType } from '@/types/note';
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { moduleRegistry } from "@/core/ModuleRegistry";
+import type { NoteType } from "@/types/note";
 
 const props = defineProps<{
   currentType: NoteType;
@@ -13,7 +11,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'change', type: NoteType): void;
+  (e: "change", type: NoteType): void;
 }>();
 
 const showMenu = ref(false);
@@ -23,32 +21,37 @@ const displayType = computed(() => props.viewAs || props.currentType);
 
 // Get all available view types
 const availableTypes = computed(() => {
-  const types = Array.from(new Set([
-    'text',
-    'markdown',
-    'code',
-    ...moduleRegistry.getAllModules().map(m => m.supportedTypes).flat()
-  ])) as NoteType[];
+  const types = Array.from(
+    new Set([
+      "text",
+      "markdown",
+      "code",
+      ...moduleRegistry
+        .getAllModules()
+        .map((m) => m.supportedTypes)
+        .flat(),
+    ])
+  ) as NoteType[];
   return types;
 });
 
 function getTypeIcon(type: NoteType): string {
   const icons: Record<string, string> = {
-    text: '📝',
-    markdown: '📄',
-    code: '💻',
-    'rich-text': '✏️',
-    image: '🖼️',
-    'smart-layer': '🤖',
-    todo: '✅',
-    'chord-sheet': '🎸',
-    'caesar-cipher': '🔐',
+    text: "📝",
+    markdown: "📄",
+    code: "💻",
+    "rich-text": "✏️",
+    image: "🖼️",
+    "smart-layer": "🤖",
+    todo: "✅",
+    "chord-sheet": "🎸",
+    "caesar-cipher": "🔐",
   };
-  return icons[type] || '📋';
+  return icons[type] || "📋";
 }
 
 function selectType(type: NoteType) {
-  emit('change', type);
+  emit("change", type);
   showMenu.value = false;
 }
 
@@ -60,13 +63,12 @@ function handleClickOutside(event: MouseEvent) {
 }
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
+  document.addEventListener("click", handleClickOutside);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener("click", handleClickOutside);
 });
-
 </script>
 
 <template>
@@ -75,8 +77,8 @@ onUnmounted(() => {
     <button
       type="button"
       class="flex items-center gap-1 px-2 py-0.5 text-2xs font-black uppercase bg-bg-secondary dark:bg-dark-bg-secondary border-2 border-base-black dark:border-white rounded cursor-pointer hover:bg-accent-yellow transition-all"
-      @click="showMenu = !showMenu"
       :title="`View as: ${displayType}. Click to change view.`"
+      @click="showMenu = !showMenu"
     >
       <span>{{ getTypeIcon(displayType) }}</span>
       <span>{{ displayType }}</span>

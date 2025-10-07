@@ -25,8 +25,10 @@ const props = defineProps<{
 
 // Unified: get content and metadata
 const codeContent = computed(() => getNoteContent(props.note));
-const language = computed(() => getNoteMeta<string>(props.note, 'language', 'text'));
-const filename = computed(() => getNoteMeta<string>(props.note, 'filename'));
+const language = computed(() =>
+  getNoteMeta<string>(props.note, "language", "text")
+);
+const filename = computed(() => getNoteMeta<string>(props.note, "filename"));
 
 const lineCount = computed(() => {
   return codeContent.value.split("\n").length;
@@ -70,8 +72,9 @@ const lineCount = computed(() => {
   border: 2px solid #000;
   background: #fafafa;
   overflow-x: auto;
-  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
-    "Courier New", monospace;
+  font-family:
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New",
+    monospace;
   font-size: 14px;
   line-height: 1.5;
   margin: 0;

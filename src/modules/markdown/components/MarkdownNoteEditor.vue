@@ -3,22 +3,22 @@
     <div class="editor-tabs">
       <button
         :class="{ active: mode === 'edit' }"
-        @click="mode = 'edit'"
         class="tab-btn"
+        @click="mode = 'edit'"
       >
         Edit
       </button>
       <button
         :class="{ active: mode === 'preview' }"
-        @click="mode = 'preview'"
         class="tab-btn"
+        @click="mode = 'preview'"
       >
         Preview
       </button>
       <button
         :class="{ active: mode === 'split' }"
-        @click="mode = 'split'"
         class="tab-btn"
+        @click="mode = 'split'"
       >
         Split
       </button>
@@ -28,10 +28,10 @@
       <textarea
         v-if="mode === 'edit' || mode === 'split'"
         v-model="localMarkdown"
-        @input="handleInput"
-        @keydown="emit('keydown', $event)"
         class="markdown-input"
         placeholder="Write your markdown here..."
+        @input="handleInput"
+        @keydown="emit('keydown', $event)"
       ></textarea>
 
       <div
@@ -57,11 +57,13 @@ const emit = defineEmits<{
 }>();
 
 const mode = ref<"edit" | "preview" | "split">("split");
-const localMarkdown = ref<string>(props.note.markdown ?? props.note.content ?? '');
+const localMarkdown = ref<string>(
+  props.note.markdown ?? props.note.content ?? ""
+);
 
 // Simple markdown to HTML converter (you can replace with a library like marked.js)
 const renderedHtml = computed(() => {
-  return simpleMarkdownToHtml(localMarkdown.value || '');
+  return simpleMarkdownToHtml(localMarkdown.value || "");
 });
 
 function handleInput() {
@@ -76,7 +78,7 @@ function handleInput() {
 watch(
   () => props.note.markdown ?? props.note.content,
   (newValue) => {
-    const next = newValue ?? '';
+    const next = newValue ?? "";
     if (next !== localMarkdown.value) {
       localMarkdown.value = next;
     }
@@ -85,7 +87,7 @@ watch(
 
 // Simple markdown parser (basic implementation)
 function simpleMarkdownToHtml(markdown: string): string {
-  if (!markdown) return '';
+  if (!markdown) return "";
 
   let html = markdown;
 
@@ -177,8 +179,9 @@ function simpleMarkdownToHtml(markdown: string): string {
   width: 100%;
   padding: 12px;
   border: 2px solid #000;
-  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas,
-    "Courier New", monospace;
+  font-family:
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New",
+    monospace;
   font-size: 14px;
   line-height: 1.6;
   resize: vertical;

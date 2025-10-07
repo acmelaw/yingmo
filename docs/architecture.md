@@ -71,6 +71,7 @@ Yingmo is architected for **massive parallel development** with these core princ
 **Location:** `src/core/ModuleRegistry.ts`
 
 **Responsibilities:**
+
 - Register/unregister note type modules
 - Provide `ModuleContext` with access to stores and services
 - Manage component registry
@@ -78,6 +79,7 @@ Yingmo is architected for **massive parallel development** with these core princ
 - Service locator pattern for dependency injection
 
 **Key Methods:**
+
 ```typescript
 register(module: NoteModule)           // Add new module
 getModule(id: string)                  // Retrieve module
@@ -92,6 +94,7 @@ getService<T>(name)                    // Retrieve service
 **Location:** `src/modules/*`
 
 **Structure per module:**
+
 ```
 my-module/
 ├── index.ts              # Module definition
@@ -105,6 +108,7 @@ my-module/
 **Registration:** Modules self-register in `src/core/initModules.ts`
 
 **Examples:**
+
 - `text` - Plain text notes
 - `markdown` - Markdown with preview
 - `code` - Code with syntax highlighting
@@ -123,18 +127,21 @@ my-module/
 **Modules:**
 
 **utils.ts** (Pure Functions)
+
 - `createId()` - Generate unique IDs
 - `clone<T>(value)` - Deep cloning
 - `ensureFutureTimestamp()` - Monotonic timestamps
 - `normalizeCategory()` - Category normalization
 
 **tags.ts** (Pure Functions)
+
 - `extractHashtags(text)` - Unicode-aware tag extraction
 - `mergeTags()` - Combine extracted and explicit tags
 - `filterByTags()` - Filter notes by tags
 - `cleanTag()` - Normalize tag format
 
 **sync.ts** (Class with DI)
+
 - `SyncManager` class
 - Offline queue management
 - Server synchronization
@@ -142,12 +149,14 @@ my-module/
 - Dependency-injected API client
 
 **categories.ts** (Class with State)
+
 - `CategoryManager` class
 - Reference-counted category tracking
 - O(1) lookups via Map
 - Automatic cleanup
 
 **storage.ts** (Abstraction)
+
 - `createStorageRef<T>()` - Factory for storage
 - Auto-detects test mode (in-memory) vs prod (localStorage)
 - Type-safe storage keys
@@ -161,11 +170,13 @@ my-module/
 **Location:** `src/services/*`
 
 **Services:**
+
 - `NoteService` - CRUD operations abstraction
 - `apiClient` - HTTP client for sync server
 - Custom services registered via `moduleRegistry.registerService()`
 
 **Pattern:**
+
 ```typescript
 // Register
 moduleRegistry.registerService("myService", new MyService());
@@ -181,6 +192,7 @@ const myService = moduleRegistry.getService<MyService>("myService");
 **Location:** `src/types/*`
 
 **Files:**
+
 - `module.ts` - Module system types (`NoteModule`, `ModuleContext`, `SlashCommand`)
 - `note.ts` - Note types (`Note`, `NoteType`, type-specific interfaces)
 
@@ -193,27 +205,27 @@ const myService = moduleRegistry.getService<MyService>("myService");
 ```
 1. User Input
    └─> Slash command (/markdown, /code, etc.)
-   
+
 2. Module Registry
    └─> Matches command to module
    └─> Retrieves module's handler
-   
+
 3. Note Type Handler
    └─> Creates note instance (with metadata, timestamps, ID)
-   
+
 4. Store Module (tags.ts)
    └─> Extracts hashtags if enabled (pure function)
-   
+
 5. Store Module (categories.ts)
    └─> Updates category index (reference counting)
-   
+
 6. Store Module (storage.ts)
    └─> Persists to localStorage/IndexedDB
-   
+
 7. Store Module (sync.ts) [if online]
    └─> Adds to sync queue
    └─> Sends to server via injected apiClient
-   
+
 8. UI Update
    └─> Component receives note via props
    └─> Renders using module's viewer component
@@ -224,27 +236,27 @@ const myService = moduleRegistry.getService<MyService>("myService");
 ```
 1. App Initialization (main.ts)
    └─> Calls initModules()
-   
+
 2. Module Initialization (core/initModules.ts)
    └─> Imports all module definitions
    └─> Calls moduleRegistry.register() for each
-   
+
 3. Module Registry (core/ModuleRegistry.ts)
    └─> Validates module interface
    └─> Calls module.install(context)
-   
+
 4. Module Install Hook
    └─> Receives ModuleContext
    └─> Registers note type handler via context.registerNoteType()
    └─> Registers components
    └─> Registers services if needed
-   
+
 5. Registry Storage
    └─> Stores module in Map<id, NoteModule>
    └─> Stores type handler in Map<NoteType, Handler>
    └─> Stores components in Map<name, Component>
    └─> Stores slash commands
-   
+
 6. Ready State
    └─> All modules registered
    └─> App ready to handle slash commands
@@ -258,21 +270,21 @@ const myService = moduleRegistry.getService<MyService>("myService");
    └─> Store updates local state
    └─> SyncManager.addToPendingQueue(noteId)
    └─> Note persisted locally
-   
+
 2. Connection Restored
    └─> SyncManager detects online state
    └─> SyncManager.syncPendingNotes()
-   
+
 3. For Each Pending Note
    └─> Fetch local version
    └─> Fetch server version (if exists)
    └─> Compare timestamps
-   
+
 4. Conflict Resolution
    ├─> Local newer: updateOnServer()
    ├─> Server newer: update local + removeFromQueue()
    └─> Same: removeFromQueue()
-   
+
 5. Success
    └─> Note synced
    └─> Removed from pending queue
@@ -288,15 +300,16 @@ const myService = moduleRegistry.getService<MyService>("myService");
 **Solution:** Central registry acts as service locator and dependency injector
 
 **Implementation:**
+
 ```typescript
 class ModuleRegistry {
   private modules = new Map<string, NoteModule>();
   private services = new Map<string, any>();
-  
+
   registerService(name: string, service: any) {
     this.services.set(name, service);
   }
-  
+
   getService<T>(name: string): T {
     return this.services.get(name) as T;
   }
@@ -304,6 +317,7 @@ class ModuleRegistry {
 ```
 
 **Benefits:**
+
 - Modules don't import each other
 - Services accessed by name, not path
 - Easy to mock in tests
@@ -316,17 +330,19 @@ class ModuleRegistry {
 **Solution:** Self-contained modules with standard interface
 
 **Interface:**
+
 ```typescript
 interface NoteModule {
   id: string;
   supportedTypes: NoteType[];
   install(context: ModuleContext): void;
-  components?: { editor, viewer, preview };
+  components?: { editor; viewer; preview };
   slashCommands?: SlashCommand[];
 }
 ```
 
 **Benefits:**
+
 - Add features without modifying existing code
 - Each module developed independently
 - Modules can be enabled/disabled
@@ -339,6 +355,7 @@ interface NoteModule {
 **Solution:** Inject dependencies via constructor or context
 
 **Example:**
+
 ```typescript
 // Define dependency interface
 interface SyncDeps {
@@ -349,7 +366,7 @@ interface SyncDeps {
 // Inject at construction
 class SyncManager {
   constructor(private deps: SyncDeps) {}
-  
+
   async sync() {
     const tenant = this.deps.getTenantId();
     await this.deps.apiClient.post(`/${tenant}/notes`);
@@ -359,12 +376,13 @@ class SyncManager {
 // Easy to test with mocks
 const mockDeps = {
   apiClient: { post: vi.fn() },
-  getTenantId: () => "test-tenant"
+  getTenantId: () => "test-tenant",
 };
 const manager = new SyncManager(mockDeps);
 ```
 
 **Benefits:**
+
 - Easy unit testing (inject mocks)
 - Loose coupling
 - Runtime configuration
@@ -377,11 +395,12 @@ const manager = new SyncManager(mockDeps);
 **Solution:** Extract business logic into pure functions
 
 **Example:**
+
 ```typescript
 // Pure function - no side effects, deterministic
 export function extractHashtags(text: string): string[] {
   const regex = /#([\p{L}\p{N}_]+)/gu;
-  return [...text.matchAll(regex)].map(m => m[1]);
+  return [...text.matchAll(regex)].map((m) => m[1]);
 }
 
 // Easy to test
@@ -389,6 +408,7 @@ expect(extractHashtags("#hello #world")).toEqual(["hello", "world"]);
 ```
 
 **Benefits:**
+
 - Trivial to test (no mocks needed)
 - Easy to understand (input → output)
 - Composable
@@ -401,22 +421,21 @@ expect(extractHashtags("#hello #world")).toEqual(["hello", "world"]);
 **Solution:** Factory creates appropriate storage based on environment
 
 **Example:**
+
 ```typescript
-export function createStorageRef<T>(options: {
-  key: string;
-  initialValue: T;
-}) {
+export function createStorageRef<T>(options: { key: string; initialValue: T }) {
   // Test mode: in-memory storage
   if (isTestMode()) {
     return inMemoryRef(options.initialValue);
   }
-  
+
   // Prod mode: localStorage
   return localStorageRef(options.key, options.initialValue);
 }
 ```
 
 **Benefits:**
+
 - Tests run in isolation
 - No test data pollution
 - Same API for both modes
@@ -429,6 +448,7 @@ export function createStorageRef<T>(options: {
 **Solution:** Define interfaces first, implementations second
 
 **Example:**
+
 ```typescript
 // Contract (stable)
 interface NoteTypeHandler {
@@ -439,13 +459,20 @@ interface NoteTypeHandler {
 
 // Implementation (can vary)
 const textNoteHandler: NoteTypeHandler = {
-  async create(data) { /* ... */ },
-  async update(note, data) { /* ... */ },
-  validate(note) { /* ... */ }
+  async create(data) {
+    /* ... */
+  },
+  async update(note, data) {
+    /* ... */
+  },
+  validate(note) {
+    /* ... */
+  },
 };
 ```
 
 **Benefits:**
+
 - Contracts rarely change
 - Multiple implementations possible
 - TypeScript catches violations
@@ -456,50 +483,56 @@ const textNoteHandler: NoteTypeHandler = {
 ### Why This Architecture Enables Concurrent Development
 
 **1. Isolated Module Development**
+
 - Each module in separate directory
 - No shared mutable state between modules
 - Only touch `initModules.ts` for registration (additive, easy merge)
 
 **2. Registry-Based Coupling**
+
 - Modules register, don't import each other
 - Service locator pattern prevents hard dependencies
 - Add features without modifying existing code
 
 **3. Pure Functional Core**
+
 - Store utilities are pure functions
 - Same input → same output (deterministic)
 - No side effects → no hidden interactions
 - Easy to test in parallel
 
 **4. Dependency Injection**
+
 - Services injected, not imported
 - Easy to mock for isolated testing
 - Runtime configuration possible
 
 **5. Type Contracts**
+
 - Interfaces stable, implementations flexible
 - TypeScript catches integration errors
 - Contributors work against contracts, not implementations
 
 ### Conflict Probability Matrix
 
-| Change Type | Files Modified | Contributors Affected | Conflict Risk |
-|------------|---------------|----------------|---------------|
-| Add new module | 2 (module dir + initModules.ts) | All adding modules | 🟡 5% (merge initModules) |
-| Add store module | 1 (new file) | 0 | ⚪ 0% |
-| Add service | 1 (new file) | 0 | ⚪ 0% |
-| Add component | 1 (new file) | 0 | ⚪ 0% |
-| Modify types | 1 (types file) | All | 🔴 80% (coordinate!) |
-| Modify main store | 1 (notes.ts) | Many | 🔴 60% (coordinate!) |
-| Add dependency | 1 (package.json) | All | 🔴 50% (coordinate!) |
+| Change Type       | Files Modified                  | Contributors Affected | Conflict Risk             |
+| ----------------- | ------------------------------- | --------------------- | ------------------------- |
+| Add new module    | 2 (module dir + initModules.ts) | All adding modules    | 🟡 5% (merge initModules) |
+| Add store module  | 1 (new file)                    | 0                     | ⚪ 0%                     |
+| Add service       | 1 (new file)                    | 0                     | ⚪ 0%                     |
+| Add component     | 1 (new file)                    | 0                     | ⚪ 0%                     |
+| Modify types      | 1 (types file)                  | All                   | 🔴 80% (coordinate!)      |
+| Modify main store | 1 (notes.ts)                    | Many                  | 🔴 60% (coordinate!)      |
+| Add dependency    | 1 (package.json)                | All                   | 🔴 50% (coordinate!)      |
 
 **Expected conflict rate following these patterns: <5%**
 
 ## Current Implementation Details
 
-*Note: These are current choices and may change. Focus on patterns above.*
+_Note: These are current choices and may change. Focus on patterns above._
 
 ### UI Layer
+
 - Framework: Vue 3 with Composition API
 - Components: Quasar framework
 - Routing: Vue Router
@@ -507,22 +540,26 @@ const textNoteHandler: NoteTypeHandler = {
 - Styling: UnoCSS (utility-first)
 
 ### State Layer
+
 - Store: Pinia with modular decomposition
 - Reactivity: Vue refs and computed
 - Persistence: localStorage/IndexedDB via abstraction
 
 ### Editor Layer
+
 - Rich text: Tiptap (extensible ProseMirror wrapper)
 - Collaboration: Yjs CRDT (optional)
 - Markdown: marked library
 
 ### Sync Layer
+
 - Server: Fastify (HTTP + WebSocket)
 - Auth: Better Auth
 - DB: Drizzle ORM on better-sqlite3
 - Protocol: Custom JSON + Yjs binary protocol
 
 ### Build/Test Layer
+
 - Build: Vite
 - Language: TypeScript (strict mode)
 - Unit tests: Vitest
@@ -530,6 +567,7 @@ const textNoteHandler: NoteTypeHandler = {
 
 **Evolutionary Strategy:**
 When libraries change, well-architected modules adapt easily:
+
 1. Extract business logic to pure functions ✅
 2. Isolate framework code to components ✅
 3. Use dependency injection for services ✅
@@ -540,16 +578,19 @@ Result: Modules need minimal updates during library changes.
 ## References
 
 **Deep Dives:**
+
 - Store architecture patterns: [src/stores/notes/README.md](../src/stores/notes/README.md)
 - Module development: [CONTRIBUTING.md](../CONTRIBUTING.md)
 - Type definitions: `src/types/module.ts`, `src/types/note.ts`
 
 **Example Modules:**
+
 - Simplest: `src/modules/text/` (start here)
 - With editor: `src/modules/markdown/`
 - Complex: `src/modules/smart-layer/`
 
 **Testing Examples:**
+
 - Pure functions: `src/__tests__/notes/tags.test.ts`
 - Dependency injection: `src/__tests__/notes/sync.test.ts`
 - Module integration: `src/__tests__/integration.test.ts`
