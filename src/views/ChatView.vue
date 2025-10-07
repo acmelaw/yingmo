@@ -95,7 +95,7 @@ const transformingNote = computed(() => {
 const availableTransforms = computed(() => {
   if (!transformingNote.value) return [];
   // Get all available note types for conversion
-  return ['text', 'markdown', 'code', 'rich-text'].filter(
+  return ["text", "markdown", "code", "rich-text"].filter(
     (type) => type !== transformingNote.value!.type
   );
 });
@@ -120,10 +120,14 @@ const availableNoteTypes = computed<NoteType[]>(() => {
 const syncStatus = computed(() => {
   const { syncing, syncError, lastSyncedAt, hasRemoteSession } = notesStore;
 
-  if (!syncEnabled.value) return { icon: "○", text: "Offline", color: "opacity-50" };
-  if (!hasRemoteSession) return { icon: "○", text: "Not connected", color: "opacity-50" };
-  if (syncing) return { icon: "⏳", text: "Syncing...", color: "text-accent-cyan" };
-  if (syncError) return { icon: "⚠️", text: "Error", color: "text-semantic-error" };
+  if (!syncEnabled.value)
+    return { icon: "○", text: "Offline", color: "opacity-50" };
+  if (!hasRemoteSession)
+    return { icon: "○", text: "Not connected", color: "opacity-50" };
+  if (syncing)
+    return { icon: "⏳", text: "Syncing...", color: "text-accent-cyan" };
+  if (syncError)
+    return { icon: "⚠️", text: "Error", color: "text-semantic-error" };
   if (lastSyncedAt) {
     const mins = Math.max(1, Math.round((Date.now() - lastSyncedAt) / 60000));
     return { icon: "✓", text: `${mins}m ago`, color: "text-semantic-success" };
@@ -159,13 +163,17 @@ function scrollToBottom() {
   });
 }
 
-async function handleCreateNote(text: string, type: NoteType, color?: NoteColor) {
+async function handleCreateNote(
+  text: string,
+  type: NoteType,
+  color?: NoteColor
+) {
   const trimmed = text.trim();
   if (!trimmed) return;
 
   // Extract hashtags from content
   const hashtags = trimmed.match(/#[\p{L}\p{N}_-]+/gu) || [];
-  const tags = hashtags.map(tag => tag.slice(1)); // Remove # prefix
+  const tags = hashtags.map((tag) => tag.slice(1)); // Remove # prefix
 
   // Create note with appropriate payload for type
   let noteData: Record<string, any>;
@@ -213,7 +221,7 @@ async function handleCreateNote(text: string, type: NoteType, color?: NoteColor)
   }
 
   // Add color if specified
-  if (color && color !== 'default') {
+  if (color && color !== "default") {
     noteData.color = color;
   }
 
@@ -269,7 +277,7 @@ async function applyTransform(toType: NoteType | string) {
 
   await notesStore.update(transformingNoteId.value, {
     type: toType as NoteType,
-    viewAs: undefined // Clear any view transform
+    viewAs: undefined, // Clear any view transform
   });
   showTransformDialog.value = false;
   transformingNoteId.value = null;
@@ -311,7 +319,9 @@ function handleNoteSelect(id: string, selected: boolean) {
       selectedNoteIds.value.push(id);
     }
   } else {
-    selectedNoteIds.value = selectedNoteIds.value.filter(noteId => noteId !== id);
+    selectedNoteIds.value = selectedNoteIds.value.filter(
+      (noteId) => noteId !== id
+    );
   }
 }
 
@@ -339,7 +349,7 @@ function handleGlobalKeydown(e: KeyboardEvent) {
   }
 
   // Allow Cmd+Shift+A for selection mode even when input focused
-  if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+  if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
     e.preventDefault();
     isSelectionMode.value = !isSelectionMode.value;
     selectedNoteIds.value = [];
@@ -348,7 +358,7 @@ function handleGlobalKeydown(e: KeyboardEvent) {
 
   // Don't intercept if typing in input/textarea
   const target = e.target as HTMLElement;
-  if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+  if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
     return;
   }
 
@@ -387,14 +397,14 @@ function handleGlobalKeydown(e: KeyboardEvent) {
 
   // Quick actions on focused note: D=delete, P=pin, A=archive
   if (focusedNoteId.value) {
-    if (e.key.toLowerCase() === 'd') {
+    if (e.key.toLowerCase() === "d") {
       e.preventDefault();
       handleDelete(focusedNoteId.value);
       focusedNoteId.value = null;
-    } else if (e.key.toLowerCase() === 'p') {
+    } else if (e.key.toLowerCase() === "p") {
       e.preventDefault();
       handlePin(focusedNoteId.value);
-    } else if (e.key.toLowerCase() === 'a') {
+    } else if (e.key.toLowerCase() === "a") {
       e.preventDefault();
       handleArchive(focusedNoteId.value);
       focusedNoteId.value = null;
@@ -420,10 +430,15 @@ onUnmounted(() => {
       <div class="flex items-center gap-3 flex-1 min-w-0">
         <!-- App Title -->
         <div class="flex-1 min-w-0">
-          <h1 class="text-lg sm:text-xl font-black uppercase tracking-wide truncate">
+          <h1
+            class="text-lg sm:text-xl font-black uppercase tracking-wide truncate"
+          >
             💬 Notes
           </h1>
-          <p class="text-2xs font-bold opacity-60 truncate" :class="syncStatus.color">
+          <p
+            class="text-2xs font-bold opacity-60 truncate"
+            :class="syncStatus.color"
+          >
             {{ syncStatus.icon }} {{ syncStatus.text }}
             <span v-if="currentServer" class="hidden sm:inline">
               • {{ currentServer }}
@@ -435,7 +450,9 @@ onUnmounted(() => {
       <!-- Header Actions -->
       <div class="flex items-center gap-2">
         <!-- Keyboard hint (desktop only) -->
-        <div class="hidden lg:flex items-center gap-1.5 px-2 py-1 text-2xs font-bold opacity-40 border border-base-black/20 dark:border-white/20 rounded">
+        <div
+          class="hidden lg:flex items-center gap-1.5 px-2 py-1 text-2xs font-bold opacity-40 border border-base-black/20 dark:border-white/20 rounded"
+        >
           <kbd class="px-1 bg-base-black/10 dark:bg-white/10 rounded">⌘K</kbd>
           <span>Search</span>
         </div>
@@ -444,7 +461,11 @@ onUnmounted(() => {
           variant="ghost"
           size="icon"
           :title="showSearch ? 'Close search (Esc)' : 'Search notes (⌘K)'"
-          :aria-label="showSearch ? 'Close search (keyboard shortcut: Esc)' : 'Search notes (keyboard shortcut: Cmd+K)'"
+          :aria-label="
+            showSearch
+              ? 'Close search (keyboard shortcut: Esc)'
+              : 'Search notes (keyboard shortcut: Cmd+K)'
+          "
           @click="showSearch = !showSearch"
         >
           {{ showSearch ? "✕" : "🔍" }}
@@ -499,15 +520,22 @@ onUnmounted(() => {
     </Transition>
 
     <!-- Quick Filter Chips -->
-    <div class="shrink-0 px-3 py-2 flex items-center gap-2 border-b border-dashed border-base-black/20 dark:border-white/20 bg-bg-secondary/50 dark:bg-dark-bg-secondary/50">
+    <div
+      class="shrink-0 px-3 py-2 flex items-center gap-2 border-b border-dashed border-base-black/20 dark:border-white/20 bg-bg-secondary/50 dark:bg-dark-bg-secondary/50"
+    >
       <button
         type="button"
         class="px-3 py-1.5 text-xs font-black uppercase border-2 border-base-black dark:border-white rounded-md transition-all duration-100"
-        :class="activeFilter === 'all'
-          ? 'bg-accent-cyan text-base-black shadow-hard-sm'
-          : 'bg-base-white dark:bg-dark-bg-tertiary hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard-sm)'"
+        :class="
+          activeFilter === 'all'
+            ? 'bg-accent-cyan text-base-black shadow-hard-sm'
+            : 'bg-base-white dark:bg-dark-bg-tertiary hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard-sm)'
+        "
         aria-label="Show all notes (keyboard shortcut: Cmd+1)"
-        @click="activeFilter = 'all'; activeTagFilter = null"
+        @click="
+          activeFilter = 'all';
+          activeTagFilter = null;
+        "
       >
         💬 All <span v-if="noteStats.all > 0">({{ noteStats.all }})</span>
       </button>
@@ -515,25 +543,37 @@ onUnmounted(() => {
       <button
         type="button"
         class="px-3 py-1.5 text-xs font-black uppercase border-2 border-base-black dark:border-white rounded-md transition-all duration-100"
-        :class="activeFilter === 'pinned'
-          ? 'bg-accent-yellow text-base-black shadow-hard-sm'
-          : 'bg-base-white dark:bg-dark-bg-tertiary hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard-sm)'"
+        :class="
+          activeFilter === 'pinned'
+            ? 'bg-accent-yellow text-base-black shadow-hard-sm'
+            : 'bg-base-white dark:bg-dark-bg-tertiary hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard-sm)'
+        "
         aria-label="Show pinned notes (keyboard shortcut: Cmd+2)"
-        @click="activeFilter = 'pinned'; activeTagFilter = null"
+        @click="
+          activeFilter = 'pinned';
+          activeTagFilter = null;
+        "
       >
-        ⭐ Pinned <span v-if="noteStats.pinned > 0">({{ noteStats.pinned }})</span>
+        ⭐ Pinned
+        <span v-if="noteStats.pinned > 0">({{ noteStats.pinned }})</span>
       </button>
 
       <button
         type="button"
         class="px-3 py-1.5 text-xs font-black uppercase border-2 border-base-black dark:border-white rounded-md transition-all duration-100"
-        :class="activeFilter === 'archived'
-          ? 'bg-accent-purple text-base-white shadow-hard-sm'
-          : 'bg-base-white dark:bg-dark-bg-tertiary hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard-sm)'"
+        :class="
+          activeFilter === 'archived'
+            ? 'bg-accent-purple text-base-white shadow-hard-sm'
+            : 'bg-base-white dark:bg-dark-bg-tertiary hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard-sm)'
+        "
         aria-label="Show archived notes (keyboard shortcut: Cmd+3)"
-        @click="activeFilter = 'archived'; activeTagFilter = null"
+        @click="
+          activeFilter = 'archived';
+          activeTagFilter = null;
+        "
       >
-        📦 Archived <span v-if="noteStats.archived > 0">({{ noteStats.archived }})</span>
+        📦 Archived
+        <span v-if="noteStats.archived > 0">({{ noteStats.archived }})</span>
       </button>
 
       <div class="flex-1"></div>
@@ -543,15 +583,15 @@ onUnmounted(() => {
         v-if="activeTagFilter"
         type="button"
         class="px-2 py-1 text-xs font-bold bg-accent-green text-base-black border-2 border-base-black rounded-md shadow-hard-sm animate-pulse"
-        @click="activeTagFilter = null"
         title="Click to clear filter"
+        @click="activeTagFilter = null"
       >
         🏷️ #{{ activeTagFilter }} ✕
       </button>
 
       <!-- Total count -->
       <span class="text-2xs font-bold opacity-60">
-        {{ displayNotes.length }} note{{ displayNotes.length !== 1 ? 's' : '' }}
+        {{ displayNotes.length }} note{{ displayNotes.length !== 1 ? "s" : "" }}
       </span>
     </div>
 
@@ -566,12 +606,15 @@ onUnmounted(() => {
           <div class="text-7xl">💭</div>
           <div class="space-y-2">
             <h2 class="text-xl font-black uppercase tracking-wide">
-              {{ searchQuery ? 'No matches found' : 'Start capturing thoughts' }}
+              {{
+                searchQuery ? "No matches found" : "Start capturing thoughts"
+              }}
             </h2>
             <p class="text-sm opacity-70 font-bold">
-              {{ searchQuery
-                ? 'Try a different search term'
-                : 'Type below to create your first note. Quick like WhatsApp, powerful like Notion.'
+              {{
+                searchQuery
+                  ? "Try a different search term"
+                  : "Type below to create your first note. Quick like WhatsApp, powerful like Notion."
               }}
             </p>
           </div>
@@ -593,7 +636,11 @@ onUnmounted(() => {
           :selectable="isSelectionMode"
           :selected="selectedNoteIds.includes(note.id)"
           :class="{ 'ring-2 ring-accent-green': focusedNoteId === note.id }"
-          @click="isSelectionMode ? handleNoteSelect(note.id, !selectedNoteIds.includes(note.id)) : focusedNoteId = note.id"
+          @click="
+            isSelectionMode
+              ? handleNoteSelect(note.id, !selectedNoteIds.includes(note.id))
+              : (focusedNoteId = note.id)
+          "
           @delete="handleDelete(note.id)"
           @update="(updates) => handleUpdate(note.id, updates)"
           @archive="handleArchive(note.id)"

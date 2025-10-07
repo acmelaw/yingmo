@@ -43,21 +43,21 @@ const baseRooms: Room[] = [
     label: "Inbox",
     icon: "💬",
     filters: {},
-    variant: "primary"
+    variant: "primary",
   },
   {
     id: "pinned",
     label: "Pinned",
     icon: "⭐",
     filters: { onlyPinned: true },
-    variant: "accent"
+    variant: "accent",
   },
   {
     id: "archived",
     label: "Archived",
     icon: "📦",
     filters: { includeArchived: true, onlyArchived: true },
-    variant: "warning"
+    variant: "warning",
   },
 ];
 
@@ -74,7 +74,9 @@ const tagRooms = computed<Room[]>(() =>
 const rooms = computed(() => [...baseRooms, ...tagRooms.value]);
 
 const activeRoom = computed(() => {
-  return rooms.value.find((r) => r.id === internalActiveRoom.value) ?? rooms.value[0];
+  return (
+    rooms.value.find((r) => r.id === internalActiveRoom.value) ?? rooms.value[0]
+  );
 });
 
 function handleSelect(room: Room) {
@@ -93,11 +95,15 @@ watch(searchQuery, (value) => {
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col overflow-hidden bg-bg-secondary dark:bg-dark-bg-secondary">
+  <div
+    class="flex-1 flex flex-col overflow-hidden bg-bg-secondary dark:bg-dark-bg-secondary"
+  >
     <!-- Sidebar Header -->
     <div class="shrink-0 p-4 border-b-2 border-base-black dark:border-white">
       <div class="space-y-1">
-        <h2 class="text-sm font-black uppercase tracking-wide opacity-70">Rooms</h2>
+        <h2 class="text-sm font-black uppercase tracking-wide opacity-70">
+          Rooms
+        </h2>
         <p class="text-xs text-text-secondary dark:text-dark-text-secondary">
           {{ stats.active }} active • {{ stats.total }} total
         </p>
@@ -105,7 +111,9 @@ watch(searchQuery, (value) => {
     </div>
 
     <!-- Search -->
-    <div class="shrink-0 p-3 border-b border-dashed border-base-black/20 dark:border-white/20">
+    <div
+      class="shrink-0 p-3 border-b border-dashed border-base-black/20 dark:border-white/20"
+    >
       <Input
         v-model="searchQuery"
         class="w-full"
@@ -119,7 +127,11 @@ watch(searchQuery, (value) => {
       <div class="p-3 space-y-4">
         <!-- Quick Access -->
         <nav class="space-y-2">
-          <h3 class="px-1 text-2xs font-black uppercase tracking-wider opacity-60">Quick Access</h3>
+          <h3
+            class="px-1 text-2xs font-black uppercase tracking-wider opacity-60"
+          >
+            Quick Access
+          </h3>
           <ul class="space-y-1.5" role="list">
             <li v-for="room in baseRooms" :key="room.id">
               <button
@@ -128,7 +140,7 @@ watch(searchQuery, (value) => {
                 :class="[
                   room.id === activeRoom.id
                     ? 'bg-accent-cyan text-base-black shadow-hard-sm translate-x-0 translate-y-0'
-                    : 'bg-base-white dark:bg-dark-bg-tertiary text-text-primary dark:text-dark-text-primary shadow-hard-sm hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard) active:(translate-x-0 translate-y-0 shadow-hard-sm)'
+                    : 'bg-base-white dark:bg-dark-bg-tertiary text-text-primary dark:text-dark-text-primary shadow-hard-sm hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard) active:(translate-x-0 translate-y-0 shadow-hard-sm)',
                 ]"
                 @click="handleSelect(room)"
               >
@@ -155,7 +167,11 @@ watch(searchQuery, (value) => {
 
         <!-- Tags -->
         <nav class="space-y-2">
-          <h3 class="px-1 text-2xs font-black uppercase tracking-wider opacity-60">Tags</h3>
+          <h3
+            class="px-1 text-2xs font-black uppercase tracking-wider opacity-60"
+          >
+            Tags
+          </h3>
           <div v-if="tagRooms.length === 0" class="px-3 py-6 text-center">
             <div class="space-y-2">
               <div class="text-3xl opacity-40">🏷️</div>
@@ -173,7 +189,7 @@ watch(searchQuery, (value) => {
                 :class="[
                   room.id === activeRoom.id
                     ? 'bg-accent-yellow text-base-black shadow-hard-sm translate-x-0 translate-y-0'
-                    : 'bg-base-white dark:bg-dark-bg-tertiary text-text-primary dark:text-dark-text-primary shadow-hard-sm hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard) active:(translate-x-0 translate-y-0 shadow-hard-sm)'
+                    : 'bg-base-white dark:bg-dark-bg-tertiary text-text-primary dark:text-dark-text-primary shadow-hard-sm hover:(-translate-x-0.5 -translate-y-0.5 shadow-hard) active:(translate-x-0 translate-y-0 shadow-hard-sm)',
                 ]"
                 @click="handleSelect(room)"
               >
@@ -187,9 +203,15 @@ watch(searchQuery, (value) => {
     </div>
 
     <!-- Stats Footer -->
-    <div class="shrink-0 p-3 border-t border-dashed border-base-black/20 dark:border-white/20">
+    <div
+      class="shrink-0 p-3 border-t border-dashed border-base-black/20 dark:border-white/20"
+    >
       <div class="space-y-2">
-        <h3 class="px-1 text-2xs font-black uppercase tracking-wider opacity-60">Stats</h3>
+        <h3
+          class="px-1 text-2xs font-black uppercase tracking-wider opacity-60"
+        >
+          Stats
+        </h3>
         <div class="flex flex-wrap gap-1.5">
           <Badge variant="type" class="text-2xs">
             Total {{ stats.total }}

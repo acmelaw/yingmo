@@ -1,12 +1,10 @@
+# Notes Store Architecture
 
-
-# Notes Store Refactoring
-
-This directory contains the refactored notes store following modern TypeScript best practices and modular architecture.
+This directory contains the modular notes store following modern TypeScript best practices and architectural patterns.
 
 ## Architecture Overview
 
-The refactored store follows the **Single Responsibility Principle** and **Dependency Injection** patterns, breaking the monolithic store into focused, testable modules.
+The store follows the **Single Responsibility Principle** and **Dependency Injection** patterns, breaking functionality into focused, testable modules.
 
 ### Module Structure
 
@@ -22,9 +20,11 @@ src/stores/notes/
 ## Module Responsibilities
 
 ### `utils.ts`
+
 **Purpose**: General-purpose utility functions
 
 **Exports**:
+
 - `clone<T>(value: T)` - Deep clone using structuredClone or JSON fallback
 - `createId()` - Generate unique IDs
 - `ensureFutureTimestamp(prev: number)` - Ensure timestamps are monotonically increasing
@@ -35,9 +35,11 @@ src/stores/notes/
 ---
 
 ### `tags.ts`
+
 **Purpose**: Tag extraction and filtering logic
 
 **Exports**:
+
 - `extractHashtags(text: string)` - Extract #hashtags from text with Unicode support
 - `mergeTags(text, explicitTags, autoExtract)` - Combine extracted and manual tags
 - `stripHashtags(text)` - Remove hashtags from text
@@ -46,6 +48,7 @@ src/stores/notes/
 - `filterByTags(notes, selectedTags)` - Filter notes by tags (AND logic)
 
 **Key Features**:
+
 - ✅ Unicode support (#café, #日本語)
 - ✅ Case-insensitive deduplication
 - ✅ Pure functions (no side effects)
@@ -56,11 +59,13 @@ src/stores/notes/
 ---
 
 ### `sync.ts`
+
 **Purpose**: Server synchronization and offline queue management
 
 **Class**: `SyncManager`
 
 **Methods**:
+
 - `addToPendingQueue(noteId)` - Add note to sync queue
 - `removeFromPendingQueue(noteId)` - Remove from queue
 - `getPendingNotes()` - Get all pending note IDs
@@ -72,6 +77,7 @@ src/stores/notes/
 - `getState()` / `setState()` - Serialize/deserialize queue
 
 **Key Features**:
+
 - ✅ Offline-first architecture
 - ✅ Conflict resolution (local vs remote timestamps)
 - ✅ Error handling and retry logic
@@ -83,11 +89,13 @@ src/stores/notes/
 ---
 
 ### `categories.ts`
+
 **Purpose**: Category tracking and indexing
 
 **Class**: `CategoryManager`
 
 **Methods**:
+
 - `rebuild(notes)` - Rebuild index from scratch
 - `track(category)` - Increment category count
 - `untrack(category)` - Decrement category count
@@ -96,6 +104,7 @@ src/stores/notes/
 - `clear()` - Reset state
 
 **Key Features**:
+
 - ✅ Reference counting for automatic cleanup
 - ✅ Sorted category list
 - ✅ O(1) lookups via Map
@@ -106,14 +115,17 @@ src/stores/notes/
 ---
 
 ### `storage.ts`
+
 **Purpose**: Persistence layer abstraction
 
 **Exports**:
+
 - `createStorageRef<T>(options)` - Create localStorage or in-memory ref
 - `STORAGE_KEYS` - Centralized storage key constants
 - `CURRENT_VERSION` - Data version for migrations
 
 **Key Features**:
+
 - ✅ Test mode detection (in-memory storage for tests)
 - ✅ Automatic deep cloning in test mode
 - ✅ Type-safe storage keys
@@ -123,9 +135,9 @@ src/stores/notes/
 
 ---
 
-## Main Store (`notesRefactored.ts`)
+## Main Store (`notes.ts`)
 
-The main store file is now a **thin orchestration layer** that:
+The main store file is a **thin orchestration layer** that:
 
 1. Initializes dependencies (services, managers)
 2. Exposes computed properties
@@ -140,7 +152,7 @@ The main store file is now a **thin orchestration layer** that:
 
 ✅ **Type Safety**: Full TypeScript with strict types and interfaces
 
-✅ **Readability**: ~600 LOC refactored store vs ~900 LOC monolithic
+✅ **Readability**: Focused modules with clear responsibilities
 
 ✅ **Maintainability**: Changes to sync logic don't affect tag extraction
 
@@ -148,29 +160,10 @@ The main store file is now a **thin orchestration layer** that:
 
 ✅ **Performance**: Optimized with Maps, Sets, and efficient algorithms
 
-## Migration Path
-
-### Phase 1: Side-by-side (Current)
-- Old store: `src/stores/notes.ts`
-- New store: `src/stores/notesRefactored.ts`
-- Components use old store
-- Tests pass for both
-
-### Phase 2: Gradual Migration
-```typescript
-// In components, gradually switch:
-import { useNotesStore } from "@/stores/notes"; // old
-import { useNotesStore } from "@/stores/notesRefactored"; // new
-```
-
-### Phase 3: Cleanup
-- Delete `src/stores/notes.ts`
-- Rename `notesRefactored.ts` → `notes.ts`
-- Remove old tests
-
-## Testing Strategy
+## Usage
 
 ### Unit Tests
+
 Each module can be tested independently:
 
 ```typescript
@@ -192,27 +185,13 @@ test("SyncManager queues notes when offline", () => {
 ```
 
 ### Integration Tests
+
 Test the full store with all modules:
-
-```typescript
-import { useNotesStore } from "@/stores/notesRefactored";
-
-test("creates note offline and syncs when online", async () => {
-  const store = useNotesStore();
-  settings.syncEnabled = true;
-
-  const id = await store.create("text", { text: "#test" });
-  expect(store.pendingSync).toContain(id);
-
-  auth.login({ tenantId: "t1", userId: "u1", token: "tk1" });
-  await store.syncPendingNotes();
-  expect(store.pendingSync).not.toContain(id);
-});
-```
 
 ## Best Practices Applied
 
 ### 1. **Pure Functions**
+
 ```typescript
 // ✅ Good: Pure, testable
 export function extractHashtags(text: string): string[] {
@@ -227,6 +206,7 @@ export function extractHashtags(text: string) {
 ```
 
 ### 2. **Dependency Injection**
+
 ```typescript
 // ✅ Good: Dependencies injected
 class SyncManager {
@@ -240,6 +220,7 @@ class SyncManager {
 ```
 
 ### 3. **Single Responsibility**
+
 ```typescript
 // ✅ Good: One responsibility per module
 import { extractHashtags } from "./tags";
@@ -252,24 +233,32 @@ export const useNotesStore = defineStore("notes", () => {
 ```
 
 ### 4. **Type Safety**
+
 ```typescript
 // ✅ Good: Explicit types
 export function mergeTags(
   text: string,
   explicitTags?: string[],
   autoExtract = true
-): string[] { /* ... */ }
+): string[] {
+  /* ... */
+}
 
 // ❌ Bad: Implicit any
-export function mergeTags(text, tags, auto) { /* ... */ }
+export function mergeTags(text, tags, auto) {
+  /* ... */
+}
 ```
 
 ### 5. **Encapsulation**
+
 ```typescript
 // ✅ Good: Private state, public API
 class CategoryManager {
   private categoryCounts = new Map();
-  public getAll() { return this.categories; }
+  public getAll() {
+    return this.categories;
+  }
 }
 
 // ❌ Bad: Exposed internal state
@@ -279,17 +268,8 @@ export { categoryCounts }; // Anyone can modify
 
 ## Performance Optimizations
 
-### Before (Monolithic)
-```typescript
-// Linear search for every operation
-const allTags = computed(() => {
-  const tags: string[] = [];
-  notes.forEach(n => tags.push(...(n.tags || [])));
-  return [...new Set(tags)].sort();
-});
-```
+### Efficient Data Structures
 
-### After (Modular)
 ```typescript
 // O(1) lookups with Set
 class CategoryManager {
@@ -307,6 +287,7 @@ class CategoryManager {
 ## Future Enhancements
 
 ### 1. Add y-indexeddb Integration
+
 ```typescript
 // storage.ts
 export class IndexedDBStorage {
@@ -317,6 +298,7 @@ export class IndexedDBStorage {
 ```
 
 ### 2. Add Conflict Resolution Strategies
+
 ```typescript
 // sync.ts
 export enum ConflictStrategy {
@@ -328,6 +310,7 @@ export enum ConflictStrategy {
 ```
 
 ### 3. Add Background Sync
+
 ```typescript
 // sync.ts
 export class BackgroundSyncManager extends SyncManager {
@@ -337,18 +320,10 @@ export class BackgroundSyncManager extends SyncManager {
 }
 ```
 
-## API Comparison
+## API
 
-### Old Store (Monolithic)
-```typescript
-const store = useNotesStore();
-// 60+ methods mixed together
-store.create(...);
-store.syncFromServer();
-store.extractHashtags(...); // internal helper exposed
-```
+### Store API
 
-### New Store (Modular)
 ```typescript
 const store = useNotesStore();
 // Clear public API
@@ -363,14 +338,15 @@ const tags = extractHashtags(text);
 ## Documentation
 
 Each module includes:
+
 - ✅ JSDoc comments for all public APIs
 - ✅ Type definitions for all parameters
 - ✅ Usage examples in this README
 - ✅ Design pattern documentation
 
-## Conclusion
+## Summary
 
-This refactoring transforms a monolithic 900-line store into a modular, maintainable, and testable architecture following industry best practices:
+This modular architecture transforms the notes store into a maintainable, testable system following industry best practices:
 
 - **SOLID Principles**: Single responsibility, dependency inversion
 - **Functional Programming**: Pure functions, immutability
@@ -378,6 +354,7 @@ This refactoring transforms a monolithic 900-line store into a modular, maintain
 - **Modern TypeScript**: Strict types, interfaces, generics
 
 The result is code that is:
+
 - Easier to understand
 - Easier to test
 - Easier to maintain

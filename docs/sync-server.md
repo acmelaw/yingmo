@@ -17,6 +17,7 @@ The sync server follows the **same patterns as the frontend:**
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js >= 18
 
 ### Quick Start
@@ -64,7 +65,7 @@ npm run build
 // sync-server/services/ModuleRegistry.ts
 class ModuleRegistry {
   private modules = new Map<string, NoteModule>();
-  
+
   register(module: NoteModule) {
     this.modules.set(module.id, module);
   }
@@ -98,11 +99,13 @@ export interface TextNote extends BaseNote {
 ```typescript
 // sync-server/services/NoteService.ts
 export class NoteService {
-  constructor(private deps: {
-    db: Database;
-    moduleRegistry: ModuleRegistry;
-  }) {}
-  
+  constructor(
+    private deps: {
+      db: Database;
+      moduleRegistry: ModuleRegistry;
+    }
+  ) {}
+
   async create(type: NoteType, data: any) {
     const module = this.deps.moduleRegistry.getModule(type);
     const note = await module.handler.create(data);
@@ -117,11 +120,13 @@ export class NoteService {
 ### Adding a Server Module
 
 **1. Create module file:**
+
 ```bash
 touch sync-server/modules/my-module.ts
 ```
 
 **2. Implement handler:**
+
 ```typescript
 // sync-server/modules/my-module.ts
 import type { NoteTypeHandler } from "../types/module";
@@ -131,19 +136,20 @@ export const myModuleHandler: NoteTypeHandler = {
     // Server-side creation logic
     // May include validation, enrichment, etc.
   },
-  
+
   async update(note, data) {
     // Server-side update logic
-  }
+  },
 };
 
 export const myModule = {
   id: "my-module",
-  handler: myModuleHandler
+  handler: myModuleHandler,
 };
 ```
 
 **3. Register:**
+
 ```typescript
 // sync-server/server.ts
 import { myModule } from "./modules/my-module";
@@ -151,6 +157,7 @@ moduleRegistry.register(myModule);
 ```
 
 **4. Test:**
+
 ```typescript
 // sync-server/__tests__/my-module.test.ts
 import { describe, it, expect } from "vitest";
@@ -175,13 +182,14 @@ export class NoteService {
   async findById(id: string) {
     // Database abstraction
     return this.db.query.notes.findFirst({
-      where: eq(notes.id, id)
+      where: eq(notes.id, id),
     });
   }
 }
 ```
 
 **Migration commands:**
+
 ```bash
 npm run db:generate   # Generate migrations from schema
 npm run db:migrate    # Apply migrations
@@ -228,15 +236,18 @@ import { NoteService } from "../services/NoteService";
 describe("NoteService", () => {
   it("creates notes via module handler", async () => {
     const mockDb = { insert: vi.fn() };
-    const mockRegistry = { 
-      getModule: () => ({ 
-        handler: { create: async (data) => ({ ...data, id: "123" }) }
-      })
+    const mockRegistry = {
+      getModule: () => ({
+        handler: { create: async (data) => ({ ...data, id: "123" }) },
+      }),
     };
-    
-    const service = new NoteService({ db: mockDb, moduleRegistry: mockRegistry });
+
+    const service = new NoteService({
+      db: mockDb,
+      moduleRegistry: mockRegistry,
+    });
     const note = await service.create("text", { content: "test" });
-    
+
     expect(note.id).toBe("123");
   });
 });
@@ -248,10 +259,10 @@ describe("NoteService", () => {
 describe("Text Module Integration", () => {
   it("registers and handles text notes", async () => {
     await moduleRegistry.register(textModule);
-    
+
     const handler = moduleRegistry.getHandler("text");
     const note = await handler.create({ content: "Hello" });
-    
+
     expect(note.type).toBe("text");
     expect(note.content).toBe("Hello");
   });
@@ -263,17 +274,20 @@ describe("Text Module Integration", () => {
 ### Docker
 
 **Build image:**
+
 ```bash
 npm run docker:build
 ```
 
 **Run container:**
+
 ```bash
 npm run docker:run
 # → Exposes port 4444
 ```
 
 **Custom port:**
+
 ```bash
 docker run -p 8080:4444 vue-notes-sync
 ```
@@ -297,28 +311,29 @@ npm start        # Run dist/server.js
 
 ## Commands Reference
 
-| Command | Purpose |
-|---------|---------|
-| `npm run dev` | Dev server with auto-reload (tsx watch) |
-| `npm run build` | Compile TypeScript to dist/ |
-| `npm start` | Run production build (dist/server.js) |
-| `npm test` | Run unit tests |
-| `npm run test:watch` | Watch mode for tests |
-| `npm run test:coverage` | Coverage report |
-| `npm run lint` | Check code style |
-| `npm run lint:fix` | Auto-fix style issues |
-| `npm run type-check` | TypeScript type checking |
-| `npm run db:generate` | Generate Drizzle migrations |
-| `npm run db:migrate` | Run database migrations |
-| `npm run db:studio` | Open database UI |
-| `npm run docker:build` | Build Docker image |
-| `npm run docker:run` | Run in Docker (port 4444) |
+| Command                 | Purpose                                 |
+| ----------------------- | --------------------------------------- |
+| `npm run dev`           | Dev server with auto-reload (tsx watch) |
+| `npm run build`         | Compile TypeScript to dist/             |
+| `npm start`             | Run production build (dist/server.js)   |
+| `npm test`              | Run unit tests                          |
+| `npm run test:watch`    | Watch mode for tests                    |
+| `npm run test:coverage` | Coverage report                         |
+| `npm run lint`          | Check code style                        |
+| `npm run lint:fix`      | Auto-fix style issues                   |
+| `npm run type-check`    | TypeScript type checking                |
+| `npm run db:generate`   | Generate Drizzle migrations             |
+| `npm run db:migrate`    | Run database migrations                 |
+| `npm run db:studio`     | Open database UI                        |
+| `npm run docker:build`  | Build Docker image                      |
+| `npm run docker:run`    | Run in Docker (port 4444)               |
 
 ## Parallel Development Tips
 
 ### Low-Conflict Operations
 
 ✅ **Safe for parallel work:**
+
 - Add new module in `modules/`
 - Add new route in `routes/`
 - Add new service in `services/`
@@ -327,6 +342,7 @@ npm start        # Run dist/server.js
 ### Coordination Required
 
 ⚠️ **Coordinate before modifying:**
+
 - `server.ts` (main entry point)
 - `db/schema.ts` (database schema)
 - `types/note.ts` (shared type definitions)
@@ -334,6 +350,7 @@ npm start        # Run dist/server.js
 ### Module Conflicts
 
 If two agents add modules simultaneously:
+
 ```typescript
 // Agent A adds:
 moduleRegistry.register(moduleA);
@@ -351,6 +368,7 @@ Simple additive merges work.
 ## Architecture Notes
 
 **Current stack (subject to change):**
+
 - Web framework: Fastify
 - Database: better-sqlite3 + Drizzle ORM
 - Auth: Better Auth
@@ -358,12 +376,14 @@ Simple additive merges work.
 - Real-time: Yjs CRDT
 
 **Patterns that persist:**
+
 - Module registry system
 - Dependency injection
 - Type contracts
 - Service layer abstraction
 
 When libraries change, well-architected code survives:
+
 1. Business logic in pure functions ✅
 2. Framework code in routes/server.ts ✅
 3. Database access through service layer ✅

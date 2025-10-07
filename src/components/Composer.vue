@@ -14,14 +14,10 @@
         class="flex items-center gap-2 mb-2 flex-wrap px-1"
       >
         <Badge variant="category">
-          #️⃣ {{ hashtagCount }} {{ hashtagCount === 1 ? 'tag' : 'tags' }}
+          #️⃣ {{ hashtagCount }} {{ hashtagCount === 1 ? "tag" : "tags" }}
         </Badge>
         <div class="flex flex-wrap gap-1.5">
-          <Badge
-            v-for="tag in detectedHashtags"
-            :key="tag"
-            variant="tag"
-          >
+          <Badge v-for="tag in detectedHashtags" :key="tag" variant="tag">
             {{ tag }}
           </Badge>
         </div>
@@ -38,8 +34,8 @@
             variant="secondary"
             size="icon"
             aria-label="Emoji"
-            @click="triggerAction(defaultEmojiAction)"
             title="Add emoji"
+            @click="triggerAction(defaultEmojiAction)"
           >
             😊
           </Button>
@@ -72,8 +68,8 @@
             variant="secondary"
             size="icon"
             class="bg-brutal-cyan text-brutal-black"
-            @click="menuOpen = menuOpen === 'note-type' ? null : 'note-type'"
             :title="'Type: ' + selectedType"
+            @click="menuOpen = menuOpen === 'note-type' ? null : 'note-type'"
           >
             {{ getNoteTypeIcon(selectedType) }}
           </Button>
@@ -108,8 +104,8 @@
           v-model="draftNote.content"
           class="w-full px-3 py-2.5 min-h-[44px] max-h-32 font-bold text-sm sm:text-base bg-brutal-white text-brutal-black border-3 border-brutal-black rounded-lg resize-none outline-none transition-all duration-100 focus:(shadow-hard border-brutal-green) placeholder:opacity-60"
           placeholder="Write your note..."
-          @keydown="onKeydown"
           rows="1"
+          @keydown="onKeydown"
         />
       </div>
 
@@ -120,10 +116,10 @@
           size="lg"
           class="flex items-center gap-1.5"
           :disabled="!isTyping"
-          @click="send"
           title="Send message"
+          @click="send"
         >
-          <span class="hidden sm:inline">{{ t('send') }}</span>
+          <span class="hidden sm:inline">{{ t("send") }}</span>
           <span class="text-lg sm:text-xl">⚡</span>
         </Button>
       </div>
@@ -138,7 +134,10 @@
       leave-from-class="op-100"
       leave-to-class="op-0"
     >
-      <div v-if="isTyping && !hashtagCount" class="mt-1.5 text-2xs sm:text-xs text-brutal-text-secondary font-black flex items-center gap-1 px-1">
+      <div
+        v-if="isTyping && !hashtagCount"
+        class="mt-1.5 text-2xs sm:text-xs text-brutal-text-secondary font-black flex items-center gap-1 px-1"
+      >
         ✍️ typing...
       </div>
     </Transition>
@@ -146,106 +145,151 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { Button, Badge } from './ui'
+import { ref, computed, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { Button, Badge } from "./ui";
 
 // Props
 const props = defineProps({
   availableTypes: {
     type: Array,
-    default: () => ['text']
+    default: () => ["text"],
   },
   initialType: {
     type: String,
-    default: 'text'
-  }
-})
+    default: "text",
+  },
+});
 
 // Emits
-const emit = defineEmits(['submit'])
+const emit = defineEmits(["submit"]);
 
 // I18n
-const { t } = useI18n()
+const { t } = useI18n();
 
 // State
-const menuOpen = ref(null)
-const showHashtagHelper = ref(false)
-const selectedType = ref(props.initialType)
+const menuOpen = ref(null);
+const showHashtagHelper = ref(false);
+const selectedType = ref(props.initialType);
 const draftNote = ref({
-  id: 'draft',
+  id: "draft",
   type: props.initialType,
-  content: '',
+  content: "",
   metadata: {},
   created: Date.now(),
-  updated: Date.now()
-})
+  updated: Date.now(),
+});
 
 // Computed
-const isTyping = computed(() => draftNote.value.content.trim().length > 0)
-const hashtagCount = computed(() => detectedHashtags.value.length)
+const isTyping = computed(() => draftNote.value.content.trim().length > 0);
+const hashtagCount = computed(() => detectedHashtags.value.length);
 const detectedHashtags = computed(() => {
-  const content = draftNote.value.content
-  const hashtags = content.match(/#[a-zA-Z0-9_]+/g)
-  return hashtags ? [...new Set(hashtags)] : []
-})
+  const content = draftNote.value.content;
+  const hashtags = content.match(/#[a-zA-Z0-9_]+/g);
+  return hashtags ? [...new Set(hashtags)] : [];
+});
 
 // Emoji data
 const emojiData = [
-  '😀', '😂', '🥰', '😎', '🤩', '😍', '🤗', '🤑', '🤠', '🥳',
-  '😭', '😡', '🤯', '🥶', '😱', '👻', '💩', '👾', '🤖', '👋',
-  '👍', '👏', '🙌', '💪', '🦾', '🦿', '🧠', '🦷', '🦴', '👀',
-  '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯',
-  '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🦆', '🦅'
-]
+  "😀",
+  "😂",
+  "🥰",
+  "😎",
+  "🤩",
+  "😍",
+  "🤗",
+  "🤑",
+  "🤠",
+  "🥳",
+  "😭",
+  "😡",
+  "🤯",
+  "🥶",
+  "😱",
+  "👻",
+  "💩",
+  "👾",
+  "🤖",
+  "👋",
+  "👍",
+  "👏",
+  "🙌",
+  "💪",
+  "🦾",
+  "🦿",
+  "🧠",
+  "🦷",
+  "🦴",
+  "👀",
+  "🐶",
+  "🐱",
+  "🐭",
+  "🐹",
+  "🐰",
+  "🦊",
+  "🐻",
+  "🐼",
+  "🐨",
+  "🐯",
+  "🦁",
+  "🐮",
+  "🐷",
+  "🐸",
+  "🐵",
+  "🐔",
+  "🐧",
+  "🐦",
+  "🦆",
+  "🦅",
+];
 
 // Action context
 const context = {
   append(value) {
-    const currentContent = draftNote.value.content
-    draftNote.value.content = currentContent + value
+    const currentContent = draftNote.value.content;
+    draftNote.value.content = currentContent + value;
   },
   focus() {
     // Focus logic would go here
   },
   close() {
-    menuOpen.value = null
-  }
-}
+    menuOpen.value = null;
+  },
+};
 
 // Components
 const defaultEmojiAction = {
-  id: 'emoji',
-  type: 'menu',
-  items: emojiData.map(emoji => ({ id: emoji, label: emoji }))
-}
+  id: "emoji",
+  type: "menu",
+  items: emojiData.map((emoji) => ({ id: emoji, label: emoji })),
+};
 
 const editorComponent = computed(() => {
   // This would be dynamically imported based on selectedType
   // For demo purposes, we'll return a simple textarea
-  return 'textarea'
-})
+  return "textarea";
+});
 
 // Methods
 const triggerAction = (action) => {
-  if (action.type === 'menu') {
-    menuOpen.value = menuOpen.value === action.id ? null : action.id
-    return
+  if (action.type === "menu") {
+    menuOpen.value = menuOpen.value === action.id ? null : action.id;
+    return;
   }
-  action.handler?.()
-}
+  action.handler?.();
+};
 
 const selectActionItem = (action, item) => {
-  if (action.id === 'emoji') {
-    context.append(item.label)
+  if (action.id === "emoji") {
+    context.append(item.label);
   }
-  menuOpen.value = null
-}
+  menuOpen.value = null;
+};
 
 const changeType = (type) => {
-  selectedType.value = type
-  menuOpen.value = null
-}
+  selectedType.value = type;
+  menuOpen.value = null;
+};
 
 const getNoteTypeIcon = (type) => {
   const icons = {
@@ -257,41 +301,44 @@ const getNoteTypeIcon = (type) => {
     "smart-layer": "🤖",
     todo: "✅",
     "chord-sheet": "🎸",
-  }
-  return icons[type] || "📋"
-}
+  };
+  return icons[type] || "📋";
+};
 
 const handleEditorUpdate = (event) => {
-  draftNote.value.content = event.target.value
-}
+  draftNote.value.content = event.target.value;
+};
 
 const onKeydown = (event) => {
-  if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault()
-    send()
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    send();
   }
-}
+};
 
 const send = () => {
-  if (!isTyping.value) return
+  if (!isTyping.value) return;
 
   // Emit with text and type (matching NoteShell handleAdd signature)
-  emit('submit', draftNote.value.content, selectedType.value)
+  emit("submit", draftNote.value.content, selectedType.value);
 
   // Reset the input
-  draftNote.value.content = ''
-  menuOpen.value = null
-  showHashtagHelper.value = false
-}
+  draftNote.value.content = "";
+  menuOpen.value = null;
+  showHashtagHelper.value = false;
+};
 
 // Watchers
-watch(() => draftNote.value.content, (newContent) => {
-  // Update the note with new content
-  draftNote.value.updated = Date.now()
+watch(
+  () => draftNote.value.content,
+  (newContent) => {
+    // Update the note with new content
+    draftNote.value.updated = Date.now();
 
-  // Show hashtag helper when content contains #
-  showHashtagHelper.value = newContent.includes('#')
-})
+    // Show hashtag helper when content contains #
+    showHashtagHelper.value = newContent.includes("#");
+  }
+);
 </script>
 
 <style scoped>

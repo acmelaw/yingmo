@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { storeToRefs } from 'pinia';
-import * as Y from 'yjs';
-import type { TextNote } from '@/types/note';
-import { getNoteContent } from '@/types/note';
-import { useNotesStore } from '@/stores/notes';
-import { useAuthStore } from '@/stores/auth';
-import { useCollaborationDoc } from '@/composables/useCollaborationDoc';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
+import * as Y from "yjs";
+import type { TextNote } from "@/types/note";
+import { getNoteContent } from "@/types/note";
+import { useNotesStore } from "@/stores/notes";
+import { useAuthStore } from "@/stores/auth";
+import { useCollaborationDoc } from "@/composables/useCollaborationDoc";
 
 const props = defineProps<{
   note: TextNote;
@@ -34,7 +34,10 @@ onMounted(() => {
 const { shouldSync } = storeToRefs(notesStore);
 
 const collaborationEnabled = computed(
-  () => !props.readonly && Boolean(shouldSync.value) && Boolean(authStore.state.baseUrl)
+  () =>
+    !props.readonly &&
+    Boolean(shouldSync.value) &&
+    Boolean(authStore.state.baseUrl)
 );
 
 const localText = ref(getNoteContent(props.note)); // UNIFIED: use helper
@@ -66,7 +69,7 @@ watch(
 watch(
   () => (props.note as any)?.text,
   (newText) => {
-    if (!collaborationEnabled.value && typeof newText === 'string') {
+    if (!collaborationEnabled.value && typeof newText === "string") {
       localText.value = newText;
     }
   }
@@ -84,7 +87,7 @@ function debounce<T extends (...args: any[]) => void>(fn: T, delay = 400) {
 
 const emitUpdate = debounce((text: string) => {
   if (props.readonly) return;
-  emit('update', { content: text, text });
+  emit("update", { content: text, text });
 }, 450);
 
 function setupCollaboration() {
@@ -96,7 +99,7 @@ function setupCollaboration() {
 
   tearDownCollaboration();
 
-  const text = doc.getText('content');
+  const text = doc.getText("content");
   yText = text;
 
   const noteContent = getNoteContent(props.note); // UNIFIED
@@ -134,7 +137,7 @@ function setupCollaboration() {
         }
       });
     },
-    { flush: 'sync' }
+    { flush: "sync" }
   );
 }
 
@@ -151,15 +154,19 @@ function tearDownCollaboration() {
   }
 }
 
-watch(collaborationEnabled, (enabled) => {
-  if (enabled) {
-    setupCollaboration();
-  } else {
-    tearDownCollaboration();
-    collaboration.disconnect();
-    localText.value = getNoteContent(props.note); // UNIFIED
-  }
-}, { immediate: true });
+watch(
+  collaborationEnabled,
+  (enabled) => {
+    if (enabled) {
+      setupCollaboration();
+    } else {
+      tearDownCollaboration();
+      collaboration.disconnect();
+      localText.value = getNoteContent(props.note); // UNIFIED
+    }
+  },
+  { immediate: true }
+);
 
 watch(
   () => collaboration.doc.value,
@@ -191,7 +198,7 @@ function handleUpdate() {
 
   const currentContent = getNoteContent(props.note); // UNIFIED
   if (localText.value !== currentContent) {
-    emit('update', { content: localText.value, text: localText.value });
+    emit("update", { content: localText.value, text: localText.value });
   }
 }
 
@@ -200,7 +207,7 @@ function handleInput() {
   if (collaborationEnabled.value) return;
 
   // Emit updates immediately on input for real-time reactivity
-  emit('update', { content: localText.value, text: localText.value });
+  emit("update", { content: localText.value, text: localText.value });
 }
 
 const collaborationStatus = computed(() => collaboration.status.value);
@@ -216,14 +223,16 @@ const collaborationStatus = computed(() => collaboration.status.value);
       placeholder="Write your note..."
       @input="handleInput"
       @blur="handleUpdate"
-      @keydown="(e: KeyboardEvent) => {
-        $emit('keydown', e);
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          e.stopPropagation();
-          $emit('close');
+      @keydown="
+        (e: KeyboardEvent) => {
+          $emit('keydown', e);
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            $emit('close');
+          }
         }
-      }"
+      "
     />
     <p
       v-if="collaborationEnabled"

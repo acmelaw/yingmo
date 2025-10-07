@@ -17,7 +17,15 @@ export type NoteType =
   | "todo"
   | "chord-sheet";
 
-export type NoteColor = 'default' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink';
+export type NoteColor =
+  | "default"
+  | "red"
+  | "orange"
+  | "yellow"
+  | "green"
+  | "blue"
+  | "purple"
+  | "pink";
 
 export interface BaseNote {
   id: string;

@@ -104,17 +104,18 @@ export const chordSheetModule: NoteModule = {
     {
       command: "/chords",
       aliases: ["/chord", "/guitar", "/music", "/chord-sheet"],
-      description: "Create a chord sheet with parameters like /chords/transpose=2/key=G",
+      description:
+        "Create a chord sheet with parameters like /chords/transpose=2/key=G",
       icon: "🎸",
       defaultParameters: {
         transpose: 0,
-        format: 'chordpro'
+        format: "chordpro",
       },
       examples: [
         "/chords {title:Amazing Grace} {artist:John Newton} [G]Amazing [C]grace",
         "/chords/transpose=2/key=G [G]Amazing [C]grace",
-        "/chords/format=tab | G C | D Em |"
-      ]
+        "/chords/format=tab | G C | D Em |",
+      ],
     },
   ],
 

@@ -9,9 +9,9 @@ const props = defineProps<{
 
 // Unified: content is the URL
 const imageUrl = computed(() => getNoteContent(props.note));
-const imageAlt = computed(() => getNoteMeta<string>(props.note, 'alt'));
-const imageWidth = computed(() => getNoteMeta<number>(props.note, 'width'));
-const imageHeight = computed(() => getNoteMeta<number>(props.note, 'height'));
+const imageAlt = computed(() => getNoteMeta<string>(props.note, "alt"));
+const imageWidth = computed(() => getNoteMeta<number>(props.note, "width"));
+const imageHeight = computed(() => getNoteMeta<number>(props.note, "height"));
 </script>
 
 <template>

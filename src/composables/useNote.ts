@@ -4,9 +4,9 @@
  * Fine-grained reactivity for individual notes
  */
 
-import { computed, ref, watch, type Ref } from 'vue';
-import type { Note } from '@/types/note';
-import { useNotesStore } from '@/stores/notes';
+import { computed, ref, watch, type Ref } from "vue";
+import type { Note } from "@/types/note";
+import { useNotesStore } from "@/stores/notes";
 
 export interface UseNoteOptions {
   /**
@@ -30,20 +30,18 @@ export interface UseNoteOptions {
   onError?: (error: Error) => void;
 }
 
-export function useNote(noteId: string | Ref<string>, options: UseNoteOptions = {}) {
-  const {
-    optimistic = true,
-    autoSaveDelay = 500,
-    onUpdate,
-    onError,
-  } = options;
+export function useNote(
+  noteId: string | Ref<string>,
+  options: UseNoteOptions = {}
+) {
+  const { optimistic = true, autoSaveDelay = 500, onUpdate, onError } = options;
 
   const store = useNotesStore();
   const id = ref(noteId);
 
   // Fine-grained reactive note
-  const note = computed(() =>
-    store.notes.find(n => n.id === id.value) ?? null
+  const note = computed(
+    () => store.notes.find((n) => n.id === id.value) ?? null
   );
 
   // Local state for optimistic updates
@@ -137,7 +135,7 @@ export function useNote(noteId: string | Ref<string>, options: UseNoteOptions = 
    */
   async function removeTag(tag: string): Promise<void> {
     if (!note.value) return;
-    const tags = (note.value.tags ?? []).filter(t => t !== tag);
+    const tags = (note.value.tags ?? []).filter((t) => t !== tag);
     await update({ tags });
   }
 

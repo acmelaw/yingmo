@@ -3,7 +3,11 @@
     <div class="source-section">
       <h3 class="section-title">Source Content</h3>
 
-      <select v-model="sourceType" @change="handleSourceTypeChange" class="source-type-select">
+      <select
+        v-model="sourceType"
+        class="source-type-select"
+        @change="handleSourceTypeChange"
+      >
         <option value="text">Text</option>
         <option value="image">Image</option>
         <option value="url">URL</option>
@@ -12,29 +16,27 @@
       <textarea
         v-if="sourceType === 'text'"
         v-model="sourceData"
-        @input="handleSourceChange"
         placeholder="Enter source text..."
         class="source-input"
+        @input="handleSourceChange"
       ></textarea>
 
       <input
         v-else-if="sourceType === 'url'"
         v-model="sourceData"
-        @input="handleSourceChange"
         placeholder="Enter URL..."
         class="source-input"
         type="url"
+        @input="handleSourceChange"
       />
 
-      <div v-else class="placeholder-box">
-        Image upload coming soon
-      </div>
+      <div v-else class="placeholder-box">Image upload coming soon</div>
     </div>
 
     <div class="layers-section">
       <div class="section-header">
         <h3 class="section-title">Smart Layers</h3>
-        <button @click="addLayer" class="add-layer-btn">+ Add Layer</button>
+        <button class="add-layer-btn" @click="addLayer">+ Add Layer</button>
       </div>
 
       <div v-if="localLayers.length === 0" class="empty-state">
@@ -58,9 +60,7 @@
             {{ truncate(String(layer.result), 100) }}
           </div>
 
-          <div v-else class="layer-pending">
-            Not yet processed
-          </div>
+          <div v-else class="layer-pending">Not yet processed</div>
         </div>
       </div>
     </div>
@@ -80,26 +80,32 @@ const emit = defineEmits<{
   update: [data: Partial<SmartLayerNote>];
 }>();
 
-const localSource = ref(getNoteMeta<any>(props.note, 'source', { type: 'text', data: '' }));
-const localLayers = ref<SmartLayer[]>(getNoteMeta<SmartLayer[]>(props.note, 'layers', []) || []);
-const activeLayerId = ref<string | undefined>(getNoteMeta<string>(props.note, 'activeLayerId') || localLayers.value[0]?.id);
+const localSource = ref(
+  getNoteMeta<any>(props.note, "source", { type: "text", data: "" })
+);
+const localLayers = ref<SmartLayer[]>(
+  getNoteMeta<SmartLayer[]>(props.note, "layers", []) || []
+);
+const activeLayerId = ref<string | undefined>(
+  getNoteMeta<string>(props.note, "activeLayerId") || localLayers.value[0]?.id
+);
 
 watch(
-  () => getNoteMeta<any>(props.note, 'source'),
+  () => getNoteMeta<any>(props.note, "source"),
   (newSource) => {
     localSource.value = newSource;
   }
 );
 
 watch(
-  () => getNoteMeta<SmartLayer[]>(props.note, 'layers'),
+  () => getNoteMeta<SmartLayer[]>(props.note, "layers"),
   (newLayers) => {
     localLayers.value = newLayers || [];
   }
 );
 
 watch(
-  () => getNoteMeta<string>(props.note, 'activeLayerId'),
+  () => getNoteMeta<string>(props.note, "activeLayerId"),
   (newId) => {
     if (newId) activeLayerId.value = newId;
   }
@@ -116,8 +122,8 @@ function addLayer() {
   emit("update", {
     metadata: {
       ...props.note.metadata,
-      layers: localLayers.value
-    }
+      layers: localLayers.value,
+    },
   });
 }
 
@@ -126,8 +132,8 @@ function setActiveLayer(id: string) {
   emit("update", {
     metadata: {
       ...props.note.metadata,
-      activeLayerId: id
-    }
+      activeLayerId: id,
+    },
   });
 }
 
@@ -138,39 +144,39 @@ function updateLayerData(id: string, data: any) {
     emit("update", {
       metadata: {
         ...props.note.metadata,
-        layers: localLayers.value
-      }
+        layers: localLayers.value,
+      },
     });
   }
 }
 
-const sourceType = computed(() => localSource.value?.type || 'text');
+const sourceType = computed(() => localSource.value?.type || "text");
 const sourceData = computed({
-  get: () => localSource.value?.data || '',
+  get: () => localSource.value?.data || "",
   set: (value) => {
     localSource.value = { ...localSource.value, data: value };
-  }
+  },
 });
 
 function handleSourceChange() {
   emit("update", {
     metadata: {
       ...props.note.metadata,
-      source: localSource.value
-    }
+      source: localSource.value,
+    },
   });
 }
 
 function handleSourceTypeChange() {
   localSource.value = {
     type: sourceType.value,
-    data: ''
+    data: "",
   };
   handleSourceChange();
 }
 
 function truncate(text: string, length: number): string {
-  return text.length > length ? text.substring(0, length) + '...' : text;
+  return text.length > length ? text.substring(0, length) + "..." : text;
 }
 </script>
 

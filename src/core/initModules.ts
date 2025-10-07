@@ -31,5 +31,8 @@ export async function initializeModules() {
   await moduleRegistry.register(caesarCipherModule);
 
   console.log("All modules initialized");
-  console.log("Registered slash commands:", moduleRegistry.getAllSlashCommands());
+  console.log(
+    "Registered slash commands:",
+    moduleRegistry.getAllSlashCommands()
+  );
 }

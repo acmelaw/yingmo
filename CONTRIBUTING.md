@@ -1,6 +1,6 @@
-# Contributing Guide for Coding Agents
+# Contributing Guide
 
-This guide helps **autonomous coding agents** understand the codebase architecture to enable **parallel development by up to 100+ agents simultaneously** with minimal merge conflicts.
+This guide helps contributors understand the codebase architecture to enable **parallel development with minimal merge conflicts**.
 
 ## Core Architecture Principles
 
@@ -15,24 +15,27 @@ export const yourModule: NoteModule = {
   name: "Your Module",
   version: "1.0.0",
   supportedTypes: ["your-type"],
-  
-  slashCommands: [{
-    command: "/yourcommand",
-    description: "Creates a your-type note"
-  }],
-  
+
+  slashCommands: [
+    {
+      command: "/yourcommand",
+      description: "Creates a your-type note",
+    },
+  ],
+
   async install(context) {
     context.registerNoteType("your-type", yourHandler);
   },
-  
+
   components: {
     editor: YourEditor,
-    viewer: YourViewer
-  }
+    viewer: YourViewer,
+  },
 };
 ```
 
 **Register in `src/core/initModules.ts`:**
+
 ```typescript
 await moduleRegistry.register(yourModule);
 ```
@@ -42,7 +45,7 @@ await moduleRegistry.register(yourModule);
 The notes store is split into **independent modules** in `src/stores/notes/`:
 
 - **utils.ts** - Pure utility functions (ID generation, cloning, timestamps)
-- **tags.ts** - Tag extraction and filtering (Unicode-aware, pure functions)  
+- **tags.ts** - Tag extraction and filtering (Unicode-aware, pure functions)
 - **sync.ts** - Server synchronization with offline queue (class-based, DI)
 - **categories.ts** - Category indexing with reference counting (class-based)
 - **storage.ts** - Persistence abstraction (auto test/prod mode detection)
@@ -59,10 +62,12 @@ import { apiClient } from "@/services/apiClient";
 
 // ✅ GOOD - Injected dependency
 class SyncManager {
-  constructor(private config: {
-    apiClient: ApiClient;
-    getTenantId: () => string;
-  }) {}
+  constructor(
+    private config: {
+      apiClient: ApiClient;
+      getTenantId: () => string;
+    }
+  ) {}
 }
 ```
 
@@ -77,9 +82,9 @@ All modules implement standard interfaces defined in `src/types/`:
 
 ## Parallel Development Strategy
 
-### Conflict-Free Zones for Agents
+### Conflict-Free Zones for Contributors
 
-Different agents can work simultaneously on:
+Different contributors can work simultaneously on:
 
 1. **New Modules** (`src/modules/new-module/`)
    - Create new directory
@@ -111,6 +116,7 @@ Different agents can work simultaneously on:
 ### High-Conflict Zones (Coordinate First)
 
 ❌ **Avoid simultaneous edits:**
+
 - `src/main.ts` - App initialization
 - `src/types/note.ts` - Core type definitions (coordinate type additions)
 - `src/stores/notes.ts` - Main store orchestration
@@ -119,11 +125,12 @@ Different agents can work simultaneously on:
 ### Merge Conflict Resolution
 
 If conflicts occur in `initModules.ts`:
+
 ```typescript
-// Agent A adds:
+// Contributor A adds:
 await moduleRegistry.register(moduleA);
 
-// Agent B adds:
+// Contributor B adds:
 await moduleRegistry.register(moduleB);
 
 // Merged result:
@@ -136,28 +143,41 @@ Simple additive merges - just include both lines.
 ## Development Workflow
 
 ### Prerequisites
+
 - Node.js >= 18
 - Understand the module system (read this entire file)
 
 ### Quick Start
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Run dev server:**
+
    ```bash
    npm run dev
    ```
 
 3. **Run tests (essential):**
+
    ```bash
    npm test                  # Unit tests
    npm run test:e2e         # E2E tests
    ```
 
-4. **Optional - sync server:**
+4. **Lint and format (before committing):**
+
+   ```bash
+   npm run lint             # Check linting
+   npm run lint:fix         # Auto-fix linting issues
+   npm run format           # Format code with Prettier
+   npm run format:check     # Check formatting
+   ```
+
+5. **Optional - sync server:**
    ```bash
    cd sync-server
    npm install
@@ -167,6 +187,7 @@ Simple additive merges - just include both lines.
 ### Adding a New Module (Step-by-Step)
 
 **Step 1:** Create module directory
+
 ```bash
 mkdir -p src/modules/my-module
 touch src/modules/my-module/index.ts
@@ -177,6 +198,7 @@ touch src/modules/my-module/MyModuleViewer.vue
 **Step 2:** Implement module (see `src/modules/text/` for simplest example)
 
 **Step 3:** Register module in `src/core/initModules.ts`:
+
 ```typescript
 import { myModule } from "@/modules/my-module";
 // ...
@@ -186,6 +208,7 @@ await moduleRegistry.register(myModule);
 **Step 4:** Add tests in `src/__tests__/my-module.test.ts`
 
 **Step 5:** Verify:
+
 ```bash
 npm run build             # Must pass
 npm test                  # Must pass
@@ -194,23 +217,27 @@ npm test                  # Must pass
 ### Code Patterns & Conventions
 
 #### Pure Functions (Preferred)
+
 ```typescript
 // ✅ Pure, testable, no side effects
 export function extractHashtags(text: string): string[] {
   const regex = /#([\p{L}\p{N}_]+)/gu;
-  return [...text.matchAll(regex)].map(m => m[1]);
+  return [...text.matchAll(regex)].map((m) => m[1]);
 }
 ```
 
 #### Injectable Classes (When State Needed)
+
 ```typescript
 // ✅ Dependency injection for testability
 export class SyncManager {
-  constructor(private deps: {
-    apiClient: ApiClient;
-    getTenantId: () => string;
-  }) {}
-  
+  constructor(
+    private deps: {
+      apiClient: ApiClient;
+      getTenantId: () => string;
+    }
+  ) {}
+
   async syncNote(note: Note) {
     const tenant = this.deps.getTenantId();
     await this.deps.apiClient.post(`/notes/${tenant}`, note);
@@ -219,6 +246,7 @@ export class SyncManager {
 ```
 
 #### Module Components
+
 ```typescript
 // ✅ Self-contained, receives note via props
 <script setup lang="ts">
@@ -235,6 +263,7 @@ const emit = defineEmits<{
 ```
 
 #### Avoid Global State
+
 ```typescript
 // ❌ BAD - Global state
 let cache = {};
@@ -250,6 +279,7 @@ class CacheService {
 **Every module must have tests:**
 
 1. **Unit tests** for pure functions:
+
 ```typescript
 // src/__tests__/my-module.test.ts
 import { describe, it, expect } from "vitest";
@@ -263,6 +293,7 @@ describe("My Module Utils", () => {
 ```
 
 2. **Integration tests** for module registration:
+
 ```typescript
 it("registers my-module correctly", async () => {
   await moduleRegistry.register(myModule);
@@ -271,6 +302,7 @@ it("registers my-module correctly", async () => {
 ```
 
 3. **E2E tests** for user flows (if UI-facing):
+
 ```typescript
 // e2e/my-module.spec.ts
 test("creates my-module note via slash command", async ({ page }) => {
@@ -284,31 +316,36 @@ test("creates my-module note via slash command", async ({ page }) => {
 ### Library Refactoring Awareness
 
 **Current libraries are subject to change:**
+
 - UI framework (Vue/Quasar) → May migrate
-- State management (Pinia) → May migrate  
+- State management (Pinia) → May migrate
 - Editor (Tiptap) → May migrate
 - Build tool (Vite) → May migrate
 
 **Focus on patterns, not libraries:**
+
 - ✅ Module isolation
 - ✅ Dependency injection
 - ✅ Interface compliance
 - ✅ Pure functions where possible
 
-**When refactoring happens:**
-- Modules with clean abstractions survive
+**When libraries change:**
+
+- Modules with clean abstractions adapt easily
 - Modules with library-specific code need updates
 - Well-tested modules migrate easier
 
 ## Pull Request Guidelines
 
 ### Branch Naming
+
 - `feat/module-name` - New module
 - `fix/module-name` - Bug fix in module
-- `refactor/area` - Refactoring (coordinate with other agents)
+- `improve/area` - Code improvements (coordinate with others)
 - `docs/topic` - Documentation only
 
 ### Commit Messages
+
 ```
 feat(my-module): add slash command support
 
@@ -320,52 +357,109 @@ feat(my-module): add slash command support
 ### PR Checklist
 
 Before submitting:
+
 - [ ] **Build passes:** `npm run build`
 - [ ] **Tests pass:** `npm test && npm run test:e2e`
+- [ ] **Linting passes:** `npm run lint`
+- [ ] **Formatting passes:** `npm run format:check`
 - [ ] **Module registered** in `initModules.ts`
 - [ ] **Tests added** for new functionality
 - [ ] **Types defined** in `src/types/` or module
 - [ ] **No hardcoded dependencies** (use DI)
 - [ ] **Follows existing patterns** (check similar modules)
 - [ ] **Minimal file changes** (only affected files)
+- [ ] **Screenshots updated** (if UI changes): `npm run screenshots`
+
+### Screenshot Generation
+
+For UI changes or new features, update documentation screenshots:
+
+```bash
+# Generate all screenshots (hero + feature demos)
+npm run screenshots
+
+# Generate only hero screenshot
+npm run screenshots:hero
+
+# Generate only feature demo screenshots
+npm run screenshots:features
+```
+
+**Adding a new feature demo screenshot:**
+
+1. Add test in `e2e/feature-demos.spec.ts`:
+
+```typescript
+test("capture my-feature demo", async ({ page }) => {
+  await page.goto("/");
+  await setupAppForScreenshot(page);
+
+  // Set up the feature state
+  await typeInInput(page, "Demo text");
+
+  // Capture screenshot
+  await captureOptimizedScreenshot(page, {
+    path: "docs/images/feature-my-feature.png",
+    type: "png",
+  });
+});
+```
+
+2. Add screenshot to README with description
+3. Run `npm run screenshots` to generate
+4. Commit both test and screenshot
+
+**Helper functions** (in `e2e/utils/screenshot-helper.ts`):
+
+- `setupAppForScreenshot(page)` - Close modals, prepare app
+- `captureOptimizedScreenshot(page, options)` - Take optimized screenshot
+- `createNote(page, content, slashCommand)` - Create a note
+- `typeInInput(page, content)` - Type without sending (for live features)
 
 ### PR Description Template
 
 ```markdown
 ## What
+
 Brief description of module/feature
 
-## Why  
+## Why
+
 Problem it solves or capability it adds
 
 ## Module Details
+
 - Type: text/markdown/code/custom
 - Slash command: /yourcommand
 - Components: Editor, Viewer
 - Dependencies: None / Service X (via DI)
 
 ## Testing
-- Unit tests: ✅ Added in __tests__/my-module.test.ts
+
+- Unit tests: ✅ Added in **tests**/my-module.test.ts
 - Integration: ✅ Module registration verified
 - E2E: ✅ Added in e2e/my-module.spec.ts
 
 ## Conflicts
+
 - Files modified: 2 (new module + initModules.ts)
 - Conflict risk: LOW (one-line addition)
 - Coordination needed: NO
 ```
 
-## Agent Coordination
+## Coordination
 
 ### When to Coordinate
 
 **Coordinate if modifying:**
+
 - Core type definitions (`src/types/note.ts`)
 - Main store file (`src/stores/notes.ts`)
 - App initialization (`src/main.ts`)
 - Package dependencies (`package.json`)
 
 **No coordination needed:**
+
 - New module in `src/modules/`
 - New store module in `src/stores/notes/`
 - New service in `src/services/`
@@ -375,6 +469,7 @@ Problem it solves or capability it adds
 ### Communication Pattern
 
 If you must modify shared files:
+
 1. Announce intent: "Modifying src/types/note.ts to add XType"
 2. Make minimal changes
 3. Commit immediately after testing
@@ -384,37 +479,41 @@ If you must modify shared files:
 
 ### File Change Impact
 
-| File | Change Frequency | Conflict Risk | Agent Coordination |
-|------|-----------------|---------------|-------------------|
-| `src/modules/*/` | High | ⚪ None | ❌ No |
-| `src/core/initModules.ts` | High | 🟡 Low | ⚠️ Additive only |
-| `src/stores/notes/*` | Medium | ⚪ None | ❌ No |
-| `src/types/module.ts` | Low | ⚪ None | ✅ Interface stable |
-| `src/types/note.ts` | Low | 🔴 High | ✅ Required |
-| `src/main.ts` | Very Low | 🔴 High | ✅ Required |
-| `package.json` | Low | 🔴 High | ✅ Required |
+| File                      | Change Frequency | Conflict Risk | Agent Coordination  |
+| ------------------------- | ---------------- | ------------- | ------------------- |
+| `src/modules/*/`          | High             | ⚪ None       | ❌ No               |
+| `src/core/initModules.ts` | High             | 🟡 Low        | ⚠️ Additive only    |
+| `src/stores/notes/*`      | Medium           | ⚪ None       | ❌ No               |
+| `src/types/module.ts`     | Low              | ⚪ None       | ✅ Interface stable |
+| `src/types/note.ts`       | Low              | 🔴 High       | ✅ Required         |
+| `src/main.ts`             | Very Low         | 🔴 High       | ✅ Required         |
+| `package.json`            | Low              | 🔴 High       | ✅ Required         |
 
 ### Common Tasks
 
 **Add a note type module:** 15 min
+
 1. Create `src/modules/my-module/`
 2. Implement `NoteModule` interface
 3. Add to `initModules.ts`
 4. Write tests
 
 **Extend store:** 10 min
+
 1. Create `src/stores/notes/my-feature.ts`
 2. Export pure functions or class
 3. Import in main store if needed
 4. Write tests
 
 **Add a service:** 10 min
+
 1. Create `src/services/MyService.ts`
 2. Register via `moduleRegistry.registerService()`
 3. Inject where needed
 4. Write tests
 
 **Add a component:** 5 min
+
 1. Create `src/components/MyComponent.vue`
 2. Use in module or view
 3. Write tests
@@ -432,6 +531,7 @@ If you must modify shared files:
 5. ✅ **Type contracts** - Shared interfaces, independent implementations
 
 **Your mission:**
+
 - Read this guide thoroughly
 - Follow established patterns
 - Write isolated, testable code

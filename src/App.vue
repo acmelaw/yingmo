@@ -76,12 +76,11 @@ function openServerSelector() {
 </script>
 
 <template>
-  <div class="h-screen w-screen overflow-hidden bg-bg-primary dark:bg-dark-bg-primary">
+  <div
+    class="h-screen w-screen overflow-hidden bg-bg-primary dark:bg-dark-bg-primary"
+  >
     <!-- Loading Screen -->
-    <div
-      v-if="!modulesReady"
-      class="flex items-center justify-center h-full"
-    >
+    <div v-if="!modulesReady" class="flex items-center justify-center h-full">
       <div class="text-center space-y-6 px-4 animate-slide-up-fade">
         <div class="text-8xl animate-pulse">💬</div>
         <div class="space-y-2">
@@ -96,10 +95,7 @@ function openServerSelector() {
     </div>
 
     <!-- Main App Shell -->
-    <NoteShell
-      v-else
-      @open-server-selector="openServerSelector"
-    />
+    <NoteShell v-else @open-server-selector="openServerSelector" />
 
     <!-- Server Selector Modal -->
     <Teleport to="body">

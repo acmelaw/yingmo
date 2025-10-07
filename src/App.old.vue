@@ -23,8 +23,14 @@ const settings = useSettingsStore();
 const notesStore = useNotesStore();
 const { t } = useI18n();
 
-const { syncing, shouldSync, hasRemoteSession, syncError, lastSyncedAt, notes } =
-  storeToRefs(notesStore);
+const {
+  syncing,
+  shouldSync,
+  hasRemoteSession,
+  syncError,
+  lastSyncedAt,
+  notes,
+} = storeToRefs(notesStore);
 const { syncEnabled, currentServer } = storeToRefs(settings);
 
 // === Local State ===
@@ -41,19 +47,24 @@ const activeRoomId = ref("inbox");
 const appTitle = computed(() => t("appName") || "Notes");
 
 const syncStatus = computed(() => {
-  if (!syncEnabled.value) return { text: "Offline", icon: "○", variant: "muted" };
-  if (!hasRemoteSession.value) return { text: "Disconnected", icon: "○", variant: "warning" };
+  if (!syncEnabled.value)
+    return { text: "Offline", icon: "○", variant: "muted" };
+  if (!hasRemoteSession.value)
+    return { text: "Disconnected", icon: "○", variant: "warning" };
   if (syncing.value) return { text: "Syncing...", icon: "⏳", variant: "info" };
   if (syncError.value) return { text: "Error", icon: "⚠️", variant: "error" };
   if (lastSyncedAt.value) {
-    const minutes = Math.max(1, Math.round((Date.now() - lastSyncedAt.value) / 60000));
+    const minutes = Math.max(
+      1,
+      Math.round((Date.now() - lastSyncedAt.value) / 60000)
+    );
     return { text: `${minutes}m ago`, icon: "✓", variant: "success" };
   }
   return { text: "Ready", icon: "✓", variant: "success" };
 });
 
-const transformingNote = computed(() =>
-  notes.value.find((note) => note.id === transformingNoteId.value) ?? null
+const transformingNote = computed(
+  () => notes.value.find((note) => note.id === transformingNoteId.value) ?? null
 );
 
 const availableNoteTypes = computed<NoteType[]>(() => {
@@ -65,7 +76,9 @@ const availableNoteTypes = computed<NoteType[]>(() => {
     .forEach((m) => m.supportedTypes.forEach((type) => types.add(type)));
 
   modules
-    .filter((m) => m.capabilities?.canTransform && m.supportedTypes.length === 0)
+    .filter(
+      (m) => m.capabilities?.canTransform && m.supportedTypes.length === 0
+    )
     .forEach((m) => types.add(m.id as NoteType));
 
   const result = Array.from(types);
@@ -119,7 +132,7 @@ function handleOffline() {
 
 async function handleManualSync() {
   if (!shouldSync.value || syncing.value) return;
-  
+
   try {
     await notesStore.syncFromServer();
     if (typeof notesStore.syncPendingNotes === "function") {
@@ -164,11 +177,12 @@ async function handleTransform(toType: NoteType | string) {
     closeTransformDialog();
   }
 }
-
 </script>
 
 <template>
-  <div class="h-screen w-screen overflow-hidden bg-bg-primary dark:bg-dark-bg-primary">
+  <div
+    class="h-screen w-screen overflow-hidden bg-bg-primary dark:bg-dark-bg-primary"
+  >
     <!-- Loading State -->
     <div
       v-if="!modulesInitialized"
@@ -193,16 +207,20 @@ async function handleTransform(toType: NoteType | string) {
       <template #header>
         <div class="w-full flex items-center justify-between gap-3 sm:gap-4">
           <div class="flex-1 min-w-0">
-            <h1 class="text-base sm:text-lg md:text-xl font-black uppercase tracking-wide truncate">
+            <h1
+              class="text-base sm:text-lg md:text-xl font-black uppercase tracking-wide truncate"
+            >
               {{ appTitle }}
             </h1>
             <p class="text-2xs sm:text-xs font-bold opacity-60 truncate">
-              <span :class="{
-                'text-semantic-success': syncStatus.variant === 'success',
-                'text-semantic-error': syncStatus.variant === 'error',
-                'text-semantic-warning': syncStatus.variant === 'warning',
-                'text-semantic-info': syncStatus.variant === 'info',
-              }">
+              <span
+                :class="{
+                  'text-semantic-success': syncStatus.variant === 'success',
+                  'text-semantic-error': syncStatus.variant === 'error',
+                  'text-semantic-warning': syncStatus.variant === 'warning',
+                  'text-semantic-info': syncStatus.variant === 'info',
+                }"
+              >
                 {{ syncStatus.icon }} {{ syncStatus.text }}
               </span>
               <span v-if="currentServer" class="hidden sm:inline">
@@ -220,11 +238,7 @@ async function handleTransform(toType: NoteType | string) {
               <span :class="{ 'animate-spin': syncing }">🔄</span>
               <span class="hidden sm:inline">Sync</span>
             </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              @click="openServerSelector"
-            >
+            <Button variant="secondary" size="sm" @click="openServerSelector">
               🌐
               <span class="hidden sm:inline">Server</span>
             </Button>
@@ -251,8 +265,12 @@ async function handleTransform(toType: NoteType | string) {
 
       <!-- Right Sidebar: Future insights/presence -->
       <template #right>
-        <div class="flex-1 flex flex-col overflow-hidden bg-bg-secondary dark:bg-dark-bg-secondary">
-          <div class="shrink-0 p-4 border-b-2 border-base-black dark:border-white">
+        <div
+          class="flex-1 flex flex-col overflow-hidden bg-bg-secondary dark:bg-dark-bg-secondary"
+        >
+          <div
+            class="shrink-0 p-4 border-b-2 border-base-black dark:border-white"
+          >
             <h2 class="text-sm font-black uppercase tracking-wide opacity-70">
               Insights
             </h2>

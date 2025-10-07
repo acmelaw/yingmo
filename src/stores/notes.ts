@@ -353,8 +353,8 @@ export const useNotesStore = defineStore("notes", () => {
         typeof payloadData.text === "string"
           ? payloadData.text
           : typeof payloadData.content === "string"
-          ? (payloadData.content as string)
-          : "";
+            ? (payloadData.content as string)
+            : "";
 
       if (state.value.autoExtractTags && initialText) {
         finalTags = mergeTags(initialText, tags, true);
@@ -505,7 +505,10 @@ export const useNotesStore = defineStore("notes", () => {
   }
 
   // Bulk operations
-  async function bulkUpdate(ids: string[], updates: Partial<Note>): Promise<void> {
+  async function bulkUpdate(
+    ids: string[],
+    updates: Partial<Note>
+  ): Promise<void> {
     if (!ids || ids.length === 0) return;
     // Run updates in parallel; update() will handle sync/pending queue logic
     await Promise.all(ids.map((id) => update(id, updates)));
@@ -633,8 +636,8 @@ export const useNotesStore = defineStore("notes", () => {
             typeof next.text === "string"
               ? next.text
               : typeof next.content === "string"
-              ? next.content
-              : "";
+                ? next.content
+                : "";
           next.text = textValue;
           next.content = textValue;
         }

@@ -7,12 +7,12 @@
 :root {
   /* === BASE COLORS === */
   --color-base-black: #000000;
-  --color-base-white: #FFFFFF;
+  --color-base-white: #ffffff;
 
   /* === BACKGROUNDS === */
-  --color-bg-primary: #FAFAFA;
-  --color-bg-secondary: #F0F0F0;
-  --color-bg-tertiary: #E8E8E8;
+  --color-bg-primary: #fafafa;
+  --color-bg-secondary: #f0f0f0;
+  --color-bg-tertiary: #e8e8e8;
 
   /* === TEXT === */
   --color-text-primary: #000000;
@@ -20,18 +20,18 @@
   --color-text-tertiary: #666666;
 
   /* === ACCENTS === */
-  --color-accent-pink: #FF006E;
-  --color-accent-cyan: #00F5FF;
-  --color-accent-yellow: #FFFF00;
-  --color-accent-green: #00FF41;
-  --color-accent-purple: #B026FF;
-  --color-accent-orange: #FF6B00;
+  --color-accent-pink: #ff006e;
+  --color-accent-cyan: #00f5ff;
+  --color-accent-yellow: #ffff00;
+  --color-accent-green: #00ff41;
+  --color-accent-purple: #b026ff;
+  --color-accent-orange: #ff6b00;
 
   /* === SEMANTIC === */
-  --color-success: #00FF41;
-  --color-error: #FF006E;
-  --color-warning: #FFFF00;
-  --color-info: #00F5FF;
+  --color-success: #00ff41;
+  --color-error: #ff006e;
+  --color-warning: #ffff00;
+  --color-info: #00f5ff;
 
   /* === BORDERS === */
   --border-width-thin: 2px;
@@ -56,8 +56,9 @@
   --space-2xl: 3rem;
 
   /* === TYPOGRAPHY === */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Arial', 'Helvetica', sans-serif;
-  --font-mono: 'Courier New', 'Courier', monospace;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Arial", "Helvetica", sans-serif;
+  --font-mono: "Courier New", "Courier", monospace;
 
   --text-xs: 0.7rem;
   --text-sm: 0.85rem;
@@ -92,26 +93,26 @@
 /* === DARK MODE === */
 .dark {
   /* Base colors inverted */
-  --color-base-black: #FFFFFF;
-  --color-base-white: #0A0A0A;
+  --color-base-black: #ffffff;
+  --color-base-white: #0a0a0a;
 
   /* Backgrounds */
-  --color-bg-primary: #0A0A0A;
-  --color-bg-secondary: #1A1A1A;
-  --color-bg-tertiary: #2A2A2A;
+  --color-bg-primary: #0a0a0a;
+  --color-bg-secondary: #1a1a1a;
+  --color-bg-tertiary: #2a2a2a;
 
   /* Text */
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #CCCCCC;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #cccccc;
   --color-text-tertiary: #999999;
 
   /* Accents stay vibrant */
-  --color-accent-pink: #FF1A8C;
-  --color-accent-cyan: #00FFFF;
-  --color-accent-yellow: #FFFF33;
-  --color-accent-green: #39FF14;
-  --color-accent-purple: #C855FF;
-  --color-accent-orange: #FF8533;
+  --color-accent-pink: #ff1a8c;
+  --color-accent-cyan: #00ffff;
+  --color-accent-yellow: #ffff33;
+  --color-accent-green: #39ff14;
+  --color-accent-purple: #c855ff;
+  --color-accent-orange: #ff8533;
 
   /* Border color inverted */
   --border-color: var(--color-base-black);
