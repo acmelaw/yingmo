@@ -10,7 +10,7 @@ Yingmo is architected for **massive parallel development** with these core princ
 4. **Registry Pattern** - Central registry manages all modules, services, and components
 5. **Type Contracts** - Shared interfaces enable independent implementations
 
-**Key Insight:** Libraries (Vue, Pinia, etc.) are implementation details. Focus on architectural patterns that survive library migrations.
+**Key Insight:** Libraries (Vue, Pinia, etc.) are implementation details. Focus on architectural patterns that remain stable across library changes.
 
 ## System Overview
 
@@ -453,7 +453,7 @@ const textNoteHandler: NoteTypeHandler = {
 
 ## Parallel Development Enablers
 
-### Why This Architecture Enables 100+ Concurrent Agents
+### Why This Architecture Enables Concurrent Development
 
 **1. Isolated Module Development**
 - Each module in separate directory
@@ -479,11 +479,11 @@ const textNoteHandler: NoteTypeHandler = {
 **5. Type Contracts**
 - Interfaces stable, implementations flexible
 - TypeScript catches integration errors
-- Agents work against contracts, not implementations
+- Contributors work against contracts, not implementations
 
 ### Conflict Probability Matrix
 
-| Change Type | Files Modified | Agents Affected | Conflict Risk |
+| Change Type | Files Modified | Contributors Affected | Conflict Risk |
 |------------|---------------|----------------|---------------|
 | Add new module | 2 (module dir + initModules.ts) | All adding modules | 🟡 5% (merge initModules) |
 | Add store module | 1 (new file) | 0 | ⚪ 0% |
@@ -493,7 +493,7 @@ const textNoteHandler: NoteTypeHandler = {
 | Modify main store | 1 (notes.ts) | Many | 🔴 60% (coordinate!) |
 | Add dependency | 1 (package.json) | All | 🔴 50% (coordinate!) |
 
-**Expected conflict rate with 100 agents following patterns: <5%**
+**Expected conflict rate following these patterns: <5%**
 
 ## Current Implementation Details
 
@@ -528,20 +528,20 @@ const textNoteHandler: NoteTypeHandler = {
 - Unit tests: Vitest
 - E2E tests: Playwright
 
-**Refactoring Strategy:**
-When libraries change, well-architected modules survive:
+**Evolutionary Strategy:**
+When libraries change, well-architected modules adapt easily:
 1. Extract business logic to pure functions ✅
 2. Isolate framework code to components ✅
 3. Use dependency injection for services ✅
 4. Define clear type contracts ✅
 
-Result: Modules need minimal updates during migrations.
+Result: Modules need minimal updates during library changes.
 
 ## References
 
 **Deep Dives:**
-- Store refactoring patterns: `src/stores/notes/README.md`
-- Module development: `CONTRIBUTING.md`
+- Store architecture patterns: [src/stores/notes/README.md](../src/stores/notes/README.md)
+- Module development: [CONTRIBUTING.md](../CONTRIBUTING.md)
 - Type definitions: `src/types/module.ts`, `src/types/note.ts`
 
 **Example Modules:**

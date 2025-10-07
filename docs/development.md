@@ -1,13 +1,13 @@
 # Development Guide
 
-## Quick Start for Coding Agents
+## Quick Start
 
-**Goal:** Get productive in <10 minutes by understanding patterns, not libraries.
+**Goal:** Get productive quickly by understanding patterns, not libraries.
 
 ### Prerequisites
 - Node.js >= 18
 - Understanding of TypeScript
-- Read `CONTRIBUTING.md` for agent collaboration patterns
+- Read [CONTRIBUTING.md](../CONTRIBUTING.md) for collaboration patterns
 
 ### Setup (2 min)
 
@@ -37,9 +37,13 @@ npm test
 
 # TypeScript should compile
 npx tsc --noEmit
-```
 
-If all pass, you're ready to develop.
+# Linting should pass
+npm run lint
+
+# Formatting should pass
+npm run format:check
+```
 
 If all pass, you're ready to develop.
 
@@ -540,6 +544,10 @@ npm run lint:fix       # Auto-fix
 | `npm run test:e2e:ui` | E2E tests (interactive) |
 | `npm run test:e2e:headed` | E2E tests (visible browser) |
 | `npm run test:e2e:debug` | E2E tests (debug mode) |
+| `npm run lint` | Check code style |
+| `npm run lint:fix` | Auto-fix linting issues |
+| `npm run format` | Format code with Prettier |
+| `npm run format:check` | Check formatting without changes |
 
 ### Sync Server (sync-server/package.json)
 
@@ -572,13 +580,13 @@ import { MyComponent } from "@/components";    // → src/components
 
 ## Resources
 
-- **Architecture patterns:** `docs/architecture.md`
-- **Agent collaboration:** `CONTRIBUTING.md`
-- **Store refactoring:** `src/stores/notes/README.md`
+- **Architecture patterns:** [architecture.md](architecture.md)
+- **Collaboration guide:** [../CONTRIBUTING.md](../CONTRIBUTING.md)
+- **Store architecture:** [../src/stores/notes/README.md](../src/stores/notes/README.md)
 - **Type definitions:** `src/types/module.ts`, `src/types/note.ts`
 - **Example modules:** `src/modules/text/` (simplest), `src/modules/markdown/` (typical)
 
-## Summary for Agents
+## Summary
 
 **Remember:**
 1. 📦 Modules are isolated - work independently

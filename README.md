@@ -1,19 +1,19 @@
 # Yingmo
 
-A pluggable, modular notes application designed for **parallel development by multiple independent agents**. The architecture emphasizes extensibility, separation of concerns, and minimal code delta changes to enable simultaneous work across the codebase.
+A pluggable, modular notes application designed for **parallel development by multiple contributors**. The architecture emphasizes extensibility, separation of concerns, and minimal code changes to enable simultaneous work across the codebase.
 
 ## Core Philosophy
 
-**Modularity First**: Every feature is a self-contained module that registers itself with the central registry. This allows multiple agents to work on different modules simultaneously without conflicts.
+**Modularity First**: Every feature is a self-contained module that registers itself with the central registry. This allows multiple contributors to work on different modules simultaneously without conflicts.
 
 **Dependency Injection**: Services, stores, and handlers are injected rather than imported directly, enabling isolated development and testing.
 
 **Convention over Configuration**: Follow established patterns (see CONTRIBUTING.md) to ensure consistent code style across all contributions.
 
-**Library Agnostic**: Current UI/state libraries are implementation details subject to refactoring. Focus on architectural patterns, not specific frameworks.
+**Library Agnostic**: Current UI/state libraries are implementation details that may evolve. Focus on architectural patterns, not specific frameworks.
 
 For detailed store architecture patterns, see:
-- src/stores/notes/README.md
+- [src/stores/notes/README.md](src/stores/notes/README.md)
 
 ## Repository Structure
 
@@ -29,7 +29,7 @@ For detailed store architecture patterns, see:
 │   └── components/          # 🎨 UI components
 ├── sync-server/             # 🔄 Optional sync server with module system
 ├── docs/                    # 📚 Architecture and development guides
-└── CONTRIBUTING.md          # 🤖 Agent collaboration guide
+└── CONTRIBUTING.md          # 🤝 Collaboration guide
 ```
 
 **Key Directories for Parallel Development:**
@@ -97,8 +97,13 @@ From package.json:
   - `npm run test:e2e:ui`
   - `npm run test:e2e:headed`
   - `npm run test:e2e:debug`
+- Linting & Formatting:
+  - `npm run lint` - Check code style
+  - `npm run lint:fix` - Auto-fix linting issues
+  - `npm run format` - Format code with Prettier
+  - `npm run format:check` - Check formatting without changes
 
-Sync server scripts (see docs/sync-server.md):
+Sync server scripts (see [docs/sync-server.md](docs/sync-server.md)):
 - Dev: `npm run dev`
 - Build: `npm run build`
 - Start: `npm start`
@@ -137,20 +142,21 @@ Sync server scripts (see docs/sync-server.md):
 - All modules implement standard interfaces
 
 See detailed patterns in:
-- docs/architecture.md - System design and data flow
-- docs/development.md - Code conventions and patterns
-- src/stores/notes/README.md - Store refactoring guide
+- [docs/architecture.md](docs/architecture.md) - System design and data flow
+- [docs/development.md](docs/development.md) - Code conventions and patterns
+- [src/stores/notes/README.md](src/stores/notes/README.md) - Store architecture patterns
 
-## For Coding Agents
+## Development & Contributing
 
-**Read CONTRIBUTING.md first** - Essential guide for parallel development by multiple agents
+**Read [CONTRIBUTING.md](CONTRIBUTING.md) first** - Essential guide for parallel development
 
-Key principles for agents:
+Key principles:
 1. **One module per PR** - Minimize merge conflicts
 2. **Follow existing patterns** - Check similar modules for conventions
 3. **Use dependency injection** - Never hardcode service references
 4. **Write isolated tests** - Each module must be independently testable
 5. **Register, don't import** - Use `ModuleRegistry` for cross-module access
+6. **Lint and format** - Run `npm run lint:fix` and `npm run format` before committing
 
 CONTRIBUTING.md contains:
 - Module development workflow

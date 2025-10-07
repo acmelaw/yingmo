@@ -1,12 +1,10 @@
+# Notes Store Architecture
 
-
-# Notes Store Refactoring
-
-This directory contains the refactored notes store following modern TypeScript best practices and modular architecture.
+This directory contains the modular notes store following modern TypeScript best practices and architectural patterns.
 
 ## Architecture Overview
 
-The refactored store follows the **Single Responsibility Principle** and **Dependency Injection** patterns, breaking the monolithic store into focused, testable modules.
+The store follows the **Single Responsibility Principle** and **Dependency Injection** patterns, breaking functionality into focused, testable modules.
 
 ### Module Structure
 
@@ -123,9 +121,9 @@ src/stores/notes/
 
 ---
 
-## Main Store (`notesRefactored.ts`)
+## Main Store (`notes.ts`)
 
-The main store file is now a **thin orchestration layer** that:
+The main store file is a **thin orchestration layer** that:
 
 1. Initializes dependencies (services, managers)
 2. Exposes computed properties
@@ -140,7 +138,7 @@ The main store file is now a **thin orchestration layer** that:
 
 ✅ **Type Safety**: Full TypeScript with strict types and interfaces
 
-✅ **Readability**: ~600 LOC refactored store vs ~900 LOC monolithic
+✅ **Readability**: Focused modules with clear responsibilities
 
 ✅ **Maintainability**: Changes to sync logic don't affect tag extraction
 
@@ -148,27 +146,7 @@ The main store file is now a **thin orchestration layer** that:
 
 ✅ **Performance**: Optimized with Maps, Sets, and efficient algorithms
 
-## Migration Path
-
-### Phase 1: Side-by-side (Current)
-- Old store: `src/stores/notes.ts`
-- New store: `src/stores/notesRefactored.ts`
-- Components use old store
-- Tests pass for both
-
-### Phase 2: Gradual Migration
-```typescript
-// In components, gradually switch:
-import { useNotesStore } from "@/stores/notes"; // old
-import { useNotesStore } from "@/stores/notesRefactored"; // new
-```
-
-### Phase 3: Cleanup
-- Delete `src/stores/notes.ts`
-- Rename `notesRefactored.ts` → `notes.ts`
-- Remove old tests
-
-## Testing Strategy
+## Usage
 
 ### Unit Tests
 Each module can be tested independently:
@@ -193,22 +171,6 @@ test("SyncManager queues notes when offline", () => {
 
 ### Integration Tests
 Test the full store with all modules:
-
-```typescript
-import { useNotesStore } from "@/stores/notesRefactored";
-
-test("creates note offline and syncs when online", async () => {
-  const store = useNotesStore();
-  settings.syncEnabled = true;
-
-  const id = await store.create("text", { text: "#test" });
-  expect(store.pendingSync).toContain(id);
-
-  auth.login({ tenantId: "t1", userId: "u1", token: "tk1" });
-  await store.syncPendingNotes();
-  expect(store.pendingSync).not.toContain(id);
-});
-```
 
 ## Best Practices Applied
 
@@ -279,17 +241,7 @@ export { categoryCounts }; // Anyone can modify
 
 ## Performance Optimizations
 
-### Before (Monolithic)
-```typescript
-// Linear search for every operation
-const allTags = computed(() => {
-  const tags: string[] = [];
-  notes.forEach(n => tags.push(...(n.tags || [])));
-  return [...new Set(tags)].sort();
-});
-```
-
-### After (Modular)
+### Efficient Data Structures
 ```typescript
 // O(1) lookups with Set
 class CategoryManager {
@@ -337,18 +289,9 @@ export class BackgroundSyncManager extends SyncManager {
 }
 ```
 
-## API Comparison
+## API
 
-### Old Store (Monolithic)
-```typescript
-const store = useNotesStore();
-// 60+ methods mixed together
-store.create(...);
-store.syncFromServer();
-store.extractHashtags(...); // internal helper exposed
-```
-
-### New Store (Modular)
+### Store API
 ```typescript
 const store = useNotesStore();
 // Clear public API
@@ -368,9 +311,9 @@ Each module includes:
 - ✅ Usage examples in this README
 - ✅ Design pattern documentation
 
-## Conclusion
+## Summary
 
-This refactoring transforms a monolithic 900-line store into a modular, maintainable, and testable architecture following industry best practices:
+This modular architecture transforms the notes store into a maintainable, testable system following industry best practices:
 
 - **SOLID Principles**: Single responsibility, dependency inversion
 - **Functional Programming**: Pure functions, immutability

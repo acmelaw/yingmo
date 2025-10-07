@@ -1,6 +1,6 @@
-# Contributing Guide for Coding Agents
+# Contributing Guide
 
-This guide helps **autonomous coding agents** understand the codebase architecture to enable **parallel development by up to 100+ agents simultaneously** with minimal merge conflicts.
+This guide helps contributors understand the codebase architecture to enable **parallel development with minimal merge conflicts**.
 
 ## Core Architecture Principles
 
@@ -77,9 +77,9 @@ All modules implement standard interfaces defined in `src/types/`:
 
 ## Parallel Development Strategy
 
-### Conflict-Free Zones for Agents
+### Conflict-Free Zones for Contributors
 
-Different agents can work simultaneously on:
+Different contributors can work simultaneously on:
 
 1. **New Modules** (`src/modules/new-module/`)
    - Create new directory
@@ -120,10 +120,10 @@ Different agents can work simultaneously on:
 
 If conflicts occur in `initModules.ts`:
 ```typescript
-// Agent A adds:
+// Contributor A adds:
 await moduleRegistry.register(moduleA);
 
-// Agent B adds:
+// Contributor B adds:
 await moduleRegistry.register(moduleB);
 
 // Merged result:
@@ -157,7 +157,15 @@ Simple additive merges - just include both lines.
    npm run test:e2e         # E2E tests
    ```
 
-4. **Optional - sync server:**
+4. **Lint and format (before committing):**
+   ```bash
+   npm run lint             # Check linting
+   npm run lint:fix         # Auto-fix linting issues
+   npm run format           # Format code with Prettier
+   npm run format:check     # Check formatting
+   ```
+
+5. **Optional - sync server:**
    ```bash
    cd sync-server
    npm install
@@ -295,8 +303,8 @@ test("creates my-module note via slash command", async ({ page }) => {
 - ✅ Interface compliance
 - ✅ Pure functions where possible
 
-**When refactoring happens:**
-- Modules with clean abstractions survive
+**When libraries change:**
+- Modules with clean abstractions adapt easily
 - Modules with library-specific code need updates
 - Well-tested modules migrate easier
 
@@ -305,7 +313,7 @@ test("creates my-module note via slash command", async ({ page }) => {
 ### Branch Naming
 - `feat/module-name` - New module
 - `fix/module-name` - Bug fix in module
-- `refactor/area` - Refactoring (coordinate with other agents)
+- `improve/area` - Code improvements (coordinate with others)
 - `docs/topic` - Documentation only
 
 ### Commit Messages
@@ -322,6 +330,8 @@ feat(my-module): add slash command support
 Before submitting:
 - [ ] **Build passes:** `npm run build`
 - [ ] **Tests pass:** `npm test && npm run test:e2e`
+- [ ] **Linting passes:** `npm run lint`
+- [ ] **Formatting passes:** `npm run format:check`
 - [ ] **Module registered** in `initModules.ts`
 - [ ] **Tests added** for new functionality
 - [ ] **Types defined** in `src/types/` or module
@@ -355,7 +365,7 @@ Problem it solves or capability it adds
 - Coordination needed: NO
 ```
 
-## Agent Coordination
+## Coordination
 
 ### When to Coordinate
 
