@@ -108,6 +108,13 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
     // Use a robust locator that works across different systems
     await expect(page.getByText("2 tags")).toBeVisible({ timeout: 5000 });
 
+    await expect(page.getByText("#test", { exact: true })).toBeVisible({
+      timeout: 2000,
+    });
+    await expect(page.getByText("#important", { exact: true })).toBeVisible({
+      timeout: 2000,
+    });
+
     // Send the note
     await page.getByRole("button", { name: "⚡" }).click();
 

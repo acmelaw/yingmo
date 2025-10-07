@@ -280,6 +280,14 @@ function insertEmoji(emoji: string) {
               detectedHashtags.length > 1 ? "s" : ""
             }}</span
           >
+          <span class="flex items-center gap-1 ml-1">
+            <span
+              v-for="tag in detectedHashtags"
+              :key="tag"
+              class="opacity-90"
+              >{{ tag }}</span
+            >
+          </span>
         </div>
       </Transition>
 
