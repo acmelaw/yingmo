@@ -105,8 +105,10 @@ test.describe("Chat/Note Flow - Critical User Journey", () => {
     await page.waitForTimeout(500);
 
     // Verify hashtag badge appears while typing
-    // Note: Using contains instead of exact match due to emoji rendering variations
-    await expect(page.locator("text=/2 tags/")).toBeVisible({ timeout: 5000 });
+    // Look for the badge containing "2" and "tags" text (handles emoji variations)
+    const hashtagBadge = page.locator("span").filter({ hasText: "2" }).filter({ hasText: "tags" });
+    await expect(hashtagBadge).toBeVisible({ timeout: 5000 });
+    
     await expect(page.getByText("#test", { exact: true })).toBeVisible({
       timeout: 2000,
     });
