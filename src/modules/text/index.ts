@@ -84,6 +84,15 @@ export const textNoteModule: NoteModule = {
   description: "Basic text note support",
   supportedTypes: ["text"],
 
+  slashCommands: [
+    {
+      command: "/text",
+      aliases: ["/t"],
+      description: "Create a text note",
+      icon: "📝",
+    },
+  ],
+
   async install(context) {
     context.registerNoteType("text", textNoteHandler);
     console.log("Text note module installed");

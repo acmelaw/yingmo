@@ -14,7 +14,8 @@ export type NoteType =
   | "smart-layer"
   | "markdown"
   | "code"
-  | "todo";
+  | "todo"
+  | "chord-sheet";
 
 export type NoteColor = 'default' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink';
 
@@ -151,6 +152,20 @@ export interface TodoNote extends BaseNote {
   items: TodoItem[]; // Array of todo items
 }
 
+// Chord sheet note (guitar/music chords)
+export interface ChordSheetNote extends BaseNote {
+  type: "chord-sheet";
+  content: string; // Chord sheet text with chords and lyrics
+  metadata: {
+    transpose?: number; // Semitones to transpose (-12 to 12)
+    originalKey?: string; // Original key of the song
+    capo?: number; // Capo position
+    artist?: string;
+    title?: string;
+    [key: string]: any;
+  };
+}
+
 // Union type for all note types
 export type Note =
   | TextNote
@@ -159,7 +174,8 @@ export type Note =
   | SmartLayerNote
   | MarkdownNote
   | CodeNote
-  | TodoNote;
+  | TodoNote
+  | ChordSheetNote;
 
 // ============================================================================
 // HELPER FUNCTIONS for accessing note content
@@ -271,4 +287,8 @@ export function isMarkdownNote(note: Note): note is MarkdownNote {
 
 export function isCodeNote(note: Note): note is CodeNote {
   return note.type === "code";
+}
+
+export function isChordSheetNote(note: Note): note is ChordSheetNote {
+  return note.type === "chord-sheet";
 }

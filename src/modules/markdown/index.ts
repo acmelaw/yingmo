@@ -88,6 +88,15 @@ export const markdownNoteModule: NoteModule = {
   description: "Markdown note support with live preview",
   supportedTypes: ["markdown"],
 
+  slashCommands: [
+    {
+      command: "/markdown",
+      aliases: ["/md"],
+      description: "Create a markdown note",
+      icon: "📄",
+    },
+  ],
+
   async install(context) {
     context.registerNoteType("markdown", markdownNoteHandler);
     console.log("Markdown note module installed");

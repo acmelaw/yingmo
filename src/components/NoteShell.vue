@@ -29,6 +29,7 @@ import { useDataExport } from '../composables/useDataExport';
 import { usePlatform } from '../composables/usePlatform';
 import { initializeModules } from '../core/initModules';
 import { moduleRegistry } from '../core/ModuleRegistry';
+import { parseSlashCommand } from '@/core/SlashCommandParser';
 import { useAuthStore } from '@/stores/auth';
 import type { NoteType, NoteColor } from '@/types/note';
 
@@ -154,55 +155,42 @@ async function handleAdd(text: string, type: NoteType = 'text', color?: NoteColo
   }
 
   try {
-  let noteData: Record<string, any>;
-  switch (type) {
-    case 'text':
-      noteData = { content: text.trim(), text: text.trim() };
-      break;
-    case 'markdown':
-      noteData = { content: text.trim() };
-      break;
-    case 'code':
-      noteData = { content: text.trim(), metadata: { language: 'javascript' } };
-      break;
-    case 'rich-text':
-      noteData = {
-        content: `<p>${text.trim()}</p>`,
-        metadata: {
-          format: 'html',
-          tiptapContent: {
-            type: 'doc',
-            content: [{ type: 'paragraph', content: [{ type: 'text', text: text.trim() }] }]
-          }
-        }
-      };
-      break;
-    case 'image':
-      noteData = { content: text.trim(), metadata: { alt: text.trim() } };
-      break;
-    case 'smart-layer':
-      noteData = {
-        content: text.trim(),
-        metadata: { source: { type: 'text', data: text.trim() }, layers: [] }
-      };
-      break;
-    default:
-      noteData = { content: text.trim() };
-  }
+    // Parse slash command to detect preferred view type
+    const parsed = parseSlashCommand(text);
+    
+    let noteData: Record<string, any> = {};
+    let preferredViewType = type; // Default to passed type (from button)
+    
+    if (parsed) {
+      console.log('[handleAdd] Detected slash command:', parsed);
+      
+      // Resolve preferred view type from slash command
+      // Note: parseSlashCommand returns command WITHOUT /, but registry stores WITH /
+      const commandWithSlash = parsed.command.startsWith('/') ? parsed.command : `/${parsed.command}`;
+      const slashCmd = moduleRegistry.getSlashCommand(commandWithSlash);
+      if (slashCmd) {
+        preferredViewType = slashCmd.module.supportedTypes[0]; // Slash command suggests view type
+      }
+    }
+    
+    // CRITICAL: Store the FULL TEXT including slash command
+    // The viewer will parse it to determine how to render
+    noteData.content = text.trim();
+    noteData.text = text.trim();
+    
+    // Create note with preferred view type (just a hint for the viewer)
+    const noteId = await store.create(preferredViewType, noteData);
 
-  // Create note with optional color
-  const noteId = await store.create(type, noteData);
+    if (color && noteId) {
+      await store.update(noteId, { color });
+    }
 
-  if (color && noteId) {
-    await store.update(noteId, { color });
-  }
-
-  // Ensure the new note is visible even if a search filter was active
-  if (store.searchQuery) {
-    store.searchQuery = '';
-    searchQuery.value = '';
-  }
-  nextTick(() => scrollToLatest());
+    // Ensure the new note is visible even if a search filter was active
+    if (store.searchQuery) {
+      store.searchQuery = '';
+      searchQuery.value = '';
+    }
+    nextTick(() => scrollToLatest());
   } catch (error) {
     console.error('[handleAdd] Error:', error);
   }

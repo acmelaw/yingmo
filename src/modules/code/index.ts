@@ -87,6 +87,44 @@ export const codeNoteModule: NoteModule = {
   description: "Code snippet support with syntax highlighting",
   supportedTypes: ["code"],
 
+  slashCommands: [
+    {
+      command: "/code",
+      aliases: ["/snippet"],
+      description: "Create a code snippet",
+      icon: "💻",
+      defaultParameters: {
+        language: "javascript",
+      },
+    },
+  ],
+
+  parameters: [
+    {
+      id: "language",
+      label: "Language",
+      type: "select",
+      defaultValue: "javascript",
+      options: [
+        { value: "javascript", label: "JavaScript" },
+        { value: "typescript", label: "TypeScript" },
+        { value: "python", label: "Python" },
+        { value: "java", label: "Java" },
+        { value: "cpp", label: "C++" },
+        { value: "csharp", label: "C#" },
+        { value: "go", label: "Go" },
+        { value: "rust", label: "Rust" },
+        { value: "html", label: "HTML" },
+        { value: "css", label: "CSS" },
+        { value: "json", label: "JSON" },
+        { value: "yaml", label: "YAML" },
+        { value: "markdown", label: "Markdown" },
+        { value: "bash", label: "Bash" },
+      ],
+      description: "Programming language for syntax highlighting",
+    },
+  ],
+
   async install(context) {
     context.registerNoteType("code", codeNoteHandler);
     console.log("Code note module installed");

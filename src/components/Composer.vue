@@ -256,6 +256,7 @@ const getNoteTypeIcon = (type) => {
     image: "🖼️",
     "smart-layer": "🤖",
     todo: "✅",
+    "chord-sheet": "🎸",
   }
   return icons[type] || "📋"
 }

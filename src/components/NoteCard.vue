@@ -4,9 +4,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { Note, NoteColor } from '@/types/note';
+import type { Note, NoteColor, NoteType } from '@/types/note';
 import { moduleRegistry } from '@/core/ModuleRegistry';
 import { Badge, Button } from '@/components/ui';
+import ModuleParameterControls from '@/components/ModuleParameterControls.vue';
+import ViewAsSelector from '@/components/ViewAsSelector.vue';
 
 const props = defineProps<{
   note: Note;
@@ -128,14 +130,23 @@ function handleEditorKeydown(e: KeyboardEvent) {
         >
           #{{ tag }}
         </Badge>
+        
+        <!-- View As Selector - replaces static type badge -->
+        <ViewAsSelector
+          :current-type="note.type"
+          :view-as="note.viewAs as NoteType | undefined"
+          @change="(type: NoteType) => emit('update', { viewAs: type })"
+        />
+        
+        <!-- Show transform indicator if viewing as different type -->
         <Badge
           v-if="showTransformBadge"
-          variant="type"
+          variant="tag"
+          class="text-2xs opacity-70"
           :title="`Original: ${note.type}, viewing as: ${displayType}`"
         >
           🔄 {{ note.type }} → {{ displayType }}
         </Badge>
-        <Badge v-else variant="type">{{ displayType }}</Badge>
       </div>
 
       <!-- Note content (editable or view mode) -->
@@ -167,6 +178,15 @@ function handleEditorKeydown(e: KeyboardEvent) {
       </div>
       <div v-else class="mb-2 text-brutal-pink text-xs sm:text-sm font-black">
         ⚠️ Unsupported note type: {{ note.type }}
+      </div>
+
+      <!-- Module parameters (e.g., transpose for chord sheets) -->
+      <div v-if="!isEditing" class="mb-2">
+        <ModuleParameterControls
+          :note="note"
+          compact
+          @update="(updates: Partial<Note>) => emit('update', updates)"
+        />
       </div>
 
       <!-- Transform hint -->

@@ -9,6 +9,7 @@ import type {
   NoteTypeHandler,
   NoteAction,
   TransformDefinition,
+  SlashCommand,
 } from "@/types/module";
 import type { NoteType } from "@/types/note";
 
@@ -20,6 +21,7 @@ class ModuleRegistry {
   private transforms = new Map<string, TransformDefinition>();
   private stores = new Map<string, any>();
   private services = new Map<string, any>();
+  private slashCommands = new Map<string, { command: SlashCommand; module: NoteModule }>();
 
   /**
    * Register a new module
@@ -42,6 +44,19 @@ class ModuleRegistry {
       Object.entries(module.components).forEach(([key, component]) => {
         if (component) {
           this.components.set(`${module.id}.${key}`, component);
+        }
+      });
+    }
+
+    // Register slash commands
+    if (module.slashCommands) {
+      module.slashCommands.forEach(command => {
+        this.slashCommands.set(command.command.toLowerCase(), { command, module });
+        // Register aliases
+        if (command.aliases) {
+          command.aliases.forEach(alias => {
+            this.slashCommands.set(alias.toLowerCase(), { command, module });
+          });
         }
       });
     }
@@ -140,6 +155,37 @@ class ModuleRegistry {
    */
   getRegisteredNoteTypes(): NoteType[] {
     return Array.from(this.typeHandlers.keys());
+  }
+
+  /**
+   * Get all registered slash commands
+   */
+  getAllSlashCommands(): Array<{ command: SlashCommand; module: NoteModule }> {
+    const uniqueCommands = new Map<string, { command: SlashCommand; module: NoteModule }>();
+    
+    // Get unique commands (primary commands only, not aliases)
+    this.slashCommands.forEach((value, key) => {
+      if (key === value.command.command.toLowerCase()) {
+        uniqueCommands.set(key, value);
+      }
+    });
+    
+    return Array.from(uniqueCommands.values());
+  }
+
+  /**
+   * Get slash command by command string
+   */
+  getSlashCommand(command: string): { command: SlashCommand; module: NoteModule } | undefined {
+    return this.slashCommands.get(command.toLowerCase());
+  }
+
+  /**
+   * Get module parameters for a note type
+   */
+  getParametersForType(type: NoteType): any[] {
+    const modules = this.getModulesForType(type);
+    return modules.flatMap(m => m.parameters || []);
   }
 
   /**

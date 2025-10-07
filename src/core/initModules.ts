@@ -11,6 +11,7 @@ import { richTextNoteModule } from "@/modules/rich-text";
 import { imageNoteModule } from "@/modules/image";
 import { smartLayerNoteModule } from "@/modules/smart-layer";
 import { todoModule } from "@/modules/todo";
+import { chordSheetModule } from "@/modules/chord-sheet";
 import caesarCipherModule from "@/modules/caesar-cipher";
 
 export async function initializeModules() {
@@ -24,9 +25,11 @@ export async function initializeModules() {
   await moduleRegistry.register(imageNoteModule);
   await moduleRegistry.register(smartLayerNoteModule);
   await moduleRegistry.register(todoModule);
+  await moduleRegistry.register(chordSheetModule);
 
   // Register view-only modules
   await moduleRegistry.register(caesarCipherModule);
 
   console.log("All modules initialized");
+  console.log("Registered slash commands:", moduleRegistry.getAllSlashCommands());
 }

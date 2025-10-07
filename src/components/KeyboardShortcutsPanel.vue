@@ -120,24 +120,10 @@
             </h3>
             <div class="space-y-2">
               <ShortcutRow
-                keys="/text"
-                description="Create text note"
-              />
-              <ShortcutRow
-                keys="/markdown"
-                description="Create markdown note"
-              />
-              <ShortcutRow
-                keys="/code"
-                description="Create code note"
-              />
-              <ShortcutRow
-                keys="/todo"
-                description="Create todo note"
-              />
-              <ShortcutRow
-                keys="/rich"
-                description="Create rich-text note"
+                v-for="cmd in slashCommands"
+                :key="cmd.command"
+                :keys="cmd.command"
+                :description="cmd.description"
               />
             </div>
           </section>
@@ -169,8 +155,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import ShortcutRow from './ShortcutRow.vue'
+import { moduleRegistry } from '@/core/ModuleRegistry'
 
 defineProps<{
   show: boolean
@@ -179,6 +166,15 @@ defineProps<{
 const emit = defineEmits<{
   close: []
 }>()
+
+// Get slash commands from module registry
+const slashCommands = computed(() => {
+  return moduleRegistry.getAllSlashCommands().map(({ command, module }) => ({
+    command: command.command,
+    description: command.description,
+    icon: command.icon,
+  }))
+})
 
 // Close on Escape key
 const handleKeydown = (e: KeyboardEvent) => {

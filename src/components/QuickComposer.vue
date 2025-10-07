@@ -3,9 +3,12 @@
   Simple, fast, mobile-first
 -->
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from "vue";
+import { ref, computed, watch, nextTick } from "vue";
+import { storeToRefs } from "pinia";
 import { Button, ColorPicker } from "./ui";
 import type { NoteType, NoteColor } from "../types/note";
+import { moduleRegistry } from "@/core/ModuleRegistry";
+import { parseSlashCommand } from "@/core/SlashCommandParser";
 
 const props = withDefaults(
   defineProps<{
@@ -22,14 +25,12 @@ const emit = defineEmits<{
 
 // === State ===
 const input = ref("");
-const selectedType = ref<NoteType>("text");
+// REMOVED: selectedType - slash commands now auto-determine type, defaults to "text"
 const selectedColor = ref<NoteColor>("default");
 const inputEl = ref<HTMLTextAreaElement | null>(null);
-const showTypePicker = ref(false);
+// REMOVED: showTypePicker, typeButtons, selectedTypeIndex - no manual type selection
 const showColorPicker = ref(false);
 const showEmojiPicker = ref(false);
-const selectedTypeIndex = ref(0);
-const typeButtons = ref<HTMLButtonElement[]>([]);
 
 // === Computed ===
 const canSend = computed(() => input.value.trim().length > 0);
@@ -42,31 +43,42 @@ const detectedHashtags = computed(() => {
 
 const hasHashtags = computed(() => detectedHashtags.value.length > 0);
 
-// Detect slash commands
-const slashCommandMap: Record<string, NoteType> = {
-  '/text': 'text',
-  '/markdown': 'markdown',
-  '/md': 'markdown',
-  '/code': 'code',
-  '/todo': 'todo',
-  '/rich': 'rich-text',
-  '/richtext': 'rich-text',
-  '/image': 'image',
-  '/img': 'image',
-  '/smart': 'smart-layer',
-  '/ai': 'smart-layer',
-};
-
-const detectedSlashCommand = computed(() => {
-  const trimmed = input.value.trim().toLowerCase();
-  for (const [cmd, type] of Object.entries(slashCommandMap)) {
-    if (trimmed.startsWith(cmd + ' ') || trimmed === cmd) {
-      return { command: cmd, type };
+// Build slash command map from registered modules
+const slashCommandMap = computed(() => {
+  const map: Record<string, NoteType> = {};
+  const commands = moduleRegistry.getAllSlashCommands();
+  
+  commands.forEach(({ command, module }) => {
+    const type = module.supportedTypes[0];
+    if (type) {
+      map[command.command.toLowerCase()] = type;
+      command.aliases?.forEach(alias => {
+        map[alias.toLowerCase()] = type;
+      });
     }
-  }
-  return null;
+  });
+  
+  return map;
 });
 
+// Detect slash commands using the parser
+const detectedSlashCommand = computed(() => {
+  const trimmed = input.value.trim();
+  if (!trimmed.startsWith('/')) return null;
+  
+  const parsed = parseSlashCommand(trimmed);
+  if (!parsed) return null;
+  
+  const slashCmd = moduleRegistry.getSlashCommand(parsed.command);
+  if (!slashCmd) return null;
+  
+  return {
+    command: parsed.rawCommand || parsed.command,
+    type: slashCmd.module.supportedTypes[0] || 'text'
+  };
+});
+
+// Helper for slash command indicator
 function getTypeIcon(type: NoteType): string {
   const icons: Record<string, string> = {
     text: "📝",
@@ -76,36 +88,30 @@ function getTypeIcon(type: NoteType): string {
     image: "🖼️",
     "smart-layer": "🤖",
     todo: "✅",
+    "chord-sheet": "🎸",
   };
   return icons[type] || "📋";
 }
 
-const typeIcon = computed(() => getTypeIcon(selectedType.value));
-
-// Auto-detect and apply slash commands
-watch(detectedSlashCommand, (cmd) => {
-  if (cmd && props.availableTypes.includes(cmd.type)) {
-    selectedType.value = cmd.type;
-  }
-});
+// NOTE: We do NOT auto-apply slash command types here.
+// The slash command detection is only for UI feedback (showing the indicator).
+// The actual type resolution happens in handleAdd by parsing the slash command.
+// This keeps the architecture pure: slash commands are parsed once, in one place.
 
 // === Methods ===
 function send() {
   let text = input.value.trim();
   if (!text) return;
 
-  // Remove slash command from text if present
-  if (detectedSlashCommand.value) {
-    text = text.slice(detectedSlashCommand.value.command.length).trim();
-    if (!text) return; // Don't send if only slash command with no content
-  }
-
-  emit("submit", text, selectedType.value, selectedColor.value !== 'default' ? selectedColor.value : undefined);
+  // DON'T strip slash command - handleAdd needs the full text with k-v parameters
+  // The parser in handleAdd will extract command, parameters, and content
+  // Type is always "text" - handleAdd will determine actual type from slash command
+  
+  emit("submit", text, "text", selectedColor.value !== 'default' ? selectedColor.value : undefined);
 
   // Reset
   input.value = "";
   selectedColor.value = "default";
-  showTypePicker.value = false;
   showColorPicker.value = false;
   showEmojiPicker.value = false;
 
@@ -121,40 +127,9 @@ function handleKeyDown(e: KeyboardEvent) {
     e.preventDefault();
     send();
   }
-
-  // Close type picker on Escape
-  if (e.key === "Escape") {
-    showTypePicker.value = false;
-  }
 }
 
-function selectType(type: NoteType) {
-  selectedType.value = type;
-  showTypePicker.value = false;
-  nextTick(() => inputEl.value?.focus());
-}
-
-function handleTypePickerKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') {
-    e.preventDefault();
-    showTypePicker.value = false;
-    inputEl.value?.focus();
-  } else if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    const type = props.availableTypes[selectedTypeIndex.value];
-    if (type) selectType(type);
-  } else if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    selectedTypeIndex.value = (selectedTypeIndex.value + 1) % props.availableTypes.length;
-    typeButtons.value[selectedTypeIndex.value]?.focus();
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    selectedTypeIndex.value = selectedTypeIndex.value === 0
-      ? props.availableTypes.length - 1
-      : selectedTypeIndex.value - 1;
-    typeButtons.value[selectedTypeIndex.value]?.focus();
-  }
-}
+// REMOVED: selectType, handleTypePickerKeydown - no manual type selection
 
 // Auto-resize textarea
 function autoResize() {
@@ -165,13 +140,7 @@ function autoResize() {
 
 watch(input, autoResize);
 
-// Reset type picker index when menu opens
-watch(showTypePicker, (isOpen) => {
-  if (isOpen) {
-    selectedTypeIndex.value = props.availableTypes.indexOf(selectedType.value);
-    if (selectedTypeIndex.value === -1) selectedTypeIndex.value = 0;
-  }
-});
+// REMOVED: watch(showTypePicker) - no type picker
 
 // Expose focus method for parent components (e.g., Cmd+N shortcut)
 defineExpose({
@@ -200,55 +169,9 @@ function insertEmoji(emoji: string) {
 </script>
 
 <template>
-  <div class="flex items-end gap-2">
-    <!-- Type Picker (if multiple types available) -->
-    <div v-if="availableTypes.length > 1" class="relative shrink-0">
-      <Button
-        variant="secondary"
-        size="icon"
-        :title="`Note type: ${selectedType}`"
-        @click="showTypePicker = !showTypePicker"
-      >
-        {{ typeIcon }}
-      </Button>
-
-      <!-- Type Menu -->
-      <Transition
-        enter-active-class="transition-all duration-150"
-        enter-from-class="opacity-0 scale-95 translate-y-2"
-        leave-active-class="transition-all duration-100"
-        leave-to-class="opacity-0 scale-95 translate-y-2"
-      >
-        <div
-          v-if="showTypePicker"
-          class="absolute bottom-full left-0 mb-2 p-2 bg-base-white dark:bg-dark-bg-primary border-3 border-base-black dark:border-white shadow-hard-xl rounded-sm z-50 min-w-40"
-          role="menu"
-          aria-label="Note type selection"
-          @keydown="handleTypePickerKeydown"
-        >
-          <button
-            v-for="(type, index) in availableTypes"
-            :key="type"
-            :ref="(el) => { if (el) typeButtons[index] = el as HTMLButtonElement }"
-            type="button"
-            role="menuitem"
-            :aria-label="`Select ${type} note type`"
-            class="w-full flex items-center gap-2 px-3 py-2 text-left font-bold text-sm border-2 border-base-black dark:border-white rounded mb-1.5 last:mb-0 transition-all duration-75"
-            :class="
-              type === selectedType
-                ? 'bg-accent-green text-base-black'
-                : 'bg-base-white dark:bg-dark-bg-tertiary hover:(bg-accent-yellow -translate-x-0.5)'
-            "
-            @click="selectType(type)"
-          >
-            <span class="text-base">{{ getTypeIcon(type) }}</span>
-            <span class="uppercase">{{ type }}</span>
-            <span v-if="type === selectedType" class="ml-auto text-accent-green">✓</span>
-          </button>
-        </div>
-      </Transition>
-    </div>
-
+    <div class="flex items-end gap-1.5 sm:gap-2 w-full max-w-4xl">
+    <!-- REMOVED: Type selector - slash commands now auto-determine type -->
+    
     <!-- Color Picker -->
     <div class="relative shrink-0">
       <Button
