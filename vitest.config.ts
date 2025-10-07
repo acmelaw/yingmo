@@ -7,7 +7,7 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: "happy-dom",
-      exclude: [...configDefaults.exclude, "e2e/**", "sync-server/**"],
+      exclude: [...configDefaults.exclude, "e2e/**"],
       root: fileURLToPath(new URL("./", import.meta.url)),
       globals: true,
       setupFiles: ["./src/__tests__/setup.ts"],
