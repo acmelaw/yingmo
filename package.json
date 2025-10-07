@@ -18,7 +18,8 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
     "lint:fix": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "dependencies": {
     "@tiptap/core": "^2.1.13",
@@ -81,6 +82,8 @@
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-vue": "^9.33.0",
     "happy-dom": "^15.11.7",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.3",
     "prettier": "^3.6.2",
     "sass": "^1.75.0",
     "storybook": "^9.1.10",
@@ -91,5 +94,14 @@
     "vite": "^5.2.8",
     "vitest": "^2.1.8",
     "vue-tsc": "^2.0.28"
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }
