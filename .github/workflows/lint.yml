@@ -31,3 +31,11 @@ jobs:
 
       - name: Run Prettier check
         run: npm run format:check
+
+      - name: Check for code duplication
+        run: npm run check:duplication
+        continue-on-error: true
+
+      - name: Check for dead code
+        run: npm run check:dead-code
+        continue-on-error: true

@@ -22,6 +22,8 @@
     "lint:fix": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check:duplication": "jscpd src/",
+    "check:dead-code": "ts-prune --error",
     "prepare": "husky"
   },
   "dependencies": {
@@ -86,10 +88,12 @@
     "eslint-plugin-vue": "^9.33.0",
     "happy-dom": "^15.11.7",
     "husky": "^9.1.7",
+    "jscpd": "^4.0.5",
     "lint-staged": "^16.2.3",
     "prettier": "^3.6.2",
     "sass": "^1.75.0",
     "storybook": "^9.1.10",
+    "ts-prune": "^0.10.3",
     "typescript": "^5.4.5",
     "unocss": "^0.58.9",
     "unplugin-auto-import": "^0.17.5",
