@@ -2,6 +2,11 @@
  * Utility functions for notes store
  */
 
+import {
+  createId as sharedCreateId,
+  ensureFutureTimestamp as sharedEnsureFutureTimestamp,
+} from "@/lib/utils";
+
 /**
  * Deep clone a value using structuredClone or JSON fallback
  */
@@ -19,20 +24,15 @@ export function clone<T>(value: T): T {
 
 /**
  * Generate a unique ID
+ * @deprecated Use the shared utility from @/lib/utils instead
  */
-export function createId(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
+export const createId = sharedCreateId;
 
 /**
  * Ensure timestamp is in the future (for optimistic updates)
+ * @deprecated Use the shared utility from @/lib/utils instead
  */
-export function ensureFutureTimestamp(previousTimestamp: number): number {
-  const now = Date.now();
-  return now > previousTimestamp ? now : previousTimestamp + 1;
-}
+export const ensureFutureTimestamp = sharedEnsureFutureTimestamp;
 
 /**
  * Normalize category name for consistent storage

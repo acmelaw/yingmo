@@ -4,14 +4,9 @@
 
 import type { NoteModule, NoteTypeHandler } from "@/types/module";
 import type { TodoNote, TodoItem } from "@/types/note";
+import { createId, ensureFutureTimestamp } from "@/lib/utils";
 import TodoNoteEditor from "./components/TodoNoteEditor.vue";
 import TodoNoteViewer from "./components/TodoNoteViewer.vue";
-
-function createId(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
 
 function parseTextToTodos(text: string): TodoItem[] {
   const lines = text.split("\n");
@@ -70,7 +65,7 @@ const todoNoteHandler: NoteTypeHandler = {
         items,
         text,
         content: text,
-        updated: Date.now(),
+        updated: ensureFutureTimestamp(todoNote.updated),
       };
     }
 
@@ -87,7 +82,7 @@ const todoNoteHandler: NoteTypeHandler = {
         items,
         text,
         content: text,
-        updated: Date.now(),
+        updated: ensureFutureTimestamp(todoNote.updated),
       };
     }
 
@@ -95,7 +90,7 @@ const todoNoteHandler: NoteTypeHandler = {
       ...todoNote,
       ...updates,
       type: "todo",
-      updated: Date.now(),
+      updated: ensureFutureTimestamp(todoNote.updated),
     };
   },
 

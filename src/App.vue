@@ -3,7 +3,7 @@
   Quick like Google Keep, Deep like Notion, Familiar like WhatsApp
 -->
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import { useHead } from "@unhead/vue";
@@ -14,7 +14,6 @@ import ServerSelector from "./components/ServerSelector.vue";
 
 // Stores
 import { useSettingsStore } from "./stores/settings";
-import { useNotesStore } from "./stores/notes";
 
 // Core
 import { initializeModules } from "./core/initModules";
@@ -22,7 +21,6 @@ import { initializeModules } from "./core/initModules";
 // === Setup ===
 const { t } = useI18n();
 const settings = useSettingsStore();
-const notes = useNotesStore();
 
 const { syncEnabled } = storeToRefs(settings);
 

@@ -4,19 +4,9 @@
 
 import type { NoteModule, NoteTypeHandler } from "@/types/module";
 import type { TextNote } from "@/types/note";
+import { createId, ensureFutureTimestamp } from "@/lib/utils";
 import TextNoteEditor from "./components/TextNoteEditor.vue";
 import TextNoteViewer from "./components/TextNoteViewer.vue";
-
-function createId(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function nextTimestamp(previous: number): number {
-  const now = Date.now();
-  return now > previous ? now : previous + 1;
-}
 
 const textNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<TextNote> {
@@ -49,7 +39,7 @@ const textNoteHandler: NoteTypeHandler = {
       type: "text", // Ensure type doesn't change
       content: nextContent,
       text: nextContent,
-      updated: nextTimestamp(textNote.updated),
+      updated: ensureFutureTimestamp(textNote.updated),
     } as TextNote;
   },
 

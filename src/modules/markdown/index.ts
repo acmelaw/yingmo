@@ -4,20 +4,10 @@
 
 import type { NoteModule, NoteTypeHandler } from "@/types/module";
 import type { MarkdownNote, Note } from "@/types/note";
+import { createId, ensureFutureTimestamp } from "@/lib/utils";
 import MarkdownNoteEditor from "./components/MarkdownNoteEditor.vue";
 import MarkdownNoteViewer from "./components/MarkdownNoteViewer.vue";
 import { marked } from "marked";
-
-function createId(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function nextTimestamp(previous: number): number {
-  const now = Date.now();
-  return now > previous ? now : previous + 1;
-}
 
 const markdownNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<MarkdownNote> {
@@ -59,7 +49,7 @@ const markdownNoteHandler: NoteTypeHandler = {
       content: nextMarkdown,
       markdown: nextMarkdown,
       html: (data as any).html ?? (note as MarkdownNote).html,
-      updated: Date.now(),
+      updated: ensureFutureTimestamp(note.updated),
     } as MarkdownNote;
   },
 
