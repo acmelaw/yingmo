@@ -4,7 +4,6 @@
 -->
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import { useHead } from "@unhead/vue";
 
@@ -21,8 +20,6 @@ import { initializeModules } from "./core/initModules";
 // === Setup ===
 const { t } = useI18n();
 const settings = useSettingsStore();
-
-const { syncEnabled } = storeToRefs(settings);
 
 const showServerSelector = ref(false);
 const modulesReady = ref(false);
