@@ -135,6 +135,8 @@ From package.json:
   - `npm run format` - Format code with Prettier
   - `npm run format:check` - Check formatting without changes
 - Code Quality:
+  - `npm run quality:check` - **Run all CI checks locally** (full validation)
+  - `npm run quality:quick` - **Quick quality checks** (fast feedback)
   - `npm run check:duplication` - Detect code duplication (jscpd)
   - `npm run check:dead-code` - Find unused exports (ts-prune)
 

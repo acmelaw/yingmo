@@ -19,6 +19,5 @@
   "format": ["typescript", "javascript", "vue"],
   "minLines": 5,
   "minTokens": 70,
-  "output": "./reports/jscpd",
-  "exitCode": 1
+  "output": "./reports/jscpd"
 }

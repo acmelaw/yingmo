@@ -2,6 +2,77 @@
 
 This document explains the automated code quality checks that run in our CI pipeline.
 
+## Running All Checks Locally
+
+To run the same quality checks that run in CI, use one of these commands:
+
+### Full Quality Check (matches CI exactly)
+
+```bash
+npm run quality:check
+```
+
+This runs all checks in sequence:
+
+1. TypeScript type checking
+2. ESLint (code linting)
+3. Prettier (code formatting)
+4. Code duplication detection (jscpd)
+5. Dead code detection (ts-prune)
+6. Unit tests (Vitest)
+7. Production build
+
+**Time:** ~1-2 minutes depending on your machine
+
+### Quick Quality Check (fast feedback)
+
+```bash
+npm run quality:quick
+```
+
+This runs essential checks without tests and build:
+
+1. TypeScript type checking
+2. ESLint (code linting)
+3. Prettier (code formatting)
+4. Code duplication detection (jscpd)
+
+**Time:** ~10-30 seconds
+
+**Recommended workflow:**
+
+- Run `quality:quick` frequently while developing
+- Run `quality:check` before committing/pushing
+
+## Individual Checks
+
+You can also run individual checks for targeted validation:
+
+```bash
+# TypeScript type check
+npx vue-tsc --noEmit
+
+# Linting
+npm run lint
+npm run lint:fix  # Auto-fix issues
+
+# Formatting
+npm run format:check
+npm run format     # Auto-format
+
+# Code duplication
+npm run check:duplication
+
+# Dead code detection
+npm run check:dead-code
+
+# Unit tests
+npm test
+
+# Build
+npm run build
+```
+
 ## Duplication Detection
 
 We use [jscpd](https://github.com/kucherenko/jscpd) to detect code duplication across the codebase.
