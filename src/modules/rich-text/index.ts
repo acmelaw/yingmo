@@ -4,19 +4,9 @@
 
 import type { NoteModule, NoteTypeHandler } from "@/types/module";
 import type { RichTextNote } from "@/types/note";
+import { createId, ensureFutureTimestamp } from "@/lib/utils";
 import RichTextNoteEditor from "./components/RichTextNoteEditor.vue";
 import RichTextNoteViewer from "./components/RichTextNoteViewer.vue";
-
-function createId(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function nextTimestamp(previous: number): number {
-  const now = Date.now();
-  return now > previous ? now : previous + 1;
-}
 
 const richTextNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<RichTextNote> {
@@ -54,7 +44,7 @@ const richTextNoteHandler: NoteTypeHandler = {
       type: "rich-text",
       content: nextContent,
       html: nextContent,
-      updated: nextTimestamp(richNote.updated),
+      updated: ensureFutureTimestamp(richNote.updated),
     } as RichTextNote;
   },
 

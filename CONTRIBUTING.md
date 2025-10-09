@@ -207,12 +207,17 @@ await moduleRegistry.register(myModule);
 
 **Step 4:** Add tests in `src/__tests__/my-module.test.ts`
 
-**Step 5:** Verify:
+**Step 5:** Run quality checks:
 
 ```bash
-npm run build             # Must pass
-npm test                  # Must pass
+# Quick check (fast feedback)
+npm run quality:quick
+
+# Full check (same as CI)
+npm run quality:check
 ```
+
+See [QUALITY_CHECKS.md](QUALITY_CHECKS.md) for details.
 
 ### Code Patterns & Conventions
 

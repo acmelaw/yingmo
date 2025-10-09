@@ -4,19 +4,9 @@
 
 import type { NoteModule, NoteTypeHandler } from "@/types/module";
 import type { ImageNote } from "@/types/note";
+import { createId, ensureFutureTimestamp } from "@/lib/utils";
 import ImageNoteEditor from "./components/ImageNoteEditor.vue";
 import ImageNoteViewer from "./components/ImageNoteViewer.vue";
-
-function createId(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function nextTimestamp(previous: number): number {
-  const now = Date.now();
-  return now > previous ? now : previous + 1;
-}
 
 const imageNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<ImageNote> {
@@ -46,7 +36,7 @@ const imageNoteHandler: NoteTypeHandler = {
       ...imgNote,
       ...updates,
       type: "image",
-      updated: nextTimestamp(imgNote.updated),
+      updated: ensureFutureTimestamp(imgNote.updated),
     } as ImageNote;
   },
 

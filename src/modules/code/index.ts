@@ -4,19 +4,9 @@
 
 import type { NoteModule, NoteTypeHandler } from "@/types/module";
 import type { CodeNote } from "@/types/note";
+import { createId, ensureFutureTimestamp } from "@/lib/utils";
 import CodeNoteEditor from "./components/CodeNoteEditor.vue";
 import CodeNoteViewer from "./components/CodeNoteViewer.vue";
-
-function createId(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function nextTimestamp(previous: number): number {
-  const now = Date.now();
-  return now > previous ? now : previous + 1;
-}
 
 const codeNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<CodeNote> {
@@ -53,7 +43,7 @@ const codeNoteHandler: NoteTypeHandler = {
       type: "code",
       content: nextCode,
       code: nextCode,
-      updated: nextTimestamp(codeNote.updated),
+      updated: ensureFutureTimestamp(codeNote.updated),
     } as CodeNote;
   },
 
