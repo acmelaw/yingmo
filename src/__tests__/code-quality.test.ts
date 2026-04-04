@@ -26,7 +26,9 @@ describe("Shared Utilities - Prevent Duplication", () => {
         /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       const fallbackRegex = /^\d+-[a-z0-9]{8}$/;
 
-      expect(id).toMatch(new RegExp(`(${uuidRegex.source})|(${fallbackRegex.source})`));
+      expect(id).toMatch(
+        new RegExp(`(${uuidRegex.source})|(${fallbackRegex.source})`)
+      );
     });
   });
 
