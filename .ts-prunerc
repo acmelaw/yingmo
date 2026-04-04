@@ -1,0 +1,3 @@
+{
+  "ignore": "node_modules|dist|.*\\.d\\.ts$|.*\\.config\\.ts$|.*\\.config\\.js$|auto-imports\\.d\\.ts$|components\\.d\\.ts$|.*\\.spec\\.ts$|.*\\.test\\.ts$|sync-server"
+}

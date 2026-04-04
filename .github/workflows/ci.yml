@@ -40,8 +40,22 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
       - name: Run unit tests
         run: npm test
+
+      - name: Check for code duplication
+        run: npm run check:duplication
+
+      - name: Check for dead code
+        run: npm run check:dead-code
+        continue-on-error: true
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

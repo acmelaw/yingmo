@@ -134,6 +134,11 @@ From package.json:
   - `npm run lint:fix` - Auto-fix linting issues
   - `npm run format` - Format code with Prettier
   - `npm run format:check` - Check formatting without changes
+- Code Quality:
+  - `npm run quality:check` - **Run all CI checks locally** (full validation)
+  - `npm run quality:quick` - **Quick quality checks** (fast feedback)
+  - `npm run check:duplication` - Detect code duplication (jscpd)
+  - `npm run check:dead-code` - Find unused exports (ts-prune)
 
 Sync server scripts (see [docs/sync-server.md](docs/sync-server.md)):
 
@@ -182,6 +187,7 @@ See detailed patterns in:
 
 - [docs/architecture.md](docs/architecture.md) - System design and data flow
 - [docs/development.md](docs/development.md) - Code conventions and patterns
+- [docs/code-quality.md](docs/code-quality.md) - Code quality checks and best practices
 - [docs/linting-formatting.md](docs/linting-formatting.md) - Linting & formatting setup
 - [src/stores/notes/README.md](src/stores/notes/README.md) - Store architecture patterns
 

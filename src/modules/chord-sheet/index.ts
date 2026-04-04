@@ -4,20 +4,10 @@
 
 import type { NoteModule, NoteTypeHandler } from "@/types/module";
 import type { ChordSheetNote } from "@/types/note";
+import { createId, ensureFutureTimestamp } from "@/lib/utils";
 import ChordSheetNoteEditor from "./components/ChordSheetNoteEditor.vue";
 import ChordSheetNoteViewer2 from "./components/ChordSheetNoteViewer2.vue";
 import { detectFormat, extractMetadata } from "./formats";
-
-function createId(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function nextTimestamp(previous: number): number {
-  const now = Date.now();
-  return now > previous ? now : previous + 1;
-}
 
 const chordSheetHandler: NoteTypeHandler = {
   async create(data: any): Promise<ChordSheetNote> {
@@ -64,7 +54,7 @@ const chordSheetHandler: NoteTypeHandler = {
         ...chordNote.metadata,
         ...updates.metadata,
       },
-      updated: nextTimestamp(chordNote.updated),
+      updated: ensureFutureTimestamp(chordNote.updated),
     } as ChordSheetNote;
   },
 

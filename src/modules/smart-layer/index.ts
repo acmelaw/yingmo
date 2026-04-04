@@ -4,19 +4,9 @@
 
 import type { NoteModule, NoteTypeHandler } from "@/types/module";
 import type { SmartLayerNote } from "@/types/note";
+import { createId, ensureFutureTimestamp } from "@/lib/utils";
 import SmartLayerNoteEditor from "./components/SmartLayerNoteEditor.vue";
 import SmartLayerNoteViewer from "./components/SmartLayerNoteViewer.vue";
-
-function createId(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function nextTimestamp(previous: number): number {
-  const now = Date.now();
-  return now > previous ? now : previous + 1;
-}
 
 const smartLayerNoteHandler: NoteTypeHandler = {
   async create(data: any): Promise<SmartLayerNote> {
@@ -48,7 +38,7 @@ const smartLayerNoteHandler: NoteTypeHandler = {
       ...smartNote,
       ...updates,
       type: "smart-layer",
-      updated: nextTimestamp(smartNote.updated),
+      updated: ensureFutureTimestamp(smartNote.updated),
     } as SmartLayerNote;
   },
 
